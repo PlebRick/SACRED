@@ -9,14 +9,30 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 64px;
-  padding: 0 1.5rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 280px;
+  min-width: 280px;
+  padding: 0 1rem;
+  border-right: 1px solid var(--border);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 0 1.5rem;
+  position: relative;
 }
 
 .headerLeft {
@@ -35,14 +51,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-left: auto;
 }
 
 .logo {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.15em;
 }
 
 /* Verse Search */
@@ -387,6 +404,16 @@
 }
 
 @media (max-width: 768px) {
+  .headerBrand {
+    width: auto;
+    min-width: auto;
+    border-right: none;
+  }
+
+  .headerContent {
+    padding: 0 1rem;
+  }
+
   .sidebar {
     position: fixed;
     top: 64px;

@@ -11,7 +11,7 @@ export const Header = ({ onToggleSidebar, sidebarOpen }) => {
 
   return (
     <header className={styles.header}>
-      <div className={styles.headerLeft}>
+      <div className={styles.headerBrand}>
         <button
           className={styles.menuButton}
           onClick={onToggleSidebar}
@@ -25,19 +25,24 @@ export const Header = ({ onToggleSidebar, sidebarOpen }) => {
             )}
           </svg>
         </button>
-        <h1 className={styles.logo}>Sacred</h1>
-        <VerseSearch />
+        <h1 className={styles.logo}>SACRED</h1>
       </div>
 
-      <div className={styles.headerCenter}>
-        <span className={styles.currentReference}>
-          {book?.name} {chapter}
-        </span>
-      </div>
+      <div className={styles.headerContent}>
+        <div className={styles.headerLeft}>
+          <VerseSearch />
+        </div>
 
-      <div className={styles.headerRight}>
-        <SettingsModal />
-        <ThemeToggle />
+        <div className={styles.headerCenter}>
+          <span className={styles.currentReference}>
+            {book?.name} {chapter}
+          </span>
+        </div>
+
+        <div className={styles.headerRight}>
+          <ThemeToggle />
+          <SettingsModal />
+        </div>
       </div>
     </header>
   );
