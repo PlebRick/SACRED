@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const notesRoutes = require('./routes/notes.cjs');
+const backupRoutes = require('./routes/backup.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,7 +9,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
-// API routes
+// API routes - backup routes first to handle /export, /import, /count before /:id
+app.use('/api/notes', backupRoutes);
 app.use('/api/notes', notesRoutes);
 
 // Serve static frontend in production

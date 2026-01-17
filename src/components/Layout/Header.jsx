@@ -1,4 +1,5 @@
 import { ThemeToggle } from '../UI/ThemeToggle';
+import { SettingsModal } from '../UI/SettingsModal';
 import { VerseSearch } from './VerseSearch';
 import { useBible } from '../../context/BibleContext';
 import { getBookById } from '../../utils/bibleBooks';
@@ -35,6 +36,7 @@ export const Header = ({ onToggleSidebar, sidebarOpen }) => {
       </div>
 
       <div className={styles.headerRight}>
+        <SettingsModal />
         <ThemeToggle />
       </div>
     </header>

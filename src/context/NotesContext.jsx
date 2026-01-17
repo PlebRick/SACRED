@@ -101,6 +101,16 @@ export const NotesProvider = ({ children }) => {
     dispatch({ type: 'SET_SELECTED', id });
   }, []);
 
+  const refreshNotes = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
+    try {
+      const notes = await notesService.getAll();
+      dispatch({ type: 'LOAD_SUCCESS', notes });
+    } catch (error) {
+      dispatch({ type: 'LOAD_ERROR', error: error.message });
+    }
+  }, []);
+
   const getNotesForChapter = useCallback((bookId, chapter) => {
     return state.notes.filter(note =>
       note.book === bookId &&
@@ -118,6 +128,7 @@ export const NotesProvider = ({ children }) => {
       deleteNote,
       setEditingNote,
       setSelectedNote,
+      refreshNotes,
       getNotesForChapter
     }}>
       {children}
