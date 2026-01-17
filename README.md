@@ -1,4 +1,4 @@
-# Sacred
+# SACRED
 
 A personal Bible study app with rich text notes, commentary, and sermon management.
 
@@ -47,7 +47,7 @@ docker-compose up
 ## Project Structure
 
 ```
-Sacred/
+SACRED/
 ├── src/           # React frontend
 ├── server/        # Express backend
 ├── data/          # SQLite database

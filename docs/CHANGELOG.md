@@ -1,4 +1,4 @@
-# Sacred Changelog
+# SACRED Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- Initial release of Sacred Bible study app
+- Initial release of SACRED Bible study app
 - Bible reader with chapter navigation
 - Rich text note editor (Tiptap)
 - Notes attached to verse ranges (single verse, multi-verse, multi-chapter)

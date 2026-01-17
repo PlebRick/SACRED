@@ -1,4 +1,4 @@
-# Sacred Testing Guide
+# SACRED Testing Guide
 
 ## Current State
 
@@ -82,7 +82,7 @@ curl http://localhost:3001/api/notes/count
 
 ### Suggested Test Structure
 ```
-Sacred/
+SACRED/
 ├── src/
 │   ├── components/
 │   │   └── Notes/

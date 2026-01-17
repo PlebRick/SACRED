@@ -1,8 +1,8 @@
-# CLAUDE.md - Sacred Bible Study App
+# CLAUDE.md - SACRED Bible Study App
 
 ## Project Summary
 
-Sacred is a personal Bible study app with rich text notes, commentary, and sermon management. Notes are attached to verse ranges and stored locally in SQLite.
+SACRED is a personal Bible study app with rich text notes, commentary, and sermon management. Notes are attached to verse ranges and stored locally in SQLite.
 
 ## Quick Start Commands
 
@@ -31,7 +31,7 @@ docker-compose up
 ## Project Structure
 
 ```
-Sacred/
+SACRED/
 ├── src/                    # React frontend (ESM)
 │   ├── components/         # Organized by feature
 │   │   ├── Bible/         # Reader components (BibleReader, ChapterView, Verse)
