@@ -1,5 +1,6 @@
 import { ThemeToggle } from '../UI/ThemeToggle';
 import { SettingsModal } from '../UI/SettingsModal';
+import { SyncIndicator } from '../UI/SyncIndicator';
 import { VerseSearch } from './VerseSearch';
 import { useBible } from '../../context/BibleContext';
 import { getBookById } from '../../utils/bibleBooks';
@@ -40,6 +41,7 @@ export const Header = ({ onToggleSidebar, sidebarOpen }) => {
         </div>
 
         <div className={styles.headerRight}>
+          <SyncIndicator />
           <ThemeToggle />
           <SettingsModal />
         </div>

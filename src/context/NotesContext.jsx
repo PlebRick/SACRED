@@ -8,7 +8,9 @@ const initialState = {
   loading: true,
   error: null,
   editingNoteId: null,
-  selectedNoteId: null
+  selectedNoteId: null,
+  hasExternalChanges: false,
+  lastKnownModified: null
 };
 
 const reducer = (state, action) => {
@@ -39,6 +41,12 @@ const reducer = (state, action) => {
       return { ...state, editingNoteId: action.id };
     case 'SET_SELECTED':
       return { ...state, selectedNoteId: action.id };
+    case 'EXTERNAL_CHANGES_DETECTED':
+      return { ...state, hasExternalChanges: true };
+    case 'CLEAR_EXTERNAL_CHANGES':
+      return { ...state, hasExternalChanges: false };
+    case 'SET_LAST_MODIFIED':
+      return { ...state, lastKnownModified: action.lastModified };
     default:
       return state;
   }
@@ -47,18 +55,42 @@ const reducer = (state, action) => {
 export const NotesProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // Initial load - get notes and last modified timestamp
   useEffect(() => {
     const loadNotes = async () => {
       dispatch({ type: 'LOAD_START' });
       try {
-        const notes = await notesService.getAll();
+        const [notes, { lastModified }] = await Promise.all([
+          notesService.getAll(),
+          notesService.getLastModified()
+        ]);
         dispatch({ type: 'LOAD_SUCCESS', notes });
+        dispatch({ type: 'SET_LAST_MODIFIED', lastModified });
       } catch (error) {
         dispatch({ type: 'LOAD_ERROR', error: error.message });
       }
     };
     loadNotes();
   }, []);
+
+  // Poll for external changes (pause while editing)
+  useEffect(() => {
+    if (state.editingNoteId) return;
+
+    const checkForChanges = async () => {
+      try {
+        const { lastModified } = await notesService.getLastModified();
+        if (state.lastKnownModified && lastModified && lastModified !== state.lastKnownModified) {
+          dispatch({ type: 'EXTERNAL_CHANGES_DETECTED' });
+        }
+      } catch (error) {
+        // Silently ignore polling errors
+      }
+    };
+
+    const interval = setInterval(checkForChanges, 30000);
+    return () => clearInterval(interval);
+  }, [state.editingNoteId, state.lastKnownModified]);
 
   const createNote = useCallback(async (noteData) => {
     try {
@@ -104,11 +136,20 @@ export const NotesProvider = ({ children }) => {
   const refreshNotes = useCallback(async () => {
     dispatch({ type: 'LOAD_START' });
     try {
-      const notes = await notesService.getAll();
+      const [notes, { lastModified }] = await Promise.all([
+        notesService.getAll(),
+        notesService.getLastModified()
+      ]);
       dispatch({ type: 'LOAD_SUCCESS', notes });
+      dispatch({ type: 'SET_LAST_MODIFIED', lastModified });
+      dispatch({ type: 'CLEAR_EXTERNAL_CHANGES' });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR', error: error.message });
     }
+  }, []);
+
+  const dismissExternalChanges = useCallback(() => {
+    dispatch({ type: 'CLEAR_EXTERNAL_CHANGES' });
   }, []);
 
   const getNotesForChapter = useCallback((bookId, chapter) => {
@@ -129,6 +170,7 @@ export const NotesProvider = ({ children }) => {
       setEditingNote,
       setSelectedNote,
       refreshNotes,
+      dismissExternalChanges,
       getNotesForChapter
     }}>
       {children}

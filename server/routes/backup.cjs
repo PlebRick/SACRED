@@ -147,4 +147,15 @@ router.get('/count', (req, res) => {
   }
 });
 
+// GET /api/notes/lastModified - Get timestamp of most recently modified note
+router.get('/lastModified', (req, res) => {
+  try {
+    const result = db.prepare('SELECT MAX(updated_at) as lastModified FROM notes').get();
+    res.json({ lastModified: result.lastModified || null });
+  } catch (error) {
+    console.error('Error getting last modified:', error);
+    res.status(500).json({ error: 'Failed to get last modified' });
+  }
+});
+
 module.exports = router;

@@ -44,6 +44,12 @@ export const notesService = {
   delete: async (id) => {
     const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete note');
+  },
+
+  getLastModified: async () => {
+    const res = await fetch(`${API_BASE}/lastModified`);
+    if (!res.ok) throw new Error('Failed to get last modified');
+    return res.json();
   }
 };
 
