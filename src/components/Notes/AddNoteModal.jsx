@@ -4,7 +4,7 @@ import { useBible } from '../../context/BibleContext';
 import { getBookById } from '../../utils/bibleBooks';
 import styles from './Notes.module.css';
 
-export const AddNoteModal = ({ isOpen, onClose, onCreateNote }) => {
+export const AddNoteModal = ({ isOpen, onClose, onCreateNote, noteType = 'note' }) => {
   const { bookId, chapter } = useBible();
   const [referenceInput, setReferenceInput] = useState('');
   const [error, setError] = useState('');
@@ -49,7 +49,8 @@ export const AddNoteModal = ({ isOpen, onClose, onCreateNote }) => {
         endChapter: parsed.endChapter,
         endVerse: parsed.endVerse,
         title: '',
-        content: ''
+        content: '',
+        type: noteType
       });
       onClose();
     } catch (err) {
@@ -78,7 +79,7 @@ export const AddNoteModal = ({ isOpen, onClose, onCreateNote }) => {
         onKeyDown={handleKeyDown}
       >
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Add New Note</h3>
+          <h3 className={styles.modalTitle}>Add New {noteType === 'note' ? 'Note' : noteType === 'commentary' ? 'Commentary' : 'Sermon'}</h3>
           <button
             className={styles.modalCloseButton}
             onClick={onClose}

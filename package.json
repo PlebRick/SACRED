@@ -5,16 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "PORT=3001 node server/index.cjs",
     "build": "vite build",
+    "start": "NODE_ENV=production node server/index.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@tiptap/extension-placeholder": "^2.10.4",
     "@tiptap/react": "^2.10.4",
     "@tiptap/starter-kit": "^2.10.4",
-    "@tiptap/extension-placeholder": "^2.10.4",
+    "better-sqlite3": "^12.6.2",
+    "express": "^5.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

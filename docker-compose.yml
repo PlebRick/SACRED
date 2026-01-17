@@ -1,0 +1,13 @@
+services:
+  sacred:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - sacred-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+volumes:
+  sacred-data:

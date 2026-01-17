@@ -31,6 +31,34 @@
   padding: 1rem;
 }
 
+/* Section Tabs */
+.sectionTabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 1rem;
+}
+
+.sectionTab {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sectionTab:hover {
+  color: var(--text-primary);
+}
+
+.sectionTab.active {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
 /* Empty State */
 .emptyState {
   text-align: center;

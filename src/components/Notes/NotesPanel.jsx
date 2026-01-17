@@ -18,9 +18,12 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
   } = useNotes();
   const { bookId, chapter } = useBible();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('note');
   const notesListRef = useRef(null);
 
-  const chapterNotes = getNotesForChapter(bookId, chapter);
+  // Filter notes by type (default to 'note' for backward compatibility)
+  const chapterNotes = getNotesForChapter(bookId, chapter)
+    .filter(note => (note.type || 'note') === activeTab);
   const editingNote = notes.find(n => n.id === editingNoteId);
 
   // Auto-scroll to active note when it changes
@@ -69,10 +72,14 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
   return (
     <div className={styles.notesPanel}>
       <div className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>Notes</h2>
+        <h2 className={styles.panelTitle}>{activeTab === 'note' ? 'Notes' : activeTab === 'commentary' ? 'Commentary' : 'Sermons'}</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span className={styles.noteCount}>
-            {chapterNotes.length} {chapterNotes.length === 1 ? 'note' : 'notes'}
+            {chapterNotes.length} {activeTab === 'note'
+              ? (chapterNotes.length === 1 ? 'note' : 'notes')
+              : activeTab === 'commentary'
+              ? (chapterNotes.length === 1 ? 'commentary' : 'commentaries')
+              : (chapterNotes.length === 1 ? 'sermon' : 'sermons')}
           </span>
           <button
             className={styles.addNoteButton}
@@ -86,12 +93,33 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
         </div>
       </div>
 
+      <div className={styles.sectionTabs}>
+        <button
+          className={`${styles.sectionTab} ${activeTab === 'note' ? styles.active : ''}`}
+          onClick={() => setActiveTab('note')}
+        >
+          Notes
+        </button>
+        <button
+          className={`${styles.sectionTab} ${activeTab === 'commentary' ? styles.active : ''}`}
+          onClick={() => setActiveTab('commentary')}
+        >
+          Commentary
+        </button>
+        <button
+          className={`${styles.sectionTab} ${activeTab === 'sermon' ? styles.active : ''}`}
+          onClick={() => setActiveTab('sermon')}
+        >
+          Sermons
+        </button>
+      </div>
+
       <div className={styles.notesList} ref={notesListRef}>
         {chapterNotes.length === 0 ? (
           <div className={styles.emptyState}>
-            <p>No notes for this chapter yet.</p>
+            <p>No {activeTab === 'note' ? 'notes' : activeTab === 'commentary' ? 'commentaries' : 'sermons'} for this chapter yet.</p>
             <p className={styles.hint}>
-              Click the + button to create a note for a verse range.
+              Click the + button to create {activeTab === 'note' ? 'a note' : activeTab === 'commentary' ? 'a commentary' : 'a sermon'} for a verse range.
             </p>
           </div>
         ) : (
@@ -112,6 +140,7 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onCreateNote={handleCreateNote}
+        noteType={activeTab}
       />
     </div>
   );

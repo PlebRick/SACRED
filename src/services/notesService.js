@@ -1,90 +1,49 @@
-// Notes Service - localStorage implementation (backend-ready interface)
-import { v4 as uuidv4 } from 'uuid';
-
-const STORAGE_KEY = 'sacred_notes';
-
-const loadNotes = () => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (e) {
-    console.error('Failed to load notes:', e);
-    return [];
-  }
-};
-
-const saveNotes = (notes) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  } catch (e) {
-    console.error('Failed to save notes:', e);
-  }
-};
+// Notes Service - API implementation
+const API_BASE = '/api/notes';
 
 export const notesService = {
   getAll: async () => {
-    return loadNotes();
+    const res = await fetch(API_BASE);
+    if (!res.ok) throw new Error('Failed to fetch notes');
+    return res.json();
   },
 
   getById: async (id) => {
-    const notes = loadNotes();
-    return notes.find(note => note.id === id) || null;
+    const res = await fetch(`${API_BASE}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Failed to fetch note');
+    return res.json();
   },
 
   getByReference: async (book, chapter) => {
-    const notes = loadNotes();
-    return notes.filter(note =>
-      note.book === book &&
-      ((note.startChapter <= chapter && note.endChapter >= chapter) ||
-       note.startChapter === chapter ||
-       note.endChapter === chapter)
-    );
+    const res = await fetch(`${API_BASE}/chapter/${encodeURIComponent(book)}/${chapter}`);
+    if (!res.ok) throw new Error('Failed to fetch notes');
+    return res.json();
   },
 
   create: async (noteData) => {
-    const notes = loadNotes();
-    const now = new Date().toISOString();
-
-    const note = {
-      id: uuidv4(),
-      ...noteData,
-      createdAt: now,
-      updatedAt: now
-    };
-
-    notes.push(note);
-    saveNotes(notes);
-    return note;
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(noteData)
+    });
+    if (!res.ok) throw new Error('Failed to create note');
+    return res.json();
   },
 
   update: async (id, updates) => {
-    const notes = loadNotes();
-    const index = notes.findIndex(note => note.id === id);
-
-    if (index === -1) {
-      throw new Error(`Note not found: ${id}`);
-    }
-
-    const updatedNote = {
-      ...notes[index],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-
-    notes[index] = updatedNote;
-    saveNotes(notes);
-    return updatedNote;
+    const res = await fetch(`${API_BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Failed to update note');
+    return res.json();
   },
 
   delete: async (id) => {
-    const notes = loadNotes();
-    const filtered = notes.filter(note => note.id !== id);
-
-    if (filtered.length === notes.length) {
-      throw new Error(`Note not found: ${id}`);
-    }
-
-    saveNotes(filtered);
+    const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete note');
   }
 };
 
