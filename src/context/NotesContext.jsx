@@ -82,13 +82,18 @@ export const NotesProvider = ({ children }) => {
         const { lastModified } = await notesService.getLastModified();
         if (state.lastKnownModified && lastModified && lastModified !== state.lastKnownModified) {
           dispatch({ type: 'EXTERNAL_CHANGES_DETECTED' });
+          // Auto-reload notes when external changes detected
+          const notes = await notesService.getAll();
+          dispatch({ type: 'LOAD_SUCCESS', notes });
+          dispatch({ type: 'SET_LAST_MODIFIED', lastModified });
+          dispatch({ type: 'CLEAR_EXTERNAL_CHANGES' });
         }
       } catch (error) {
         // Silently ignore polling errors
       }
     };
 
-    const interval = setInterval(checkForChanges, 30000);
+    const interval = setInterval(checkForChanges, 5000);
     return () => clearInterval(interval);
   }, [state.editingNoteId, state.lastKnownModified]);
 
