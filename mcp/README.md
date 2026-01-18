@@ -71,7 +71,6 @@ Restart Claude Desktop or Claude Code for the MCP server to connect.
 |-------------|-------------------|
 | Mac App | `~/Library/Application Support/sacred/sacred.db` |
 | Development | `./data/sacred.db` |
-| Docker | `/app/data/sacred.db` |
 
 ## Available Tools
 

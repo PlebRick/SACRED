@@ -23,19 +23,6 @@ npm run dev          # Frontend at http://localhost:3000
 npm run dev:server   # Backend at http://localhost:3001
 ```
 
-## Production
-
-```bash
-# Build and run
-npm run build && npm start
-```
-
-Or with Docker:
-
-```bash
-docker-compose up
-```
-
 ## Mac App
 
 Build a native Mac app (.dmg):
@@ -95,7 +82,6 @@ See [mcp/README.md](mcp/README.md) for detailed setup, available tools, and exam
 
 - **Mac App**: `~/Library/Application Support/sacred/sacred.db`
 - **Development**: `./data/sacred.db`
-- **Docker**: `/app/data/sacred.db`
 
 ## Tech Stack
 

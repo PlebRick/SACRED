@@ -11,11 +11,8 @@ SACRED is a personal Bible study app with rich text notes, commentary, and sermo
 npm run dev          # Frontend at http://localhost:3000
 npm run dev:server   # Backend at http://localhost:3001
 
-# Production
-npm run build && npm start
-
-# Docker
-docker-compose up
+# Mac App
+npm run electron:build   # Creates release/SACRED-*.dmg
 ```
 
 ## Tech Stack
@@ -138,16 +135,10 @@ No test framework yet. Manual testing only. See `docs/TESTING.md` for test workf
 
 ## Deployment
 
-### Supported Platforms
-- **Local:** `npm run dev` for development
-- **Docker:** `docker-compose up` (production build)
-- **StartOS:** Package as `.s9pk` for self-hosted (planned)
-- **Mac App:** Wrapped web app via Electron/Tauri (planned)
-
-### Docker Notes
-- Uses Node 20 Alpine (multi-stage build)
-- Data persisted in `/app/data` volume
-- Single container serves both frontend and API
+### Mac App
+- Build with `npm run electron:build`
+- Output: `release/SACRED-*.dmg`
+- Database: `~/Library/Application Support/sacred/sacred.db`
 
 ### Environment Variables
 - `PORT`: Server port (default 3000)
