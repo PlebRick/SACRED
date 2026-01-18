@@ -59,6 +59,25 @@ vi.mock('@tiptap/extension-placeholder', () => ({
   },
 }));
 
+// Mock TopicsContext
+vi.mock('../../../src/context/TopicsContext', () => ({
+  useTopics: () => ({
+    topics: [],
+    flatTopics: [],
+    loading: false,
+    error: null,
+    selectedTopicId: null,
+    createTopic: vi.fn(),
+    updateTopic: vi.fn(),
+    deleteTopic: vi.fn(),
+    setSelectedTopic: vi.fn(),
+    refreshTopics: vi.fn(),
+    seedDefaultTopics: vi.fn(),
+    getTopicById: vi.fn().mockReturnValue(null),
+    getTopicPath: vi.fn().mockReturnValue([]),
+  }),
+}));
+
 // Import after mocks
 import NoteEditor from '../../../src/components/Notes/NoteEditor';
 
@@ -302,6 +321,8 @@ describe('NoteEditor', () => {
       expect(mockOnUpdate).toHaveBeenCalledWith('note-1', {
         title: 'Updated Title',
         content: '<p>Test content</p>',
+        primaryTopicId: null,
+        tags: [],
       });
     });
 
@@ -333,6 +354,8 @@ describe('NoteEditor', () => {
       expect(mockOnUpdate).toHaveBeenCalledWith('note-1', {
         title: 'ABC',
         content: '<p>Test content</p>',
+        primaryTopicId: null,
+        tags: [],
       });
     });
 
