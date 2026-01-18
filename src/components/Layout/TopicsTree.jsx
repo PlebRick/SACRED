@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTopics } from '../../context/TopicsContext';
+import { useInlineTags } from '../../context/InlineTagsContext';
 import { useBible } from '../../context/BibleContext';
 import { useNotes } from '../../context/NotesContext';
 import { topicsService } from '../../services/topicsService';
@@ -136,7 +137,20 @@ export const TopicsTree = () => {
   const [newTopicName, setNewTopicName] = useState('');
   const [showAddRoot, setShowAddRoot] = useState(false);
 
+  // Inline tags state
+  const [tagsExpanded, setTagsExpanded] = useState(true);
+  const [selectedTagType, setSelectedTagType] = useState(null);
+  const [tagSearch, setTagSearch] = useState('');
+
   const { topics, loading, createTopic, updateTopic, deleteTopic, seedDefaultTopics, refreshTopics } = useTopics();
+  const {
+    tagCountsByType,
+    tagInstances,
+    loadingInstances,
+    loadTagInstances,
+    searchTags,
+    createTagType
+  } = useInlineTags();
   const { navigate } = useBible();
   const { setSelectedNote, setEditingNote } = useNotes();
 
@@ -149,6 +163,8 @@ export const TopicsTree = () => {
 
   const handleSelectTopic = async (topicId) => {
     setSelectedTopicId(topicId);
+    setSelectedTagType(null); // Clear tag selection
+    setTagSearch('');
     setLoadingNotes(true);
     try {
       const notes = await topicsService.getNotes(topicId);
@@ -227,48 +243,204 @@ export const TopicsTree = () => {
     }
   };
 
+  // Inline tag handlers
+  const handleSelectTagType = async (tagType) => {
+    setSelectedTagType(tagType);
+    setSelectedTopicId(null); // Clear topic selection
+    setTopicNotes([]); // Clear topic notes
+    setTagSearch('');
+    try {
+      await loadTagInstances({ tagType: tagType.id });
+    } catch (error) {
+      console.error('Failed to load tag instances:', error);
+    }
+  };
+
+  const handleTagSearch = async (query) => {
+    setTagSearch(query);
+    if (!query.trim()) {
+      if (selectedTagType) {
+        await loadTagInstances({ tagType: selectedTagType.id });
+      }
+      return;
+    }
+    try {
+      await searchTags(query);
+    } catch (error) {
+      console.error('Failed to search tags:', error);
+    }
+  };
+
+  const handleTagInstanceClick = (instance) => {
+    navigate(instance.book, instance.startChapter);
+    setSelectedNote(instance.noteId);
+    setEditingNote(instance.noteId);
+  };
+
+  const totalTagCount = tagCountsByType.reduce((sum, t) => sum + (t.count || 0), 0);
+
   if (loading) {
     return <div className={styles.loading}>Loading topics...</div>;
   }
 
+  // Empty topics state - but still show Browse by Tag section
   if (topics.length === 0) {
     return (
-      <div className={styles.emptyState}>
-        <p>No topics yet.</p>
-        <button className={styles.seedButton} onClick={handleSeedTopics}>
-          Add default topics
-        </button>
-        <p className={styles.orText}>or</p>
-        <button
-          className={styles.createButton}
-          onClick={() => setShowAddRoot(true)}
-        >
-          Create your first topic
-        </button>
-        {showAddRoot && (
-          <div className={styles.inlineForm}>
-            <input
-              type="text"
-              className={styles.inlineInput}
-              placeholder="Topic name..."
-              value={newTopicName}
-              onChange={(e) => setNewTopicName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateTopic(null);
-                if (e.key === 'Escape') {
-                  setShowAddRoot(false);
-                  setNewTopicName('');
-                }
-              }}
-              autoFocus
-            />
-            <button
-              className={styles.inlineButton}
-              onClick={() => handleCreateTopic(null)}
-              disabled={!newTopicName.trim()}
+      <div className={styles.container}>
+        <div className={styles.emptyState}>
+          <p>No topics yet.</p>
+          <button className={styles.seedButton} onClick={handleSeedTopics}>
+            Add default topics
+          </button>
+          <p className={styles.orText}>or</p>
+          <button
+            className={styles.createButton}
+            onClick={() => setShowAddRoot(true)}
+          >
+            Create your first topic
+          </button>
+          {showAddRoot && (
+            <div className={styles.inlineForm}>
+              <input
+                type="text"
+                className={styles.inlineInput}
+                placeholder="Topic name..."
+                value={newTopicName}
+                onChange={(e) => setNewTopicName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreateTopic(null);
+                  if (e.key === 'Escape') {
+                    setShowAddRoot(false);
+                    setNewTopicName('');
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                className={styles.inlineButton}
+                onClick={() => handleCreateTopic(null)}
+                disabled={!newTopicName.trim()}
+              >
+                Add
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Browse by Tag section - always visible */}
+        <div className={styles.tagSection}>
+          <button
+            className={styles.tagSectionHeader}
+            onClick={() => setTagsExpanded(!tagsExpanded)}
+          >
+            <svg
+              className={`${styles.expandIcon} ${tagsExpanded ? styles.expanded : ''}`}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
             >
-              Add
-            </button>
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span>Browse by Tag</span>
+            {totalTagCount > 0 && (
+              <span className={styles.tagTotalCount}>{totalTagCount}</span>
+            )}
+          </button>
+
+          {tagsExpanded && (
+            <div className={styles.tagTypeList}>
+              {tagCountsByType.map((tagType) => (
+                <button
+                  key={tagType.id}
+                  className={`${styles.tagTypeItem} ${selectedTagType?.id === tagType.id ? styles.selected : ''}`}
+                  onClick={() => handleSelectTagType(tagType)}
+                >
+                  <span className={styles.tagTypeIcon}>{tagType.icon}</span>
+                  <span className={styles.tagTypeName}>{tagType.name}</span>
+                  <span className={styles.tagTypeCount}>{tagType.count}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Selected tag type results */}
+        {selectedTagType && (
+          <div className={styles.notesPanel}>
+            <div className={styles.notesPanelHeader}>
+              <button
+                className={styles.backButton}
+                onClick={() => {
+                  setSelectedTagType(null);
+                  setTagSearch('');
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <span className={styles.tagTypeHeader}>
+                {selectedTagType.icon} {selectedTagType.name}
+              </span>
+            </div>
+
+            <div className={styles.tagSearchWrapper}>
+              <svg
+                className={styles.searchIcon}
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                className={styles.tagSearchInput}
+                placeholder="Search..."
+                value={tagSearch}
+                onChange={(e) => handleTagSearch(e.target.value)}
+              />
+            </div>
+
+            {loadingInstances ? (
+              <div className={styles.loadingNotes}>Loading...</div>
+            ) : tagInstances.length === 0 ? (
+              <div className={styles.noNotes}>No tagged content found</div>
+            ) : (
+              <div className={styles.notesList}>
+                {tagInstances.map(instance => (
+                  <button
+                    key={instance.id}
+                    className={styles.tagInstanceItem}
+                    onClick={() => handleTagInstanceClick(instance)}
+                  >
+                    <span className={styles.noteReference}>
+                      {formatVerseRange({
+                        book: instance.book,
+                        startChapter: instance.startChapter,
+                        startVerse: instance.startVerse,
+                        endChapter: instance.endChapter,
+                        endVerse: instance.endVerse
+                      })}
+                    </span>
+                    <span className={styles.tagInstanceText}>
+                      "{instance.textContent}"
+                    </span>
+                    {instance.noteTitle && (
+                      <span className={styles.noteTitle}>{instance.noteTitle}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -330,6 +502,46 @@ export const TopicsTree = () => {
             >
               Add
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Browse by Tag section */}
+      <div className={styles.tagSection}>
+        <button
+          className={styles.tagSectionHeader}
+          onClick={() => setTagsExpanded(!tagsExpanded)}
+        >
+          <svg
+            className={`${styles.expandIcon} ${tagsExpanded ? styles.expanded : ''}`}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+          <span>Browse by Tag</span>
+          {totalTagCount > 0 && (
+            <span className={styles.tagTotalCount}>{totalTagCount}</span>
+          )}
+        </button>
+
+        {tagsExpanded && (
+          <div className={styles.tagTypeList}>
+            {tagCountsByType.map((tagType) => (
+              <button
+                key={tagType.id}
+                className={`${styles.tagTypeItem} ${selectedTagType?.id === tagType.id ? styles.selected : ''}`}
+                onClick={() => handleSelectTagType(tagType)}
+              >
+                <span className={styles.tagTypeIcon}>{tagType.icon}</span>
+                <span className={styles.tagTypeName}>{tagType.name}</span>
+                <span className={styles.tagTypeCount}>{tagType.count}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -453,6 +665,83 @@ export const TopicsTree = () => {
                   <span className={styles.noteTitle}>
                     {note.title || 'Untitled'}
                   </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Selected tag type results */}
+      {selectedTagType && (
+        <div className={styles.notesPanel}>
+          <div className={styles.notesPanelHeader}>
+            <button
+              className={styles.backButton}
+              onClick={() => {
+                setSelectedTagType(null);
+                setTagSearch('');
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back
+            </button>
+            <span className={styles.tagTypeHeader}>
+              {selectedTagType.icon} {selectedTagType.name}
+            </span>
+          </div>
+
+          <div className={styles.tagSearchWrapper}>
+            <svg
+              className={styles.searchIcon}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              className={styles.tagSearchInput}
+              placeholder="Search..."
+              value={tagSearch}
+              onChange={(e) => handleTagSearch(e.target.value)}
+            />
+          </div>
+
+          {loadingInstances ? (
+            <div className={styles.loadingNotes}>Loading...</div>
+          ) : tagInstances.length === 0 ? (
+            <div className={styles.noNotes}>No tagged content found</div>
+          ) : (
+            <div className={styles.notesList}>
+              {tagInstances.map(instance => (
+                <button
+                  key={instance.id}
+                  className={styles.tagInstanceItem}
+                  onClick={() => handleTagInstanceClick(instance)}
+                >
+                  <span className={styles.noteReference}>
+                    {formatVerseRange({
+                      book: instance.book,
+                      startChapter: instance.startChapter,
+                      startVerse: instance.startVerse,
+                      endChapter: instance.endChapter,
+                      endVerse: instance.endVerse
+                    })}
+                  </span>
+                  <span className={styles.tagInstanceText}>
+                    "{instance.textContent}"
+                  </span>
+                  {instance.noteTitle && (
+                    <span className={styles.noteTitle}>{instance.noteTitle}</span>
+                  )}
                 </button>
               ))}
             </div>

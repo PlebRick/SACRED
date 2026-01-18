@@ -603,3 +603,212 @@
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
+
+/* ========== Inline Tag Styles ========== */
+
+/* Tag dropdown wrapper */
+.tagDropdownWrapper {
+  position: relative;
+}
+
+.tagDropdownButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+  height: 32px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.tagDropdownButton:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.tagDropdownButton.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.tagDropdownButton svg {
+  width: 12px;
+  height: 12px;
+}
+
+.tagDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--shadow);
+  min-width: 180px;
+  z-index: 100;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tagDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.1s ease;
+}
+
+.tagDropdownItem:hover {
+  background: var(--bg-tertiary);
+}
+
+.tagDropdownItem.selected {
+  background: var(--accent-subtle);
+}
+
+.tagItemIcon {
+  font-size: 0.875rem;
+  width: 1.25rem;
+  text-align: center;
+}
+
+.tagItemLabel {
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.tagItemCheck {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.tagDropdownDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.25rem 0;
+}
+
+.tagDropdownItem.addNew {
+  color: var(--accent);
+}
+
+.tagDropdownItem.addNew .tagItemLabel {
+  color: var(--accent);
+}
+
+/* Inline tag marks in editor */
+.proseMirror span[data-inline-tag] {
+  position: relative;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  margin: 0 0.0625rem;
+}
+
+/* Illustration - Blue */
+.proseMirror span[data-inline-tag="illustration"] {
+  background: rgba(96, 165, 250, 0.15);
+}
+
+/* Application - Green */
+.proseMirror span[data-inline-tag="application"] {
+  background: rgba(52, 211, 153, 0.15);
+}
+
+/* Key Point - Amber */
+.proseMirror span[data-inline-tag="keypoint"] {
+  background: rgba(251, 191, 36, 0.15);
+}
+
+/* Quote - Purple */
+.proseMirror span[data-inline-tag="quote"] {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+/* Cross-Ref - Pink */
+.proseMirror span[data-inline-tag="crossref"] {
+  background: rgba(244, 114, 182, 0.15);
+}
+
+/* Light theme adjustments */
+:global([data-theme="light"]) .proseMirror span[data-inline-tag="illustration"] {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+:global([data-theme="light"]) .proseMirror span[data-inline-tag="application"] {
+  background: rgba(22, 163, 74, 0.12);
+}
+
+:global([data-theme="light"]) .proseMirror span[data-inline-tag="keypoint"] {
+  background: rgba(217, 119, 6, 0.12);
+}
+
+:global([data-theme="light"]) .proseMirror span[data-inline-tag="quote"] {
+  background: rgba(124, 58, 237, 0.12);
+}
+
+:global([data-theme="light"]) .proseMirror span[data-inline-tag="crossref"] {
+  background: rgba(219, 39, 119, 0.12);
+}
+
+/* Hidden highlights mode */
+:global([data-highlights="hidden"]) .proseMirror span[data-inline-tag] {
+  background: transparent;
+  padding: 0;
+}
+
+/* Add Tag Type Modal */
+.colorPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.colorSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.1);
+}
+
+.colorSwatch.selected {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
+.iconInput {
+  width: 60px;
+  text-align: center;
+  font-size: 1.25rem;
+}
