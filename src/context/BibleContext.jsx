@@ -69,10 +69,14 @@ export const BibleProvider = ({ children }) => {
     ...(savedLocation || {})
   });
 
-  const navigate = useCallback((bookId, chapter) => {
-    dispatch({ type: 'NAVIGATE', bookId, chapter });
-    saveLocation(bookId, chapter);
-  }, []);
+  const navigate = useCallback((newBookId, newChapter) => {
+    // Skip if already at this location (prevents stuck loading state)
+    if (newBookId === state.bookId && newChapter === state.chapter) {
+      return;
+    }
+    dispatch({ type: 'NAVIGATE', bookId: newBookId, chapter: newChapter });
+    saveLocation(newBookId, newChapter);
+  }, [state.bookId, state.chapter]);
 
   const goNext = useCallback(() => {
     const next = getNextChapter(state.bookId, state.chapter);
