@@ -1,7 +1,7 @@
 {
   "name": "sacred",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Personal Bible study app with rich text notes, commentary, and sermon management",
   "author": "SACRED",
   "license": "MIT",
@@ -42,7 +42,9 @@
     },
     "mac": {
       "category": "public.app-category.reference",
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "icon": "build/icon.png",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist",
