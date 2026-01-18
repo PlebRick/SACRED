@@ -1,5 +1,6 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const { JSDOM } = require('jsdom');
 const db = require('../db.cjs');
 
 const router = express.Router();
@@ -51,6 +52,51 @@ const setNoteTags = (noteId, tagIds) => {
       insertStmt.run(noteId, tagId);
     }
   }
+};
+
+// Sync inline tags from note content to inline_tags table
+const syncInlineTags = (noteId, htmlContent) => {
+  if (!htmlContent) {
+    db.prepare('DELETE FROM inline_tags WHERE note_id = ?').run(noteId);
+    return;
+  }
+
+  // Parse HTML to extract inline tags
+  const dom = new JSDOM(htmlContent);
+  const document = dom.window.document;
+  const taggedSpans = document.querySelectorAll('span[data-inline-tag]');
+
+  // Delete existing inline tags for this note
+  db.prepare('DELETE FROM inline_tags WHERE note_id = ?').run(noteId);
+
+  if (taggedSpans.length === 0) return;
+
+  const now = new Date().toISOString();
+  const insertStmt = db.prepare(`
+    INSERT INTO inline_tags (id, note_id, tag_type, text_content, html_fragment, position_start, position_end, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  let position = 0;
+  taggedSpans.forEach((span) => {
+    const tagType = span.getAttribute('data-inline-tag');
+    const textContent = span.textContent || '';
+    const htmlFragment = span.outerHTML;
+    const id = uuidv4();
+
+    insertStmt.run(
+      id,
+      noteId,
+      tagType,
+      textContent,
+      htmlFragment,
+      position,
+      position + textContent.length,
+      now
+    );
+
+    position += textContent.length + 1;
+  });
 };
 
 // GET /api/notes - Get all notes
@@ -173,6 +219,9 @@ router.post('/', (req, res) => {
       setNoteTags(id, tags);
     }
 
+    // Sync inline tags from content
+    syncInlineTags(id, content);
+
     const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id);
     res.status(201).json(toApiFormatWithTags(note));
   } catch (error) {
@@ -220,6 +269,9 @@ router.put('/:id', (req, res) => {
     if (tags !== undefined) {
       setNoteTags(id, tags);
     }
+
+    // Sync inline tags from content
+    syncInlineTags(id, content);
 
     const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id);
     res.json(toApiFormatWithTags(note));

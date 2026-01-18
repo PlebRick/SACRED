@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { BibleProvider, useBible } from './context/BibleContext';
 import { NotesProvider, useNotes } from './context/NotesContext';
 import { TopicsProvider } from './context/TopicsContext';
+import { InlineTagsProvider } from './context/InlineTagsContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { BibleReader } from './components/Bible/BibleReader';
@@ -96,7 +97,9 @@ function App() {
       <BibleProvider>
         <NotesProvider>
           <TopicsProvider>
-            <AppContent />
+            <InlineTagsProvider>
+              <AppContent />
+            </InlineTagsProvider>
           </TopicsProvider>
         </NotesProvider>
       </BibleProvider>

@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 const STORAGE_KEY = 'sacred_theme';
+const HIGHLIGHTS_KEY = 'sacred_highlights_visible';
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
@@ -18,17 +19,31 @@ export const ThemeProvider = ({ children }) => {
     return 'dark';
   });
 
+  const [highlightsVisible, setHighlightsVisible] = useState(() => {
+    const stored = localStorage.getItem(HIGHLIGHTS_KEY);
+    return stored !== 'false'; // Default to true
+  });
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-highlights', highlightsVisible ? 'visible' : 'hidden');
+    localStorage.setItem(HIGHLIGHTS_KEY, highlightsVisible);
+  }, [highlightsVisible]);
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
+  const toggleHighlights = () => {
+    setHighlightsVisible(prev => !prev);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, highlightsVisible, toggleHighlights }}>
       {children}
     </ThemeContext.Provider>
   );

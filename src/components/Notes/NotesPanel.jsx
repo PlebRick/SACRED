@@ -61,6 +61,7 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
     return (
       <div className={styles.notesPanel}>
         <NoteEditor
+          key={editingNote.id}
           note={editingNote}
           onUpdate={updateNote}
           onClose={handleCloseEditor}
