@@ -53,7 +53,17 @@
 
 ## Tests
 
-Current: 480 tests, 60.7% coverage
+Current: 520 tests, 46.9% line coverage
+
+*Note: Coverage % decreased due to new topics system code. Key new files have excellent coverage.*
+
+### Well Covered (90%+)
+- [x] **topicsService.js** - 100%
+- [x] **TopicsContext.jsx** - 98.7%
+- [x] **BibleContext.jsx** - 95.6%
+- [x] **Sidebar.jsx** - 94.4%
+- [x] **AddNoteModal.jsx** - 100%
+- [x] **NoteEditor.jsx** - 97.4%
 
 ### 0% Coverage (Need Tests)
 
@@ -81,17 +91,29 @@ Current: 480 tests, 60.7% coverage
   - Component composition
   - Provider wrapping
 
+- [ ] **NotesTree.jsx** (new)
+  - Book/chapter expansion
+  - Note navigation
+
+- [ ] **TopicsTree.jsx** (new)
+  - Topic hierarchy display
+  - Inline CRUD operations
+
+- [ ] **TopicSelector.jsx** (new)
+  - Search/filter functionality
+  - Inline topic creation
+
 ### Improve Existing Coverage
 
-- [ ] **SettingsModal.jsx** (74.5% → 90%+)
+- [ ] **SettingsModal.jsx** (78% → 90%+)
   - File import handling
   - Network error scenarios
 
-- [ ] **NotesContext.jsx** (71.6% → 90%+)
+- [ ] **NotesContext.jsx** (71% → 90%+)
   - Polling for external changes
   - Optimistic updates
 
-- [ ] **ChapterView.jsx** (84% → 95%+)
+- [ ] **ChapterView.jsx** (83% → 95%+)
   - IntersectionObserver callbacks
   - Scroll behavior
 
