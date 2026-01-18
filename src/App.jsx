@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { BibleProvider, useBible } from './context/BibleContext';
 import { NotesProvider, useNotes } from './context/NotesContext';
+import { TopicsProvider } from './context/TopicsContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { BibleReader } from './components/Bible/BibleReader';
@@ -94,7 +95,9 @@ function App() {
     <ThemeProvider>
       <BibleProvider>
         <NotesProvider>
-          <AppContent />
+          <TopicsProvider>
+            <AppContent />
+          </TopicsProvider>
         </NotesProvider>
       </BibleProvider>
     </ThemeProvider>

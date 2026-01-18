@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useBible } from '../../context/BibleContext';
 import { useNotes } from '../../context/NotesContext';
-import { books, getBookById } from '../../utils/bibleBooks';
-import { formatVerseRange } from '../../utils/verseRange';
+import { books } from '../../utils/bibleBooks';
+import { NotesTree } from './NotesTree';
+import { TopicsTree } from './TopicsTree';
 import styles from './Layout.module.css';
 
 export const Sidebar = ({ isOpen }) => {
   const [activeTab, setActiveTab] = useState('books');
   const [expandedBook, setExpandedBook] = useState(null);
   const { bookId, chapter, navigate } = useBible();
-  const { notes, setSelectedNote, setEditingNote } = useNotes();
+  const { notes } = useNotes();
 
   const handleBookClick = (id) => {
     setExpandedBook(expandedBook === id ? null : id);
@@ -18,20 +19,6 @@ export const Sidebar = ({ isOpen }) => {
   const handleChapterClick = (bookId, chapterNum) => {
     navigate(bookId, chapterNum);
   };
-
-  const handleNoteClick = (note) => {
-    navigate(note.book, note.startChapter);
-    setSelectedNote(note.id);
-    setEditingNote(note.id);
-  };
-
-  const sortedNotes = [...notes].sort((a, b) => {
-    const aIndex = books.findIndex(book => book.id === a.book);
-    const bIndex = books.findIndex(book => book.id === b.book);
-    if (aIndex !== bIndex) return aIndex - bIndex;
-    if (a.startChapter !== b.startChapter) return a.startChapter - b.startChapter;
-    return a.startVerse - b.startVerse;
-  });
 
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
@@ -46,12 +33,18 @@ export const Sidebar = ({ isOpen }) => {
           className={`${styles.tab} ${activeTab === 'notes' ? styles.active : ''}`}
           onClick={() => setActiveTab('notes')}
         >
-          Notes ({notes.length})
+          Notes
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'topics' ? styles.active : ''}`}
+          onClick={() => setActiveTab('topics')}
+        >
+          Topics
         </button>
       </div>
 
       <div className={styles.sidebarContent}>
-        {activeTab === 'books' ? (
+        {activeTab === 'books' && (
           <div className={styles.bookList}>
             {books.map((book) => (
               <div key={book.id} className={styles.bookItem}>
@@ -91,28 +84,13 @@ export const Sidebar = ({ isOpen }) => {
               </div>
             ))}
           </div>
-        ) : (
-          <div className={styles.notesList}>
-            {sortedNotes.length === 0 ? (
-              <p className={styles.emptyState}>
-                No notes yet. Select verses in the Bible text to create a note.
-              </p>
-            ) : (
-              sortedNotes.map((note) => (
-                <button
-                  key={note.id}
-                  className={styles.sidebarNoteItem}
-                  onClick={() => handleNoteClick(note)}
-                >
-                  <span className={styles.noteReference}>
-                    {formatVerseRange(note)}
-                  </span>
-                  <span className={styles.noteTitle}>
-                    {note.title || 'Untitled'}
-                  </span>
-                </button>
-              ))
-            )}
+        )}
+
+        {activeTab === 'notes' && <NotesTree />}
+
+        {activeTab === 'topics' && (
+          <div className={styles.topicsContainer}>
+            <TopicsTree />
           </div>
         )}
       </div>

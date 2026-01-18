@@ -2,11 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { parseReference, formatParsedReference } from '../../utils/parseReference';
 import { useBible } from '../../context/BibleContext';
 import { getBookById } from '../../utils/bibleBooks';
+import { TopicSelector } from '../UI/TopicSelector';
 import styles from './Notes.module.css';
 
 export const AddNoteModal = ({ isOpen, onClose, onCreateNote, noteType = 'note' }) => {
   const { bookId, chapter } = useBible();
   const [referenceInput, setReferenceInput] = useState('');
+  const [primaryTopicId, setPrimaryTopicId] = useState(null);
+  const [tags, setTags] = useState([]);
   const [error, setError] = useState('');
   const inputRef = useRef(null);
 
@@ -17,6 +20,8 @@ export const AddNoteModal = ({ isOpen, onClose, onCreateNote, noteType = 'note' 
       if (book) {
         setReferenceInput(`${book.name} ${chapter}:1`);
       }
+      setPrimaryTopicId(null);
+      setTags([]);
       setError('');
       // Focus input after modal opens
       setTimeout(() => {
@@ -50,7 +55,9 @@ export const AddNoteModal = ({ isOpen, onClose, onCreateNote, noteType = 'note' 
         endVerse: parsed.endVerse,
         title: '',
         content: '',
-        type: noteType
+        type: noteType,
+        primaryTopicId,
+        tags
       });
       onClose();
     } catch (err) {
@@ -108,6 +115,23 @@ export const AddNoteModal = ({ isOpen, onClose, onCreateNote, noteType = 'note' 
               Accepts formats like: Rom 1:1-7, Romans 1:1, Genesis 1:1-2:3
             </p>
             {error && <p className={styles.errorMessage}>{error}</p>}
+
+            <div className={styles.topicFields}>
+              <TopicSelector
+                label="Primary Topic"
+                value={primaryTopicId}
+                onChange={setPrimaryTopicId}
+                placeholder="Select topic (optional)"
+              />
+
+              <TopicSelector
+                label="Additional Tags"
+                multiSelect
+                selectedValues={tags}
+                onMultiChange={setTags}
+                placeholder="Add tags (optional)"
+              />
+            </div>
           </div>
 
           <div className={styles.modalFooter}>

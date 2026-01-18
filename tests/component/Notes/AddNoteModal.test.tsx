@@ -5,6 +5,25 @@ import React from 'react';
 import AddNoteModal from '../../../src/components/Notes/AddNoteModal';
 import { BibleProvider } from '../../../src/context/BibleContext';
 
+// Mock TopicsContext
+vi.mock('../../../src/context/TopicsContext', () => ({
+  useTopics: () => ({
+    topics: [],
+    flatTopics: [],
+    loading: false,
+    error: null,
+    selectedTopicId: null,
+    createTopic: vi.fn(),
+    updateTopic: vi.fn(),
+    deleteTopic: vi.fn(),
+    setSelectedTopic: vi.fn(),
+    refreshTopics: vi.fn(),
+    seedDefaultTopics: vi.fn(),
+    getTopicById: vi.fn().mockReturnValue(null),
+    getTopicPath: vi.fn().mockReturnValue([]),
+  }),
+}));
+
 // Wrapper component with BibleProvider
 function renderWithProviders(ui: React.ReactElement) {
   return render(<BibleProvider>{ui}</BibleProvider>);
@@ -187,6 +206,8 @@ describe('AddNoteModal', () => {
           title: '',
           content: '',
           type: 'note',
+          primaryTopicId: null,
+          tags: [],
         });
       });
     });
