@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import AddNoteModal from '../../../src/components/Notes/AddNoteModal';
@@ -18,6 +18,11 @@ describe('AddNoteModal', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockOnCreateNote.mockResolvedValue({});
+  });
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
   });
 
   describe('rendering', () => {
