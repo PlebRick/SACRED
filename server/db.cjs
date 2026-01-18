@@ -35,6 +35,35 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_notes_book_chapter
     ON notes(book, start_chapter, end_chapter);
+
+  -- Topics table for hierarchical categories
+  CREATE TABLE IF NOT EXISTS topics (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    parent_id TEXT REFERENCES topics(id) ON DELETE CASCADE,
+    sort_order INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_topics_parent ON topics(parent_id);
+
+  -- Many-to-many for secondary tags
+  CREATE TABLE IF NOT EXISTS note_tags (
+    note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+    topic_id TEXT NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    PRIMARY KEY (note_id, topic_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_note_tags_note ON note_tags(note_id);
+  CREATE INDEX IF NOT EXISTS idx_note_tags_topic ON note_tags(topic_id);
 `);
+
+// Migration: Add primary_topic_id to notes table if it doesn't exist
+const columns = db.prepare("PRAGMA table_info(notes)").all();
+const hasPrimaryTopicId = columns.some(col => col.name === 'primary_topic_id');
+if (!hasPrimaryTopicId) {
+  db.exec(`ALTER TABLE notes ADD COLUMN primary_topic_id TEXT REFERENCES topics(id)`);
+}
 
 module.exports = db;

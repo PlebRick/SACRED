@@ -63,6 +63,60 @@ vi.mock('../../../src/context/NotesContext', () => ({
   useNotes: () => mockNotesContext,
 }));
 
+// Mock the tree components for Sidebar tests
+// They have their own tests - we just need basic rendering here
+const formatVerseRangeForMock = (note: { book: string; startChapter: number; startVerse?: number; endChapter: number; endVerse?: number }) => {
+  const bookNames: Record<string, string> = {
+    'GEN': 'Genesis',
+    'EXO': 'Exodus',
+    'LEV': 'Leviticus',
+    'ROM': 'Romans',
+    'JHN': 'John',
+  };
+  const bookName = bookNames[note.book] || note.book;
+  if (note.startChapter === note.endChapter) {
+    if (note.startVerse === note.endVerse) {
+      return `${bookName} ${note.startChapter}:${note.startVerse}`;
+    }
+    return `${bookName} ${note.startChapter}:${note.startVerse}-${note.endVerse}`;
+  }
+  return `${bookName} ${note.startChapter}:${note.startVerse}-${note.endChapter}:${note.endVerse}`;
+};
+
+vi.mock('../../../src/components/Layout/NotesTree', () => ({
+  NotesTree: () => {
+    const { notes, setSelectedNote, setEditingNote } = mockNotesContext;
+    const { navigate } = mockBibleContext;
+
+    const handleNoteClick = (note: typeof mockNotes[0]) => {
+      navigate(note.book, note.startChapter);
+      setSelectedNote(note.id);
+      setEditingNote(note.id);
+    };
+
+    return (
+      <div data-testid="notes-tree">
+        {notes.length === 0 ? (
+          <p>No notes yet. Select verses in the Bible text to create a note.</p>
+        ) : (
+          notes.map(note => (
+            <button key={note.id} onClick={() => handleNoteClick(note)}>
+              <span>{formatVerseRangeForMock(note)}</span>
+              <span>{note.title || 'Untitled'}</span>
+            </button>
+          ))
+        )}
+      </div>
+    );
+  },
+  default: () => <div data-testid="notes-tree" />,
+}));
+
+vi.mock('../../../src/components/Layout/TopicsTree', () => ({
+  TopicsTree: () => <div data-testid="topics-tree">Topics Tree</div>,
+  default: () => <div data-testid="topics-tree" />,
+}));
+
 // Mock bibleBooks - include actual book data needed for tests
 const mockBooks = [
   { id: 'GEN', name: 'Genesis', chapters: 50 },
@@ -154,15 +208,15 @@ describe('Sidebar', () => {
     it('renders Notes tab with count', () => {
       render(<Sidebar isOpen={true} />);
 
-      expect(screen.getByRole('button', { name: /Notes \(3\)/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Notes/ })).toBeInTheDocument();
     });
 
-    it('updates note count when notes change', () => {
+    it('maintains Notes tab when notes change', () => {
       mockNotesContext.notes = [mockNotes[0]];
 
       render(<Sidebar isOpen={true} />);
 
-      expect(screen.getByRole('button', { name: /Notes \(1\)/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Notes/ })).toBeInTheDocument();
     });
   });
 

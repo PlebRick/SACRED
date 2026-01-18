@@ -3,6 +3,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { formatVerseRange } from '../../utils/verseRange';
+import { TopicSelector } from '../UI/TopicSelector';
+import { useTopics } from '../../context/TopicsContext';
 import styles from './Notes.module.css';
 
 const MenuBar = ({ editor }) => {
@@ -84,7 +86,12 @@ const MenuBar = ({ editor }) => {
 
 export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [title, setTitle] = useState(note.title || '');
+  const [primaryTopicId, setPrimaryTopicId] = useState(note.primaryTopicId || null);
+  const [tags, setTags] = useState(note.tags?.map(t => t.id) || []);
   const [isSaving, setIsSaving] = useState(false);
+  const [showTopics, setShowTopics] = useState(false);
+
+  const { getTopicById, refreshTopics } = useTopics();
 
   const editor = useEditor({
     extensions: [
@@ -110,24 +117,37 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
       await onUpdate(note.id, {
         title,
         content: editor.getHTML(),
+        primaryTopicId,
+        tags,
       });
+      // Refresh topics to update note counts
+      refreshTopics();
     } catch (err) {
       console.error('Failed to save note:', err);
     } finally {
       setIsSaving(false);
     }
-  }, [editor, note.id, title, onUpdate]);
+  }, [editor, note.id, title, primaryTopicId, tags, onUpdate, refreshTopics]);
 
   // Auto-save on changes
   useEffect(() => {
+    const hasContentChanges = editor && (title !== note.title || editor.getHTML() !== note.content);
+
+    // Compare topics (treat undefined/null as equivalent)
+    const notePrimaryTopicId = note.primaryTopicId || null;
+    const noteTagIds = (note.tags?.map(t => t.id) || []).sort();
+    const currentTagIds = [...tags].sort();
+    const hasTopicChanges = primaryTopicId !== notePrimaryTopicId ||
+      JSON.stringify(currentTagIds) !== JSON.stringify(noteTagIds);
+
     const timeout = setTimeout(() => {
-      if (editor && (title !== note.title || editor.getHTML() !== note.content)) {
+      if (hasContentChanges || hasTopicChanges) {
         saveNote();
       }
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [title, editor?.getHTML(), saveNote]);
+  }, [title, editor?.getHTML(), primaryTopicId, tags, saveNote]);
 
   return (
     <div className={styles.editor}>
@@ -151,6 +171,53 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Note title..."
       />
+
+      {/* Topics section */}
+      <div className={styles.editorTopics}>
+        <div className={styles.topicRow}>
+          <button
+            className={styles.topicToggle}
+            onClick={() => setShowTopics(!showTopics)}
+          >
+            {showTopics ? 'Hide topics' : 'Edit topics'}
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ marginLeft: '0.25rem', transform: showTopics ? 'rotate(180deg)' : 'none' }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          {!showTopics && (primaryTopicId || tags.length > 0) && (
+            <span className={styles.topicPreview}>
+              {primaryTopicId && getTopicById(primaryTopicId)?.name}
+              {primaryTopicId && tags.length > 0 && ', '}
+              {tags.length > 0 && `+${tags.length} tag${tags.length > 1 ? 's' : ''}`}
+            </span>
+          )}
+        </div>
+        {showTopics && (
+          <div className={styles.topicSelectors}>
+            <TopicSelector
+              label="Primary Topic"
+              value={primaryTopicId}
+              onChange={setPrimaryTopicId}
+              placeholder="Select topic..."
+            />
+            <TopicSelector
+              label="Additional Tags"
+              multiSelect
+              selectedValues={tags}
+              onMultiChange={setTags}
+              placeholder="Add tags..."
+            />
+          </div>
+        )}
+      </div>
 
       <MenuBar editor={editor} />
 
