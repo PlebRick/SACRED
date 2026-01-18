@@ -1,4 +1,4 @@
-import { getBookById } from './bibleBooks';
+import { getBookById, getBookIndex } from './bibleBooks';
 
 export const parseVerseRange = (rangeString) => {
   // Parse formats like "ROM 1:1-7", "GEN 1:1-2:3"
@@ -60,8 +60,6 @@ export const isVerseInRange = (chapter, verse, note) => {
 export const compareNotesByPosition = (a, b) => {
   // Compare by book order, then chapter, then verse
   if (a.book !== b.book) {
-    // Need to import book order
-    const { getBookIndex } = require('./bibleBooks');
     return getBookIndex(a.book) - getBookIndex(b.book);
   }
   if (a.startChapter !== b.startChapter) {
