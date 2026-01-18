@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1a1a2e"/>
-      <stop offset="100%" style="stop-color:#16213e"/>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a4f7a"/>
+      <stop offset="100%" style="stop-color:#132d4a"/>
     </linearGradient>
     <linearGradient id="sGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#d4a574"/>
@@ -18,8 +18,8 @@
   <rect x="0" y="0" width="1024" height="1024" rx="220" ry="220" fill="url(#bgGrad)"/>
 
   <!-- Subtle book spine lines on left -->
-  <line x1="180" y1="280" x2="180" y2="744" stroke="#2a2a4a" stroke-width="3" stroke-linecap="round"/>
-  <line x1="200" y1="300" x2="200" y2="724" stroke="#2a2a4a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="180" y1="280" x2="180" y2="744" stroke="#1a3a5a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="200" y1="300" x2="200" y2="724" stroke="#1a3a5a" stroke-width="2" stroke-linecap="round"/>
 
   <!-- Stylized S lettermark -->
   <path d="M 620 280
