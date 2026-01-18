@@ -50,6 +50,69 @@
 
 _None yet_
 
+## Tests
+
+Current: 480 tests, 60.7% coverage
+
+### 0% Coverage (Need Tests)
+
+- [ ] **ThemeContext.jsx**
+  - Theme persistence to localStorage
+  - System preference detection
+  - Toggle between light/dark
+
+- [ ] **ResizableDivider.jsx**
+  - Mouse drag to resize
+  - Min/max constraints
+  - Touch support
+
+- [ ] **bibleApi.js service**
+  - Fetch chapter from API
+  - Caching behavior
+  - Error handling / retry logic
+  - Rate limiting
+
+- [ ] **notesService.js**
+  - All CRUD operations
+  - Error handling
+
+- [ ] **App.jsx**
+  - Component composition
+  - Provider wrapping
+
+### Improve Existing Coverage
+
+- [ ] **SettingsModal.jsx** (74.5% → 90%+)
+  - File import handling
+  - Network error scenarios
+
+- [ ] **NotesContext.jsx** (71.6% → 90%+)
+  - Polling for external changes
+  - Optimistic updates
+
+- [ ] **ChapterView.jsx** (84% → 95%+)
+  - IntersectionObserver callbacks
+  - Scroll behavior
+
+### E2E Tests (Playwright)
+
+- [ ] **Web workflow tests**
+  - Navigate chapters
+  - Create/edit/delete notes
+  - Search functionality
+  - Theme toggle
+
+- [ ] **Electron app tests**
+  - App launches correctly
+  - Embedded server responds
+  - Database in correct location
+
+- [ ] **Mac build verification**
+  - DMG installs properly
+  - App runs from /Applications
+
+---
+
 ## Ideas / Backlog
 
 - Verse highlighting/bookmarking
