@@ -55,8 +55,12 @@ function startServer() {
   // Load existing routes (works from asar)
   const notesRoutes = require('../server/routes/notes.cjs');
   const backupRoutes = require('../server/routes/backup.cjs');
+  const topicsRoutes = require('../server/routes/topics.cjs');
+  const inlineTagsRoutes = require('../server/routes/inlineTags.cjs');
   serverApp.use('/api/notes', backupRoutes);
   serverApp.use('/api/notes', notesRoutes);
+  serverApp.use('/api/topics', topicsRoutes);
+  serverApp.use('/api/inline-tags', inlineTagsRoutes);
 
   // Serve frontend in production
   if (app.isPackaged) {
