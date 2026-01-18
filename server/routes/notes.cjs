@@ -1,6 +1,6 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { JSDOM } = require('jsdom');
+const cheerio = require('cheerio');
 const db = require('../db.cjs');
 
 const router = express.Router();
@@ -61,10 +61,9 @@ const syncInlineTags = (noteId, htmlContent) => {
     return;
   }
 
-  // Parse HTML to extract inline tags
-  const dom = new JSDOM(htmlContent);
-  const document = dom.window.document;
-  const taggedSpans = document.querySelectorAll('span[data-inline-tag]');
+  // Parse HTML to extract inline tags using cheerio
+  const $ = cheerio.load(htmlContent);
+  const taggedSpans = $('span[data-inline-tag]');
 
   // Delete existing inline tags for this note
   db.prepare('DELETE FROM inline_tags WHERE note_id = ?').run(noteId);
@@ -78,10 +77,11 @@ const syncInlineTags = (noteId, htmlContent) => {
   `);
 
   let position = 0;
-  taggedSpans.forEach((span) => {
-    const tagType = span.getAttribute('data-inline-tag');
-    const textContent = span.textContent || '';
-    const htmlFragment = span.outerHTML;
+  taggedSpans.each((index, span) => {
+    const $span = $(span);
+    const tagType = $span.attr('data-inline-tag');
+    const textContent = $span.text() || '';
+    const htmlFragment = $.html($span);
     const id = uuidv4();
 
     insertStmt.run(
