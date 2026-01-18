@@ -2,6 +2,11 @@ import { test, expect, _electron as electron, ElectronApplication, Page } from '
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import { fileURLToPath } from 'url';
+
+// ESM-compatible __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Path to the packaged Mac app
 const APP_PATHS = [
