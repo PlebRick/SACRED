@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sacred-bible-notes": {
+      "command": "node",
+      "args": ["/path/to/Sacred/mcp/build/index.js"],
+      "env": {
+        "DB_PATH": "/path/to/sacred.db"
+      }
+    }
+  }
+}

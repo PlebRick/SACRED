@@ -31,3 +31,6 @@ myfiles/
 
 # Electron builds
 release/
+
+# MCP config (user-specific paths)
+.mcp.json

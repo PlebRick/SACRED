@@ -10,6 +10,7 @@ A personal Bible study app with rich text notes, commentary, and sermon manageme
 - **Dark/Light Theme** — Respects system preference
 - **Export/Import** — Backup and restore your notes as JSON
 - **Self-Hosted** — Your data stays on your machine
+- **Claude Integration** — MCP server for AI-assisted Bible study
 
 ## Quick Start
 
@@ -35,6 +36,67 @@ Or with Docker:
 docker-compose up
 ```
 
+## Mac App
+
+Build a native Mac app (.dmg):
+
+```bash
+npm run electron:build
+```
+
+The app will be created at `release/SACRED-*.dmg`. Database is stored at:
+```
+~/Library/Application Support/sacred/sacred.db
+```
+
+## Claude Integration (MCP)
+
+SACRED includes an MCP server that lets Claude read and write your Bible notes directly.
+
+### Setup for Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "sacred-bible-notes": {
+      "command": "node",
+      "args": ["/path/to/Sacred/mcp/build/index.js"],
+      "env": {
+        "DB_PATH": "/path/to/Library/Application Support/sacred/sacred.db"
+      }
+    }
+  }
+}
+```
+
+### Setup for Claude Code
+
+Create `.mcp.json` in the Sacred project directory (this file is gitignored):
+
+```json
+{
+  "mcpServers": {
+    "sacred-bible-notes": {
+      "command": "node",
+      "args": ["/path/to/Sacred/mcp/build/index.js"],
+      "env": {
+        "DB_PATH": "/path/to/Library/Application Support/sacred/sacred.db"
+      }
+    }
+  }
+}
+```
+
+See [mcp/README.md](mcp/README.md) for detailed setup, available tools, and example prompts.
+
+### Database Path
+
+- **Mac App**: `~/Library/Application Support/sacred/sacred.db`
+- **Development**: `./data/sacred.db`
+- **Docker**: `/app/data/sacred.db`
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -43,6 +105,8 @@ docker-compose up
 | Editor | Tiptap |
 | Backend | Express 5 |
 | Database | SQLite (better-sqlite3) |
+| Desktop | Electron |
+| AI | MCP Server |
 
 ## Project Structure
 
@@ -50,7 +114,10 @@ docker-compose up
 SACRED/
 ├── src/           # React frontend
 ├── server/        # Express backend
-├── data/          # SQLite database
+├── electron/      # Electron main process
+├── mcp/           # MCP server for Claude
+├── build/         # App icons and entitlements
+├── data/          # SQLite database (dev)
 └── docs/          # Documentation
 ```
 
