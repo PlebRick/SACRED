@@ -34,3 +34,8 @@ release/
 
 # MCP config (user-specific paths)
 .mcp.json
+
+# Test coverage and reports
+coverage/
+playwright-report/
+test-results/
