@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db.cjs');
+const { syncInlineTags } = require('./notes.cjs');
 
 const router = express.Router();
 
@@ -36,11 +37,23 @@ const topicToApiFormat = (row) => ({
   updatedAt: row.updated_at
 });
 
+// Convert inline tag type row to API format
+const inlineTagTypeToApiFormat = (row) => ({
+  id: row.id,
+  name: row.name,
+  color: row.color,
+  icon: row.icon,
+  isDefault: row.is_default === 1,
+  sortOrder: row.sort_order,
+  createdAt: row.created_at
+});
+
 // GET /api/notes/export - Export all notes as JSON
 router.get('/export', (req, res) => {
   try {
     const notes = db.prepare('SELECT * FROM notes ORDER BY created_at ASC').all();
     const topics = db.prepare('SELECT * FROM topics ORDER BY created_at ASC').all();
+    const inlineTagTypes = db.prepare('SELECT * FROM inline_tag_types ORDER BY sort_order ASC').all();
 
     // Add tags to each note
     const notesWithTags = notes.map(note => ({
@@ -49,10 +62,11 @@ router.get('/export', (req, res) => {
     }));
 
     const exportData = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       notes: notesWithTags,
-      topics: topics.map(topicToApiFormat)
+      topics: topics.map(topicToApiFormat),
+      inlineTagTypes: inlineTagTypes.map(inlineTagTypeToApiFormat)
     };
 
     res.setHeader('Content-Type', 'application/json');
@@ -67,11 +81,22 @@ router.get('/export', (req, res) => {
 // POST /api/notes/import - Import notes (upsert: update existing, insert new)
 router.post('/import', (req, res) => {
   try {
-    const { notes, topics, version } = req.body;
+    const { notes, topics, inlineTagTypes, version } = req.body;
 
     if (!notes || !Array.isArray(notes)) {
       return res.status(400).json({ error: 'Invalid import data: notes array required' });
     }
+
+    // Inline tag type statements
+    const insertInlineTagTypeStmt = db.prepare(`
+      INSERT INTO inline_tag_types (id, name, color, icon, is_default, sort_order, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    const updateInlineTagTypeStmt = db.prepare(`
+      UPDATE inline_tag_types SET name = ?, color = ?, icon = ?, sort_order = ?
+      WHERE id = ?
+    `);
+    const checkInlineTagTypeStmt = db.prepare('SELECT id FROM inline_tag_types WHERE id = ?');
 
     // Topic statements
     const insertTopicStmt = db.prepare(`
@@ -105,10 +130,44 @@ router.post('/import', (req, res) => {
     let updated = 0;
     let topicsInserted = 0;
     let topicsUpdated = 0;
+    let inlineTagTypesInserted = 0;
+    let inlineTagTypesUpdated = 0;
     let errors = [];
 
     const importTransaction = db.transaction(() => {
-      // Import topics first (if provided)
+      // Import inline tag types first (if provided)
+      if (inlineTagTypes && Array.isArray(inlineTagTypes)) {
+        for (const tagType of inlineTagTypes) {
+          try {
+            const existing = checkInlineTagTypeStmt.get(tagType.id);
+            if (existing) {
+              updateInlineTagTypeStmt.run(
+                tagType.name,
+                tagType.color,
+                tagType.icon || null,
+                tagType.sortOrder || 0,
+                tagType.id
+              );
+              inlineTagTypesUpdated++;
+            } else {
+              insertInlineTagTypeStmt.run(
+                tagType.id,
+                tagType.name,
+                tagType.color,
+                tagType.icon || null,
+                tagType.isDefault ? 1 : 0,
+                tagType.sortOrder || 0,
+                tagType.createdAt || new Date().toISOString()
+              );
+              inlineTagTypesInserted++;
+            }
+          } catch (tagTypeError) {
+            errors.push({ id: tagType.id, type: 'inlineTagType', error: tagTypeError.message });
+          }
+        }
+      }
+
+      // Import topics (if provided)
       if (topics && Array.isArray(topics)) {
         for (const topic of topics) {
           try {
@@ -190,6 +249,11 @@ router.post('/import', (req, res) => {
               }
             }
           }
+
+          // Sync inline tags from note content
+          if (note.content) {
+            syncInlineTags(note.id, note.content);
+          }
         } catch (noteError) {
           errors.push({ id: note.id, type: 'note', error: noteError.message });
         }
@@ -204,6 +268,8 @@ router.post('/import', (req, res) => {
       updated,
       topicsInserted,
       topicsUpdated,
+      inlineTagTypesInserted,
+      inlineTagTypesUpdated,
       errors: errors.length > 0 ? errors : undefined
     });
   } catch (error) {
