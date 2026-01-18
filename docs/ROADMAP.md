@@ -7,10 +7,10 @@
   - Highlight matching terms in results
   - Consider SQLite FTS5 extension
 
-- [ ] **Tags/categories for organizing notes**
-  - Add tags table with many-to-many relationship
-  - Tag filtering in notes panel
-  - Color-coded tag chips
+- [x] **Tags/categories for organizing notes** ✓ v0.0.4
+  - Hierarchical topics with parent-child relationships
+  - Primary topic + secondary tags on notes
+  - Bible-structured Notes tab and Topics tab in sidebar
 
 - [ ] **Cross-reference linking between verses**
   - Link notes to multiple verse ranges
@@ -41,14 +41,15 @@
   - Automatic backups
   - Service discovery
 
-- [ ] **Mac App wrapper**
-  - Electron or Tauri
-  - Menu bar integration
-  - Native notifications
+- [x] **Mac App wrapper** ✓ v0.0.3
+  - Electron app with embedded server
+  - DMG distribution (arm64)
+  - Database in ~/Library/Application Support/sacred/
 
 ## Completed
 
-_None yet_
+- **v0.0.4** - Hierarchical topics system and sidebar redesign
+- **v0.0.3** - Mac App (Electron) with DMG distribution
 
 ## Tests
 
