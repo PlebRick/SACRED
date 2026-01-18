@@ -23,6 +23,14 @@ export const formatVerseRange = (note) => {
 
   const bookName = book.name;
 
+  // Handle chapter-level notes (no verse specified)
+  if (note.startVerse == null || note.endVerse == null) {
+    if (note.startChapter === note.endChapter) {
+      return `${bookName} ${note.startChapter}`;
+    }
+    return `${bookName} ${note.startChapter}-${note.endChapter}`;
+  }
+
   if (note.startChapter === note.endChapter) {
     if (note.startVerse === note.endVerse) {
       return `${bookName} ${note.startChapter}:${note.startVerse}`;

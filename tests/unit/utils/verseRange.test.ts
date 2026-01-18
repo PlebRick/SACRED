@@ -158,6 +158,41 @@ describe('formatVerseRange', () => {
     });
   });
 
+  describe('chapter-level notes', () => {
+    it('formats single chapter note with null verses', () => {
+      const note = {
+        book: 'PSA',
+        startChapter: 23,
+        startVerse: null,
+        endChapter: 23,
+        endVerse: null,
+      };
+      expect(formatVerseRange(note)).toBe('Psalms 23');
+    });
+
+    it('formats multi-chapter note with null verses', () => {
+      const note = {
+        book: 'ROM',
+        startChapter: 8,
+        startVerse: null,
+        endChapter: 9,
+        endVerse: null,
+      };
+      expect(formatVerseRange(note)).toBe('Romans 8-9');
+    });
+
+    it('formats single chapter note with undefined verses', () => {
+      const note = {
+        book: 'JHN',
+        startChapter: 1,
+        startVerse: undefined,
+        endChapter: 1,
+        endVerse: undefined,
+      };
+      expect(formatVerseRange(note)).toBe('John 1');
+    });
+  });
+
   describe('invalid book', () => {
     it('returns empty string for unknown book', () => {
       const note = {
