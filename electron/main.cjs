@@ -50,7 +50,7 @@ function createWindow() {
 
 function startServer() {
   const serverApp = express();
-  serverApp.use(express.json());
+  serverApp.use(express.json({ limit: '100mb' }));
 
   // Load existing routes (works from asar)
   const notesRoutes = require('../server/routes/notes.cjs');
