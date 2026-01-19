@@ -29,6 +29,15 @@ vi.mock('../../../src/context/BibleContext', () => ({
   useBible: () => mockBibleContext,
 }));
 
+vi.mock('../../../src/context/ThemeContext', () => ({
+  useTheme: () => ({
+    theme: 'dark',
+    setTheme: vi.fn(),
+    highlightsVisible: true,
+    toggleHighlights: vi.fn(),
+  }),
+}));
+
 vi.mock('../../../src/utils/bibleBooks', () => ({
   getBookById: (id: string) => {
     const books: Record<string, { id: string; name: string; chapters: number }> = {
