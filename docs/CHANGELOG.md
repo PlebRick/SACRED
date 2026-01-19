@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- **Visual Distinction for Note Types**: Color coding and icons to distinguish notes, commentaries, and sermons
+  - Sidebar tree: Each note shows a colored icon badge (blue pencil for notes, green book for commentaries, purple microphone for sermons)
+  - Section tabs: Active tab displays type-specific color and icon
+  - Colors adapt to light/dark theme
+  - New CSS variables: `--type-note`, `--type-commentary`, `--type-sermon` with background variants
+
+### Fixed
+- Import failing with "413 Payload Too Large" for larger backup files (increased limit to 100MB)
+- Notes now sorted by verse range in NotesPanel (was incorrectly sorted by last updated)
+
+---
+
 ## [0.0.5] - 2026-01-18
 
 ### Added
