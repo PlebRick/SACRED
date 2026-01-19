@@ -78,6 +78,28 @@ vi.mock('../../../src/context/TopicsContext', () => ({
   }),
 }));
 
+// Mock InlineTagsContext
+vi.mock('../../../src/context/InlineTagsContext', () => ({
+  useInlineTags: () => ({
+    tagTypes: [],
+    tagCountsByType: [],
+    loading: false,
+    error: null,
+    selectedTagType: null,
+    tagInstances: [],
+    loadingInstances: false,
+    createTagType: vi.fn(),
+    updateTagType: vi.fn(),
+    deleteTagType: vi.fn(),
+    setSelectedTagType: vi.fn(),
+    loadTagInstances: vi.fn(),
+    searchTags: vi.fn(),
+    refreshCounts: vi.fn(),
+    refreshTagTypes: vi.fn(),
+    getTagTypeById: vi.fn().mockReturnValue(null),
+  }),
+}));
+
 // Import after mocks
 import NoteEditor from '../../../src/components/Notes/NoteEditor';
 
