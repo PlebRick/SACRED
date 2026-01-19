@@ -20,6 +20,13 @@
   --border: #2a2a2a;
   --shadow: rgba(0, 0, 0, 0.4);
   --shadow-warm: rgba(212, 165, 116, 0.05);
+  /* Note type colors */
+  --type-note: #60a5fa;
+  --type-note-bg: rgba(96, 165, 250, 0.15);
+  --type-commentary: #34d399;
+  --type-commentary-bg: rgba(52, 211, 153, 0.15);
+  --type-sermon: #a78bfa;
+  --type-sermon-bg: rgba(167, 139, 250, 0.15);
 }
 
 /* Light Theme */
@@ -35,6 +42,13 @@
   --border: #e7e5e4;
   --shadow: rgba(0, 0, 0, 0.1);
   --shadow-warm: rgba(146, 64, 14, 0.05);
+  /* Note type colors */
+  --type-note: #2563eb;
+  --type-note-bg: rgba(37, 99, 235, 0.12);
+  --type-commentary: #16a34a;
+  --type-commentary-bg: rgba(22, 163, 74, 0.12);
+  --type-sermon: #7c3aed;
+  --type-sermon-bg: rgba(124, 58, 237, 0.12);
 }
 
 html {
