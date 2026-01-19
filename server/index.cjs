@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
 
 // API routes - backup routes first to handle /export, /import, /count before /:id
 app.use('/api/notes', backupRoutes);

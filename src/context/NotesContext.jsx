@@ -158,12 +158,14 @@ export const NotesProvider = ({ children }) => {
   }, []);
 
   const getNotesForChapter = useCallback((bookId, chapter) => {
-    return state.notes.filter(note =>
-      note.book === bookId &&
-      ((note.startChapter <= chapter && note.endChapter >= chapter) ||
-       note.startChapter === chapter ||
-       note.endChapter === chapter)
-    );
+    return state.notes
+      .filter(note =>
+        note.book === bookId &&
+        ((note.startChapter <= chapter && note.endChapter >= chapter) ||
+         note.startChapter === chapter ||
+         note.endChapter === chapter)
+      )
+      .sort((a, b) => (a.startVerse || 0) - (b.startVerse || 0));
   }, [state.notes]);
 
   return (
