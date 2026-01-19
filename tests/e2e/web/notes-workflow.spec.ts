@@ -209,19 +209,20 @@ async function createNote(page: Page, verseRef: string) {
   if (await addButton.first().isVisible()) {
     await addButton.first().click();
 
-    // Wait for modal to open
-    await page.waitForTimeout(300);
+    // Wait for modal to open - look for the modal overlay
+    const modal = page.locator('[class*="modalOverlay"], [class*="modal-overlay"], [role="dialog"]');
+    await modal.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Fill in the verse reference (the only input in AddNoteModal)
+    // Fill in the verse reference - scope to modal to avoid matching search input
     // Placeholder is "e.g., Romans 1:1-7"
-    const verseInput = page.locator('input[placeholder*="Romans"], input[placeholder*="verse"]');
+    const verseInput = modal.locator('input[placeholder*="Romans"], input[placeholder*="1:1"]');
     if (await verseInput.isVisible()) {
       await verseInput.clear();
       await verseInput.fill(verseRef);
     }
 
     // Submit the form - button says "Create Note"
-    const createButton = page.locator(
+    const createButton = modal.locator(
       'button:has-text("Create Note"), button:has-text("Create"), button[type="submit"]'
     );
     await createButton.click();
@@ -256,12 +257,3 @@ async function deleteNoteByVerseRef(page: Page, verseRef: string) {
   }
 }
 
-/**
- * Deletes a note if it exists, silently fails if not found.
- */
-async function deleteNoteIfExists(page: Page, verseRef: string) {
-  const noteCard = page.locator('[data-note-id]').filter({ hasText: verseRef });
-  if (await noteCard.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await deleteNoteByVerseRef(page, verseRef);
-  }
-}
