@@ -16,6 +16,14 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  -webkit-app-region: drag; /* Enable window dragging on Electron */
+}
+
+/* Disable drag on interactive elements */
+.header button,
+.header input,
+.header a {
+  -webkit-app-region: no-drag;
 }
 
 .headerBrand {
@@ -24,7 +32,7 @@
   gap: 1rem;
   width: 280px;
   min-width: 280px;
-  padding: 0 1rem;
+  padding: 0 1rem 0 5rem; /* Extra left padding for macOS traffic lights */
   border-right: 1px solid var(--border);
 }
 
