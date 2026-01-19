@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.0.6] - 2026-01-19
 
 ### Added
 - **Visual Distinction for Note Types**: Color coding and icons to distinguish notes, commentaries, and sermons
@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Section tabs: Active tab displays type-specific color and icon
   - Colors adapt to light/dark theme
   - New CSS variables: `--type-note`, `--type-commentary`, `--type-sermon` with background variants
+- **Developer Experience**: `npm run dev:all` script to start both servers with auto port cleanup
 
 ### Fixed
 - Import failing with "413 Payload Too Large" for larger backup files (increased limit to 100MB)
