@@ -12,6 +12,12 @@
   - Primary topic + secondary tags on notes
   - Bible-structured Notes tab and Topics tab in sidebar
 
+- [x] **Inline tagging system** ✓ v0.0.5
+  - Highlight text and apply semantic tags (Illustration, Application, Key Point, Quote, Cross-Ref)
+  - Custom tag type creation
+  - Browse by Tag section in sidebar
+  - Highlight visibility toggle for distraction-free reading
+
 - [ ] **Cross-reference linking between verses**
   - Link notes to multiple verse ranges
   - "Related notes" suggestions
@@ -48,6 +54,7 @@
 
 ## Completed
 
+- **v0.0.5** - Inline tagging system with Browse by Tag
 - **v0.0.4** - Hierarchical topics system and sidebar redesign
 - **v0.0.3** - Mac App (Electron) with DMG distribution
 

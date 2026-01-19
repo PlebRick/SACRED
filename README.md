@@ -7,8 +7,12 @@ A personal Bible study app with rich text notes, commentary, and sermon manageme
 - **Bible Reader** — Navigate books and chapters with clean, readable typography
 - **Rich Text Notes** — Attach notes to verse ranges using a full-featured editor
 - **Note Types** — Organize as notes, commentary, or sermons
-- **Dark/Light Theme** — Respects system preference
-- **Export/Import** — Backup and restore your notes as JSON
+- **Hierarchical Topics** — Organize notes with parent-child topic categories
+- **Inline Tagging** — Highlight text and tag as Illustration, Application, Key Point, Quote, or Cross-Reference
+- **Browse by Tag** — View all tagged content across notes from the sidebar
+- **Dark/Light Theme** — Respects system preference with highlight visibility toggle
+- **Mac App** — Native desktop app with local database
+- **Export/Import** — Backup and restore notes, topics, and tag types as JSON
 - **Self-Hosted** — Your data stays on your machine
 - **Claude Integration** — MCP server for AI-assisted Bible study
 
