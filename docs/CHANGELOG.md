@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Import failing with "413 Payload Too Large" for larger backup files (increased limit to 100MB)
 - Notes now sorted by verse range in NotesPanel (was incorrectly sorted by last updated)
 - Sidebar, Bible reader, and Notes panel now scroll independently
+- Mac app: Window can now be dragged by header, hamburger menu moved away from traffic lights
 
 ---
 
