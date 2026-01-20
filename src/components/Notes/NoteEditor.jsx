@@ -3,10 +3,13 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { InlineTagMark } from '../../extensions/InlineTagMark';
+import { SystematicLinkMark } from '../../extensions/SystematicLinkMark';
+import { InsertDoctrineModal } from './InsertDoctrineModal';
 import { formatVerseRange } from '../../utils/verseRange';
 import { TopicSelector } from '../UI/TopicSelector';
 import { useTopics } from '../../context/TopicsContext';
 import { useInlineTags } from '../../context/InlineTagsContext';
+import { useSystematic } from '../../context/SystematicContext';
 import styles from './Notes.module.css';
 
 const InlineTagDropdown = ({ editor, tagTypes, onAddTagType }) => {
@@ -83,7 +86,7 @@ const InlineTagDropdown = ({ editor, tagTypes, onAddTagType }) => {
   );
 };
 
-const MenuBar = ({ editor, tagTypes, onAddTagType }) => {
+const MenuBar = ({ editor, tagTypes, onAddTagType, onInsertDoctrine }) => {
   if (!editor) return null;
 
   return (
@@ -158,6 +161,17 @@ const MenuBar = ({ editor, tagTypes, onAddTagType }) => {
       </button>
 
       <div className={styles.menuDivider} />
+
+      <button
+        onClick={onInsertDoctrine}
+        className={styles.menuButton}
+        title="Insert Doctrine Link (Cmd+Shift+D)"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      </button>
 
       <InlineTagDropdown
         editor={editor}
@@ -268,9 +282,11 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [showTopics, setShowTopics] = useState(false);
   const [showAddTagType, setShowAddTagType] = useState(false);
+  const [showDoctrineModal, setShowDoctrineModal] = useState(false);
 
   const { getTopicById, refreshTopics } = useTopics();
   const { tagTypes, createTagType, refreshCounts } = useInlineTags();
+  const { navigateToLink } = useSystematic();
 
   const editor = useEditor({
     extensions: [
@@ -279,6 +295,12 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         placeholder: 'Write your sermon notes here...',
       }),
       InlineTagMark,
+      SystematicLinkMark.configure({
+        onLinkClick: (reference) => {
+          // Navigate to the doctrine when clicked
+          navigateToLink(`[[ST:${reference}]]`);
+        },
+      }),
     ],
     content: note.content || '',
     editorProps: {
@@ -287,6 +309,22 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
       },
     },
   });
+
+  // Listen for keyboard shortcut to open doctrine modal
+  useEffect(() => {
+    const handleOpenDoctrine = () => {
+      setShowDoctrineModal(true);
+    };
+    window.addEventListener('openDoctrineModal', handleOpenDoctrine);
+    return () => window.removeEventListener('openDoctrineModal', handleOpenDoctrine);
+  }, []);
+
+  // Handle inserting doctrine link
+  const handleInsertDoctrine = useCallback((reference, title) => {
+    if (editor) {
+      editor.chain().focus().insertSystematicLink(reference, reference).run();
+    }
+  }, [editor]);
 
   // Debounced save
   const saveNote = useCallback(async () => {
@@ -405,6 +443,7 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         editor={editor}
         tagTypes={tagTypes}
         onAddTagType={() => setShowAddTagType(true)}
+        onInsertDoctrine={() => setShowDoctrineModal(true)}
       />
 
       <div className={styles.editorContent}>
@@ -418,6 +457,12 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
           await createTagType(data);
           refreshCounts();
         }}
+      />
+
+      <InsertDoctrineModal
+        isOpen={showDoctrineModal}
+        onClose={() => setShowDoctrineModal(false)}
+        onInsert={handleInsertDoctrine}
       />
     </div>
   );

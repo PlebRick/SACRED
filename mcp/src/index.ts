@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registerQueryTools } from './tools/notes-query.js';
 import { registerCrudTools } from './tools/notes-crud.js';
 import { registerBulkTools } from './tools/notes-bulk.js';
+import { registerSystematicTools } from './tools/systematic.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
@@ -16,6 +17,7 @@ const server = new McpServer({
 registerQueryTools(server);
 registerCrudTools(server);
 registerBulkTools(server);
+registerSystematicTools(server);
 
 // Register resources
 registerResources(server);

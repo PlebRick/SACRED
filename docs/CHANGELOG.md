@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- **Nested Chapter Dropdowns in Systematic Tree**: Expandable/collapsible chapter sections in the sidebar
+  - Chevron icon on chapters that have sections (click to expand/collapse)
+  - Clicking chapter title still opens full chapter content
+  - "Expand All | Collapse All" controls above the tree
+  - Sections only shown when chapter is expanded (cleaner default view)
+  - Controls hidden during search mode
+
+---
+
 ## [0.0.6] - 2026-01-19
 
 ### Added
@@ -78,28 +90,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `primary_topic_id` column to notes table
 - New TopicsContext for state management
 - New topics API endpoints (CRUD + seeding)
-
----
-
-## [Unreleased]
-
-### Added
-- Initial release of SACRED Bible study app
-- Bible reader with chapter navigation
-- Rich text note editor (Tiptap)
-- Notes attached to verse ranges (single verse, multi-verse, multi-chapter)
-- Note types: note, commentary, sermon
-- Dark/light theme with system preference detection
-- Export/import notes as JSON
-- Docker deployment support
-- Resizable sidebar panel
-
-### Technical
-- React 18 frontend with Vite
-- Express 5 backend (CommonJS)
-- SQLite database with better-sqlite3
-- CSS Modules for styling
-- Context-based state management
 
 ---
 
