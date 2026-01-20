@@ -4,6 +4,7 @@ import { useNotes } from '../../context/NotesContext';
 import { books } from '../../utils/bibleBooks';
 import { NotesTree } from './NotesTree';
 import { TopicsTree } from './TopicsTree';
+import { SystematicTree } from './SystematicTree';
 import styles from './Layout.module.css';
 
 export const Sidebar = ({ isOpen }) => {
@@ -29,17 +30,26 @@ export const Sidebar = ({ isOpen }) => {
         >
           Books
         </button>
+        <span className={styles.tabDivider}>|</span>
         <button
           className={`${styles.tab} ${activeTab === 'notes' ? styles.active : ''}`}
           onClick={() => setActiveTab('notes')}
         >
           Notes
         </button>
+        <span className={styles.tabDivider}>|</span>
         <button
           className={`${styles.tab} ${activeTab === 'topics' ? styles.active : ''}`}
           onClick={() => setActiveTab('topics')}
         >
           Topics
+        </button>
+        <span className={styles.tabDivider}>|</span>
+        <button
+          className={`${styles.tab} ${activeTab === 'doctrine' ? styles.active : ''}`}
+          onClick={() => setActiveTab('doctrine')}
+        >
+          Doctrine
         </button>
       </div>
 
@@ -91,6 +101,12 @@ export const Sidebar = ({ isOpen }) => {
         {activeTab === 'topics' && (
           <div className={styles.topicsContainer}>
             <TopicsTree />
+          </div>
+        )}
+
+        {activeTab === 'doctrine' && (
+          <div className={styles.topicsContainer}>
+            <SystematicTree />
           </div>
         )}
       </div>

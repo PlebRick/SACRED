@@ -837,3 +837,38 @@
   text-align: center;
   font-size: 1.25rem;
 }
+
+/* ========== Systematic Theology Link Styles ========== */
+
+/* Systematic link marks in editor */
+.proseMirror :global(.systematic-link),
+.proseMirror span[data-st-ref] {
+  display: inline;
+  padding: 0.125rem 0.375rem;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 0.875em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.proseMirror :global(.systematic-link):hover,
+.proseMirror span[data-st-ref]:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* Light theme adjustments */
+:global([data-theme="light"]) .proseMirror :global(.systematic-link),
+:global([data-theme="light"]) .proseMirror span[data-st-ref] {
+  background: rgba(146, 64, 14, 0.1);
+  color: #92400e;
+}
+
+:global([data-theme="light"]) .proseMirror :global(.systematic-link):hover,
+:global([data-theme="light"]) .proseMirror span[data-st-ref]:hover {
+  background: #92400e;
+  color: white;
+}

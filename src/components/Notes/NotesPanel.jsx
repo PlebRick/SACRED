@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { NoteCard } from './NoteCard';
 import { NoteEditor } from './NoteEditor';
 import { AddNoteModal } from './AddNoteModal';
+import { RelatedDoctrines } from './RelatedDoctrines';
 import { useNotes } from '../../context/NotesContext';
 import { useBible } from '../../context/BibleContext';
 import styles from './Notes.module.css';
@@ -72,6 +73,7 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
 
   return (
     <div className={styles.notesPanel}>
+      <RelatedDoctrines />
       <div className={styles.panelHeader}>
         <h2 className={styles.panelTitle}>{activeTab === 'note' ? 'Notes' : activeTab === 'commentary' ? 'Commentary' : 'Sermons'}</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

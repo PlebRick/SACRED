@@ -83,6 +83,131 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_inline_tags_note ON inline_tags(note_id);
   CREATE INDEX IF NOT EXISTS idx_inline_tags_type ON inline_tags(tag_type);
+
+  -- ===========================================
+  -- SYSTEMATIC THEOLOGY TABLES
+  -- ===========================================
+
+  -- Main content table: parts, chapters, sections, sub-sections
+  CREATE TABLE IF NOT EXISTS systematic_theology (
+    id TEXT PRIMARY KEY,                    -- UUID
+    entry_type TEXT NOT NULL,               -- 'part', 'chapter', 'section', 'subsection'
+    part_number INTEGER,                    -- 1-7 (null for top-level)
+    chapter_number INTEGER,                 -- 1-57 (null for parts)
+    section_letter TEXT,                    -- 'A', 'B', etc. (null for parts/chapters)
+    subsection_number INTEGER,              -- 1, 2, 3, etc. (null unless subsection)
+    title TEXT NOT NULL,                    -- Display title
+    content TEXT,                           -- HTML content
+    summary TEXT,                           -- AI-generated summary for tooltips
+    parent_id TEXT REFERENCES systematic_theology(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,  -- For ordering within parent
+    word_count INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_st_entry_type ON systematic_theology(entry_type);
+  CREATE INDEX IF NOT EXISTS idx_st_chapter ON systematic_theology(chapter_number);
+  CREATE INDEX IF NOT EXISTS idx_st_parent ON systematic_theology(parent_id);
+  CREATE INDEX IF NOT EXISTS idx_st_part_chapter ON systematic_theology(part_number, chapter_number);
+
+  -- Scripture index: maps Bible verses to systematic theology entries
+  CREATE TABLE IF NOT EXISTS systematic_scripture_index (
+    id TEXT PRIMARY KEY,
+    systematic_id TEXT NOT NULL REFERENCES systematic_theology(id) ON DELETE CASCADE,
+    book TEXT NOT NULL,                     -- 3-letter code: 'JHN', 'ROM'
+    chapter INTEGER NOT NULL,
+    start_verse INTEGER,                    -- null for chapter-level reference
+    end_verse INTEGER,                      -- null for single verse
+    is_primary INTEGER DEFAULT 0,           -- 1 = key/primary reference for this doctrine
+    context_snippet TEXT,                   -- Brief context from ST content
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_ssi_systematic ON systematic_scripture_index(systematic_id);
+  CREATE INDEX IF NOT EXISTS idx_ssi_book_chapter ON systematic_scripture_index(book, chapter);
+  CREATE INDEX IF NOT EXISTS idx_ssi_primary ON systematic_scripture_index(is_primary);
+
+  -- User annotations on systematic theology content
+  CREATE TABLE IF NOT EXISTS systematic_annotations (
+    id TEXT PRIMARY KEY,
+    systematic_id TEXT NOT NULL REFERENCES systematic_theology(id) ON DELETE CASCADE,
+    annotation_type TEXT NOT NULL,          -- 'highlight', 'note'
+    color TEXT,                             -- For highlights: 'yellow', 'green', 'blue', 'pink'
+    content TEXT,                           -- User's note text (HTML)
+    text_selection TEXT,                    -- The selected text being annotated
+    position_start INTEGER,                 -- Character position in content
+    position_end INTEGER,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_sa_systematic ON systematic_annotations(systematic_id);
+  CREATE INDEX IF NOT EXISTS idx_sa_type ON systematic_annotations(annotation_type);
+
+  -- Cross-references between chapters ("see also" links)
+  CREATE TABLE IF NOT EXISTS systematic_related (
+    id TEXT PRIMARY KEY,
+    source_chapter INTEGER NOT NULL,        -- Chapter number of source
+    target_chapter INTEGER NOT NULL,        -- Chapter number of target
+    relationship_type TEXT DEFAULT 'see_also', -- 'see_also', 'contrasts_with', 'builds_on'
+    note TEXT,                              -- Optional context
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_sr_source ON systematic_related(source_chapter);
+  CREATE INDEX IF NOT EXISTS idx_sr_target ON systematic_related(target_chapter);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_sr_unique ON systematic_related(source_chapter, target_chapter);
+
+  -- Tag definitions for filtering/categorizing ST chapters
+  CREATE TABLE IF NOT EXISTS systematic_tags (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,              -- 'Doctrine of God', 'Christology', etc.
+    color TEXT,                             -- Display color
+    sort_order INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  -- Many-to-many: chapters to tags
+  CREATE TABLE IF NOT EXISTS systematic_chapter_tags (
+    chapter_number INTEGER NOT NULL,
+    tag_id TEXT NOT NULL REFERENCES systematic_tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (chapter_number, tag_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_sct_chapter ON systematic_chapter_tags(chapter_number);
+  CREATE INDEX IF NOT EXISTS idx_sct_tag ON systematic_chapter_tags(tag_id);
+`);
+
+// Full-text search for systematic theology
+db.exec(`
+  CREATE VIRTUAL TABLE IF NOT EXISTS systematic_theology_fts USING fts5(
+    title,
+    content,
+    summary,
+    content='systematic_theology',
+    content_rowid='rowid'
+  );
+`);
+
+// Triggers to keep FTS in sync
+db.exec(`
+  CREATE TRIGGER IF NOT EXISTS systematic_theology_ai AFTER INSERT ON systematic_theology BEGIN
+    INSERT INTO systematic_theology_fts(rowid, title, content, summary)
+    VALUES (NEW.rowid, NEW.title, NEW.content, NEW.summary);
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS systematic_theology_ad AFTER DELETE ON systematic_theology BEGIN
+    INSERT INTO systematic_theology_fts(systematic_theology_fts, rowid, title, content, summary)
+    VALUES ('delete', OLD.rowid, OLD.title, OLD.content, OLD.summary);
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS systematic_theology_au AFTER UPDATE ON systematic_theology BEGIN
+    INSERT INTO systematic_theology_fts(systematic_theology_fts, rowid, title, content, summary)
+    VALUES ('delete', OLD.rowid, OLD.title, OLD.content, OLD.summary);
+    INSERT INTO systematic_theology_fts(rowid, title, content, summary)
+    VALUES (NEW.rowid, NEW.title, NEW.content, NEW.summary);
+  END;
 `);
 
 // Migration: Add primary_topic_id to notes table if it doesn't exist
@@ -117,5 +242,33 @@ function seedDefaultInlineTagTypes() {
 }
 
 seedDefaultInlineTagTypes();
+
+// Seed default systematic theology tags (Grudem's 7 parts)
+function seedDefaultSystematicTags() {
+  const count = db.prepare('SELECT COUNT(*) as count FROM systematic_tags').get().count;
+  if (count === 0) {
+    const defaultTags = [
+      { id: 'doctrine-word', name: 'Doctrine of the Word of God', color: '#3b82f6', sort_order: 1 },
+      { id: 'doctrine-god', name: 'Doctrine of God', color: '#8b5cf6', sort_order: 2 },
+      { id: 'doctrine-man', name: 'Doctrine of Man', color: '#10b981', sort_order: 3 },
+      { id: 'doctrine-christ-spirit', name: 'Doctrines of Christ and the Holy Spirit', color: '#f59e0b', sort_order: 4 },
+      { id: 'doctrine-salvation', name: 'Doctrine of the Application of Redemption', color: '#ef4444', sort_order: 5 },
+      { id: 'doctrine-church', name: 'Doctrine of the Church', color: '#ec4899', sort_order: 6 },
+      { id: 'doctrine-future', name: 'Doctrine of the Future', color: '#06b6d4', sort_order: 7 }
+    ];
+
+    const insert = db.prepare(`
+      INSERT INTO systematic_tags (id, name, color, sort_order, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    const now = new Date().toISOString();
+    for (const tag of defaultTags) {
+      insert.run(tag.id, tag.name, tag.color, tag.sort_order, now);
+    }
+  }
+}
+
+seedDefaultSystematicTags();
 
 module.exports = db;

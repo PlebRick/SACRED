@@ -4,10 +4,12 @@ import { BibleProvider, useBible } from './context/BibleContext';
 import { NotesProvider, useNotes } from './context/NotesContext';
 import { TopicsProvider } from './context/TopicsContext';
 import { InlineTagsProvider } from './context/InlineTagsContext';
+import { SystematicProvider } from './context/SystematicContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { BibleReader } from './components/Bible/BibleReader';
 import { NotesPanel } from './components/Notes/NotesPanel';
+import { SystematicPanel } from './components/Systematic/SystematicPanel';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
 import { isVerseInRange } from './utils/verseRange';
 import styles from './components/Layout/Layout.module.css';
@@ -70,6 +72,7 @@ function AppContent() {
               onClose={() => setMobileNotesOpen(false)}
               activeNoteId={activeNoteId}
             />
+            <SystematicPanel />
           </div>
         </div>
 
@@ -98,7 +101,9 @@ function App() {
         <NotesProvider>
           <TopicsProvider>
             <InlineTagsProvider>
-              <AppContent />
+              <SystematicProvider>
+                <AppContent />
+              </SystematicProvider>
             </InlineTagsProvider>
           </TopicsProvider>
         </NotesProvider>
