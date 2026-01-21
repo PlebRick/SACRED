@@ -39,3 +39,4 @@ release/
 coverage/
 playwright-report/
 test-results/
+seeds/
