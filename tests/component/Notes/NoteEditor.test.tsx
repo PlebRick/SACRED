@@ -59,6 +59,31 @@ vi.mock('@tiptap/extension-placeholder', () => ({
   },
 }));
 
+// Mock Tiptap extensions
+vi.mock('../../../src/extensions/InlineTagMark', () => ({
+  InlineTagMark: {
+    configure: vi.fn().mockReturnValue({}),
+  },
+  default: {
+    configure: vi.fn().mockReturnValue({}),
+  },
+}));
+
+vi.mock('../../../src/extensions/SystematicLinkMark', () => ({
+  SystematicLinkMark: {
+    configure: vi.fn().mockReturnValue({}),
+  },
+  default: {
+    configure: vi.fn().mockReturnValue({}),
+  },
+}));
+
+// Mock InsertDoctrineModal
+vi.mock('../../../src/components/Notes/InsertDoctrineModal', () => ({
+  InsertDoctrineModal: () => null,
+  default: () => null,
+}));
+
 // Mock TopicsContext
 vi.mock('../../../src/context/TopicsContext', () => ({
   useTopics: () => ({
@@ -98,6 +123,71 @@ vi.mock('../../../src/context/InlineTagsContext', () => ({
     refreshTagTypes: vi.fn(),
     getTagTypeById: vi.fn().mockReturnValue(null),
   }),
+}));
+
+// Mock SystematicContext
+vi.mock('../../../src/context/SystematicContext', () => ({
+  useSystematic: () => ({
+    tree: [],
+    loading: false,
+    error: null,
+    selectedEntryId: null,
+    selectedEntry: null,
+    isPanelOpen: false,
+    relatedDoctrines: [],
+    relatedDoctrinesLoading: false,
+    tags: [],
+    searchResults: [],
+    searchQuery: '',
+    annotations: [],
+    annotationsLoading: false,
+    selectEntry: vi.fn(),
+    openChapter: vi.fn(),
+    closePanel: vi.fn(),
+    togglePanel: vi.fn(),
+    search: vi.fn(),
+    clearSearch: vi.fn(),
+    getByTag: vi.fn(),
+    addAnnotation: vi.fn(),
+    deleteAnnotation: vi.fn(),
+    getReferencingNotes: vi.fn(),
+    navigateToLink: vi.fn(),
+    findChapterInTree: vi.fn(),
+  }),
+}));
+
+// Mock BibleContext
+vi.mock('../../../src/context/BibleContext', () => ({
+  useBible: () => ({
+    book: 'JHN',
+    chapter: 1,
+    verses: [],
+    loading: false,
+    error: null,
+    navigate: vi.fn(),
+    setBook: vi.fn(),
+    setChapter: vi.fn(),
+  }),
+}));
+
+// Mock parseReference utility
+vi.mock('../../../src/utils/parseReference', () => ({
+  parseReference: vi.fn().mockReturnValue({
+    bookId: 'JHN',
+    bookName: 'John',
+    startChapter: 3,
+    startVerse: 16,
+    endChapter: 3,
+    endVerse: 16,
+    isWholeChapter: false,
+  }),
+  default: vi.fn(),
+}));
+
+// Mock SystematicLinkTooltip - it uses portal and SystematicContext
+vi.mock('../../../src/components/Notes/SystematicLinkTooltip', () => ({
+  SystematicLinkTooltip: () => null,
+  default: () => null,
 }));
 
 // Import after mocks

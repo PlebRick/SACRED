@@ -117,6 +117,37 @@ vi.mock('../../../src/context/BibleContext', () => ({
   useBible: () => mockBibleContext,
 }));
 
+// Mock SystematicContext
+vi.mock('../../../src/context/SystematicContext', () => ({
+  useSystematic: () => ({
+    tree: [],
+    loading: false,
+    error: null,
+    selectedEntryId: null,
+    selectedEntry: null,
+    isPanelOpen: false,
+    relatedDoctrines: [],
+    relatedDoctrinesLoading: false,
+    tags: [],
+    searchResults: [],
+    searchQuery: '',
+    annotations: [],
+    annotationsLoading: false,
+    selectEntry: vi.fn(),
+    openChapter: vi.fn(),
+    closePanel: vi.fn(),
+    togglePanel: vi.fn(),
+    search: vi.fn(),
+    clearSearch: vi.fn(),
+    getByTag: vi.fn(),
+    addAnnotation: vi.fn(),
+    deleteAnnotation: vi.fn(),
+    getReferencingNotes: vi.fn(),
+    navigateToLink: vi.fn(),
+    findChapterInTree: vi.fn(),
+  }),
+}));
+
 import NotesPanel from '../../../src/components/Notes/NotesPanel';
 
 describe('NotesPanel', () => {

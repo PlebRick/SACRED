@@ -1,4 +1,4 @@
-import { Mark, mergeAttributes } from '@tiptap/core';
+import { Mark, mergeAttributes, markInputRule, markPasteRule } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 
 /**
@@ -7,6 +7,12 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
  * Renders [[ST:ChX]] links as styled, clickable elements.
  * Format: [[ST:Ch32]], [[ST:Ch32:A]], [[ST:Ch32:B.1]]
  */
+
+// Regex to match [[ST:ChX]], [[ST:ChX:A]], [[ST:ChX:A.1]] patterns
+// Captures the full reference inside the brackets
+const ST_LINK_INPUT_REGEX = /\[\[ST:(Ch\d+(?::[A-Z](?:\.\d+)?)?)\]\]$/;
+const ST_LINK_PASTE_REGEX = /\[\[ST:(Ch\d+(?::[A-Z](?:\.\d+)?)?)\]\]/g;
+
 export const SystematicLinkMark = Mark.create({
   name: 'systematicLink',
 
@@ -86,6 +92,34 @@ export const SystematicLinkMark = Mark.create({
         return true;
       },
     };
+  },
+
+  addInputRules() {
+    return [
+      // Convert typed [[ST:ChX]] patterns to links
+      markInputRule({
+        find: ST_LINK_INPUT_REGEX,
+        type: this.type,
+        getAttributes: (match) => {
+          const reference = `[[ST:${match[1]}]]`;
+          return { reference, display: reference };
+        },
+      }),
+    ];
+  },
+
+  addPasteRules() {
+    return [
+      // Convert pasted [[ST:ChX]] patterns to links
+      markPasteRule({
+        find: ST_LINK_PASTE_REGEX,
+        type: this.type,
+        getAttributes: (match) => {
+          const reference = `[[ST:${match[1]}]]`;
+          return { reference, display: reference };
+        },
+      }),
+    ];
   },
 
   addProseMirrorPlugins() {

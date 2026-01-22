@@ -545,3 +545,16 @@
   background: var(--bg-primary);
   color: #ef4444;
 }
+
+/* Inline User Highlights */
+.content :global(.userHighlight) {
+  border-radius: 2px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  cursor: default;
+  transition: opacity 0.15s ease;
+}
+
+.content :global(.userHighlight):hover {
+  opacity: 0.85;
+}

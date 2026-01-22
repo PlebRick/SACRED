@@ -5,11 +5,14 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { InlineTagMark } from '../../extensions/InlineTagMark';
 import { SystematicLinkMark } from '../../extensions/SystematicLinkMark';
 import { InsertDoctrineModal } from './InsertDoctrineModal';
+import { SystematicLinkTooltip } from './SystematicLinkTooltip';
 import { formatVerseRange } from '../../utils/verseRange';
+import { parseReference } from '../../utils/parseReference';
 import { TopicSelector } from '../UI/TopicSelector';
 import { useTopics } from '../../context/TopicsContext';
 import { useInlineTags } from '../../context/InlineTagsContext';
 import { useSystematic } from '../../context/SystematicContext';
+import { useBible } from '../../context/BibleContext';
 import styles from './Notes.module.css';
 
 const InlineTagDropdown = ({ editor, tagTypes, onAddTagType }) => {
@@ -283,10 +286,20 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [showTopics, setShowTopics] = useState(false);
   const [showAddTagType, setShowAddTagType] = useState(false);
   const [showDoctrineModal, setShowDoctrineModal] = useState(false);
+  const editorContentRef = useRef(null);
 
   const { getTopicById, refreshTopics } = useTopics();
   const { tagTypes, createTagType, refreshCounts } = useInlineTags();
   const { navigateToLink } = useSystematic();
+  const { navigate } = useBible();
+
+  // Handle cross-ref tag clicks - navigate to Bible passage
+  const handleCrossRefClick = useCallback((text) => {
+    const parsed = parseReference(text);
+    if (parsed) {
+      navigate(parsed.bookId, parsed.startChapter);
+    }
+  }, [navigate]);
 
   const editor = useEditor({
     extensions: [
@@ -294,7 +307,9 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
       Placeholder.configure({
         placeholder: 'Write your sermon notes here...',
       }),
-      InlineTagMark,
+      InlineTagMark.configure({
+        onCrossRefClick: handleCrossRefClick,
+      }),
       SystematicLinkMark.configure({
         onLinkClick: (reference) => {
           // Navigate to the doctrine when clicked
@@ -446,9 +461,11 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         onInsertDoctrine={() => setShowDoctrineModal(true)}
       />
 
-      <div className={styles.editorContent}>
+      <div className={styles.editorContent} ref={editorContentRef}>
         <EditorContent editor={editor} />
       </div>
+
+      <SystematicLinkTooltip editorContainerRef={editorContentRef} />
 
       <AddTagTypeModal
         isOpen={showAddTagType}

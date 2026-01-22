@@ -10,6 +10,61 @@ const HIGHLIGHT_COLORS = [
   { name: 'Pink', value: '#fbcfe8' }
 ];
 
+/**
+ * Apply user highlights to HTML content by wrapping matching text with styled marks.
+ * @param {string} htmlContent - The HTML content to apply highlights to
+ * @param {Array} annotations - Array of annotation objects with annotationType, textSelection, and color
+ * @returns {string} - HTML content with highlights applied
+ */
+const applyHighlightsToContent = (htmlContent, annotations) => {
+  if (!annotations || annotations.length === 0 || !htmlContent) {
+    return htmlContent;
+  }
+
+  let result = htmlContent;
+
+  // Filter to only highlight annotations and sort by length descending
+  // to handle overlapping highlights correctly (longer matches first)
+  const highlights = annotations
+    .filter(a => a.annotationType === 'highlight' && a.textSelection)
+    .sort((a, b) => b.textSelection.length - a.textSelection.length);
+
+  for (const ann of highlights) {
+    // Escape special regex characters in the text
+    const escapedText = ann.textSelection.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Match the text but avoid matching inside HTML tags
+    // We use a simple approach: find text not inside < > brackets
+    // This regex looks for the text preceded and followed by word boundaries
+    const regex = new RegExp(`(${escapedText})`, 'g');
+
+    // Replace with marked text, but we need to avoid replacing inside tags
+    // Use a more careful approach with a callback
+    result = result.replace(regex, (match, text, offset) => {
+      // Check if we're inside an HTML tag by looking for unmatched < before offset
+      const beforeMatch = result.substring(0, offset);
+      const openBrackets = (beforeMatch.match(/</g) || []).length;
+      const closeBrackets = (beforeMatch.match(/>/g) || []).length;
+
+      // If we're inside a tag (more < than >), don't replace
+      if (openBrackets > closeBrackets) {
+        return match;
+      }
+
+      // Check if this text is already inside a userHighlight mark
+      const lastMarkOpen = beforeMatch.lastIndexOf('<mark class="userHighlight"');
+      const lastMarkClose = beforeMatch.lastIndexOf('</mark>');
+      if (lastMarkOpen > lastMarkClose) {
+        return match;
+      }
+
+      return `<mark class="userHighlight" style="background-color: ${ann.color}">${text}</mark>`;
+    });
+  }
+
+  return result;
+};
+
 export const SystematicPanel = () => {
   const {
     isPanelOpen,
@@ -287,12 +342,14 @@ export const SystematicPanel = () => {
           </div>
         )}
 
-        {/* Main content */}
+        {/* Main content - with highlights applied */}
         {selectedEntry.content && (
           <div
             ref={contentRef}
             className={styles.content}
-            dangerouslySetInnerHTML={{ __html: selectedEntry.content }}
+            dangerouslySetInnerHTML={{
+              __html: applyHighlightsToContent(selectedEntry.content, annotations)
+            }}
             onMouseUp={handleTextSelection}
             onClick={(e) => {
               // Handle scripture link clicks
@@ -343,7 +400,9 @@ export const SystematicPanel = () => {
                 {section.content && (
                   <div
                     className={styles.content}
-                    dangerouslySetInnerHTML={{ __html: section.content }}
+                    dangerouslySetInnerHTML={{
+                      __html: applyHighlightsToContent(section.content, annotations)
+                    }}
                     onClick={(e) => {
                       const target = e.target;
                       if (target.tagName === 'A' && target.dataset.scripture) {
