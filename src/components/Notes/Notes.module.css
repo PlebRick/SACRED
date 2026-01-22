@@ -774,9 +774,18 @@
   background: rgba(167, 139, 250, 0.15);
 }
 
-/* Cross-Ref - Pink */
+/* Cross-Ref - Pink (clickable - navigates to Bible) */
 .proseMirror span[data-inline-tag="crossref"] {
   background: rgba(244, 114, 182, 0.15);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.proseMirror span[data-inline-tag="crossref"]:hover {
+  background: rgba(244, 114, 182, 0.25);
+  text-decoration-style: solid;
 }
 
 /* Light theme adjustments */
