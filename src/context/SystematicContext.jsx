@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { systematicService } from '../services/systematicService';
+import { sessionsService } from '../services/sessionsService';
 import { useBible } from './BibleContext';
 
 const SystematicContext = createContext();
@@ -154,12 +155,30 @@ export const SystematicProvider = ({ children }) => {
     loadAnnotations();
   }, [state.selectedEntryId]);
 
+  // Track last logged doctrine session to avoid duplicates
+  const lastLoggedDoctrineRef = useRef(null);
+
   // Select and open an entry
   const selectEntry = useCallback(async (id) => {
     try {
       const entry = await systematicService.getById(id);
       if (entry) {
         dispatch({ type: 'SELECT_ENTRY', id, entry });
+
+        // Log study session for doctrine view
+        const refId = entry.chapterNumber
+          ? `ch${entry.chapterNumber}${entry.sectionLetter ? `:${entry.sectionLetter}` : ''}${entry.subsectionNumber ? `.${entry.subsectionNumber}` : ''}`
+          : id;
+
+        // Avoid duplicate logs for the same entry
+        if (lastLoggedDoctrineRef.current !== refId) {
+          lastLoggedDoctrineRef.current = refId;
+          sessionsService.log({
+            sessionType: 'doctrine',
+            referenceId: refId,
+            referenceLabel: entry.title
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to select entry:', error);
@@ -172,6 +191,17 @@ export const SystematicProvider = ({ children }) => {
       const chapter = await systematicService.getChapter(chapterNum);
       if (chapter) {
         dispatch({ type: 'SELECT_ENTRY', id: chapter.id, entry: chapter });
+
+        // Log study session for chapter view
+        const refId = `ch${chapterNum}`;
+        if (lastLoggedDoctrineRef.current !== refId) {
+          lastLoggedDoctrineRef.current = refId;
+          sessionsService.log({
+            sessionType: 'doctrine',
+            referenceId: refId,
+            referenceLabel: chapter.title
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to open chapter:', error);

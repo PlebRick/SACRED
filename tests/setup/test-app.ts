@@ -1,5 +1,5 @@
 import express from 'express';
-import { MockDatabase, createMockDb, MockNote } from './mock-db';
+import { MockDatabase, createMockDb, MockNote, MockSession } from './mock-db';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface TestNote {
@@ -274,6 +274,93 @@ export function createTestApp() {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete note' });
+    }
+  });
+
+  // ========================================
+  // Study Sessions Routes
+  // ========================================
+
+  const sessionToApiFormat = (row: MockSession) => ({
+    id: row.id,
+    sessionType: row.session_type,
+    referenceId: row.reference_id,
+    referenceLabel: row.reference_label,
+    durationSeconds: row.duration_seconds,
+    createdAt: row.created_at,
+  });
+
+  // POST /api/sessions
+  app.post('/api/sessions', (req, res) => {
+    try {
+      const { sessionType, referenceId, referenceLabel, durationSeconds } = req.body;
+
+      if (!sessionType || !referenceId) {
+        return res.status(400).json({
+          error: 'Missing required fields: sessionType, referenceId',
+        });
+      }
+
+      const validTypes = ['bible', 'doctrine', 'note'];
+      if (!validTypes.includes(sessionType)) {
+        return res.status(400).json({
+          error: `Invalid sessionType. Must be one of: ${validTypes.join(', ')}`,
+        });
+      }
+
+      const id = uuidv4();
+      const now = new Date().toISOString();
+
+      db.prepare(`
+        INSERT INTO study_sessions (id, session_type, reference_id, reference_label, duration_seconds, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(id, sessionType, referenceId, referenceLabel || null, durationSeconds || null, now);
+
+      const session = db.prepare('SELECT * FROM study_sessions WHERE id = ?').get(id) as MockSession;
+      res.status(201).json(sessionToApiFormat(session));
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to log session' });
+    }
+  });
+
+  // GET /api/sessions
+  app.get('/api/sessions', (req, res) => {
+    try {
+      const { limit = 50, offset = 0 } = req.query;
+      const sessions = db
+        .prepare('SELECT * FROM study_sessions ORDER BY created_at DESC LIMIT ? OFFSET ?')
+        .all(parseInt(limit as string, 10), parseInt(offset as string, 10)) as MockSession[];
+
+      const totalResult = db.prepare('SELECT COUNT(*) as count FROM study_sessions').get() as { count: number };
+
+      res.json({
+        sessions: sessions.map(sessionToApiFormat),
+        total: totalResult.count,
+        limit: parseInt(limit as string, 10),
+        offset: parseInt(offset as string, 10),
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch sessions' });
+    }
+  });
+
+  // GET /api/sessions/summary
+  app.get('/api/sessions/summary', (req, res) => {
+    try {
+      const byType = db
+        .prepare('SELECT session_type as type, COUNT(*) as count FROM study_sessions GROUP BY session_type')
+        .all() as { type: string; count: number }[];
+
+      res.json({
+        period: { days: 30 },
+        byType: Object.fromEntries(byType.map((r) => [r.type, r.count])),
+        topBibleChapters: [],
+        topDoctrines: [],
+        topNotes: [],
+        dailyActivity: [],
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch session summary' });
     }
   });
 

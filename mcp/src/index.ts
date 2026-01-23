@@ -9,6 +9,7 @@ import { registerTopicTools } from './tools/topics.js';
 import { registerInlineTagTools } from './tools/inline-tags.js';
 import { registerBackupTools } from './tools/backup.js';
 import { registerAiEnhancedTools } from './tools/ai-enhanced.js';
+import { registerSessionTools } from './tools/sessions.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
@@ -26,6 +27,7 @@ registerTopicTools(server);
 registerInlineTagTools(server);
 registerBackupTools(server);
 registerAiEnhancedTools(server);
+registerSessionTools(server);
 
 // Register resources
 registerResources(server);
