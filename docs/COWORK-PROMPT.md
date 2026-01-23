@@ -140,6 +140,66 @@ get_systematic_section(reference: "Ch36:C")  // Section on imputation
 find_doctrines_for_passage(book: "ROM", chapter: 3, verse: 23)
 ```
 
+### Study Session Tools
+
+SACRED automatically tracks what I study. Use these to understand my study patterns.
+
+| Tool | Parameters | Purpose |
+|------|------------|---------|
+| `get_recent_sessions` | `limit?`, `sessionType?`, `startDate?`, `endDate?` | Get recent study sessions |
+| `get_study_summary` | `days?` | Aggregated stats: top chapters, doctrines, notes studied |
+| `find_related_sessions` | `book?`, `chapter?`, `doctrineChapter?` | Sessions related to a passage/doctrine |
+| `get_last_studied` | `referenceType`, `referenceId` | When I last studied something |
+
+**Session types:** `"bible"`, `"doctrine"`, `"note"`
+
+**Example - What have I been studying?**
+```
+get_study_summary(days: 30)
+get_recent_sessions(limit: 20)
+```
+
+**Example - When did I last look at Romans?**
+```
+find_related_sessions(book: "ROM")
+get_last_studied(referenceType: "bible", referenceId: "ROM:8")
+```
+
+### Sermon Preparation Tools
+
+Tools specifically designed to help with sermon writing.
+
+| Tool | Parameters | Purpose |
+|------|------------|---------|
+| `get_similar_sermons` | `book?`, `chapter?`, `topic?`, `keyword?`, `limit?` | Find past sermons by passage, topic, or keyword |
+| `compile_illustrations_for_topic` | `topic?`, `doctrineChapter?`, `limit?` | Gather illustrations by topic or doctrine |
+| `generate_sermon_structure` | `book`, `startChapter`, `startVerse?`, `endChapter?`, `endVerse?`, `sermonTitle?`, `mainTheme?` | Generate sermon outline scaffold with resources |
+
+**Example - Find similar sermons:**
+```
+get_similar_sermons(book: "JHN")  // All John sermons
+get_similar_sermons(topic: "grace")  // Sermons on grace topic
+get_similar_sermons(keyword: "justification")  // Keyword search
+```
+
+**Example - Gather illustrations:**
+```
+compile_illustrations_for_topic(topic: "faith")
+compile_illustrations_for_topic(doctrineChapter: 36)  // Justification illustrations
+```
+
+**Example - Generate sermon scaffold:**
+```
+generate_sermon_structure(
+  book: "ROM",
+  startChapter: 3,
+  startVerse: 21,
+  endVerse: 26,
+  sermonTitle: "Justified by Faith",
+  mainTheme: "God's righteousness through faith"
+)
+```
+
 ### Backup Tools
 
 | Tool | Parameters | Purpose |
@@ -194,11 +254,18 @@ Link notes to systematic theology with: `[[ST:Ch32]]`, `[[ST:Ch32:A]]`, `[[ST:Ch
 
 ### Workflow Examples
 
-**"Help me prepare a sermon on Romans 8:28-30"**
-1. `sermon_prep_bundle(book: "ROM", startChapter: 8, startVerse: 28, endVerse: 30)`
-2. `get_systematic_section(reference: "Ch32")` - Election
-3. `get_systematic_section(reference: "Ch33")` - Calling
-4. Create sermon note with findings
+**"Help me prepare a sermon on Romans 3:21-26"**
+1. `generate_sermon_structure(book: "ROM", startChapter: 3, startVerse: 21, endVerse: 26)` - Get outline scaffold
+2. `get_similar_sermons(book: "ROM")` - Check what I've preached from Romans
+3. `compile_illustrations_for_topic(topic: "justification")` - Gather illustrations
+4. `sermon_prep_bundle(book: "ROM", startChapter: 3, startVerse: 21, endVerse: 26)` - Get all related data
+5. `get_systematic_section(reference: "Ch36")` - Deep dive on justification doctrine
+6. Create sermon note with type: "sermon"
+
+**"What have I been studying lately?"**
+1. `get_study_summary(days: 30)` - See top chapters, doctrines, notes
+2. `get_recent_sessions(limit: 20)` - Detailed recent activity
+3. `find_related_sessions(book: "ROM")` - Focus on a specific book
 
 **"What does systematic theology say about the Trinity?"**
 1. `search_systematic_theology(query: "trinity")`
@@ -206,7 +273,8 @@ Link notes to systematic theology with: `[[ST:Ch32]]`, `[[ST:Ch32:A]]`, `[[ST:Ch
 3. `explain_doctrine_simply(chapterNumber: 14)`
 
 **"Find all my illustrations about grace"**
-1. `search_inline_tags(query: "grace", type: "illustration")`
+1. `compile_illustrations_for_topic(topic: "grace")` - From sermon prep tools
+2. Or: `search_inline_tags(query: "grace", type: "illustration")` - Direct tag search
 
 **"Organize my note on John 3"**
 1. `get_note(id: "note-uuid")`
@@ -215,4 +283,4 @@ Link notes to systematic theology with: `[[ST:Ch32]]`, `[[ST:Ch32:A]]`, `[[ST:Ch
 
 ---
 
-Start by calling `get_notes_summary()` to see what data I have.
+Start by calling `get_notes_summary()` and `get_study_summary()` to see what data I have and what I've been studying.
