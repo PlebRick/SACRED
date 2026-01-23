@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import styles from './Layout.module.css';
 
-export const ResizableDivider = ({ onResize, minWidth = 300, maxWidth = 600 }) => {
+export const ResizableDivider = ({ onResize, minWidth = 300, maxWidth = 600, direction = 'right', className = '' }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleMouseDown = useCallback((e) => {
@@ -12,12 +12,19 @@ export const ResizableDivider = ({ onResize, minWidth = 300, maxWidth = 600 }) =
   const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
 
-    const containerWidth = window.innerWidth;
-    const newWidth = containerWidth - e.clientX;
+    let newWidth;
+    if (direction === 'left') {
+      // Left panel: width = cursor X position
+      newWidth = e.clientX;
+    } else {
+      // Right panel: width = container width - cursor X position
+      const containerWidth = window.innerWidth;
+      newWidth = containerWidth - e.clientX;
+    }
     const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
 
     onResize(clampedWidth);
-  }, [isDragging, minWidth, maxWidth, onResize]);
+  }, [isDragging, minWidth, maxWidth, onResize, direction]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -41,7 +48,7 @@ export const ResizableDivider = ({ onResize, minWidth = 300, maxWidth = 600 }) =
 
   return (
     <div
-      className={`${styles.resizableDivider} ${isDragging ? styles.dragging : ''}`}
+      className={`${styles.resizableDivider} ${isDragging ? styles.dragging : ''} ${className}`}
       onMouseDown={handleMouseDown}
     >
       <div className={styles.dividerHandle} />

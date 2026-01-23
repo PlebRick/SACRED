@@ -17,6 +17,7 @@ import styles from './components/Layout/Layout.module.css';
 // Inner component that uses context
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
   const [notesWidth, setNotesWidth] = useState(400);
   const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   const [visibleVerse, setVisibleVerse] = useState(1);
@@ -32,7 +33,11 @@ function AppContent() {
     setMobileNotesOpen(!mobileNotesOpen);
   };
 
-  const handleResize = useCallback((width) => {
+  const handleSidebarResize = useCallback((width) => {
+    setSidebarWidth(width);
+  }, []);
+
+  const handleNotesResize = useCallback((width) => {
     setNotesWidth(width);
   }, []);
 
@@ -52,17 +57,28 @@ function AppContent() {
       <Header
         onToggleSidebar={toggleSidebar}
         sidebarOpen={sidebarOpen}
+        sidebarWidth={sidebarWidth}
       />
 
       <main className={styles.main}>
-        <Sidebar isOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} width={sidebarWidth} />
+
+        {sidebarOpen && (
+          <ResizableDivider
+            onResize={handleSidebarResize}
+            minWidth={200}
+            maxWidth={400}
+            direction="left"
+            className={styles.sidebarDivider}
+          />
+        )}
 
         <div className={styles.contentWrapper}>
           <div className={styles.leftColumn}>
             <BibleReader onVisibleVerseChange={handleVisibleVerseChange} />
           </div>
 
-          <ResizableDivider onResize={handleResize} />
+          <ResizableDivider onResize={handleNotesResize} />
 
           <div
             className={`${styles.rightColumn} ${mobileNotesOpen ? styles.mobileOpen : ''}`}

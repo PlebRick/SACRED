@@ -7,7 +7,7 @@ import { TopicsTree } from './TopicsTree';
 import { SystematicTree } from './SystematicTree';
 import styles from './Layout.module.css';
 
-export const Sidebar = ({ isOpen }) => {
+export const Sidebar = ({ isOpen, width }) => {
   const [activeTab, setActiveTab] = useState('books');
   const [expandedBook, setExpandedBook] = useState(null);
   const { bookId, chapter, navigate } = useBible();
@@ -21,8 +21,13 @@ export const Sidebar = ({ isOpen }) => {
     navigate(bookId, chapterNum);
   };
 
+  const sidebarStyle = width ? { width, minWidth: width } : undefined;
+
   return (
-    <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+    <aside
+      className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}
+      style={sidebarStyle}
+    >
       <div className={styles.sidebarTabs}>
         <button
           className={`${styles.tab} ${activeTab === 'books' ? styles.active : ''}`}
