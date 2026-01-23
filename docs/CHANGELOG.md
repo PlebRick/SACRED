@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Full-Text Search for Notes**: Search across all note titles and content with highlighted matches
+  - New search button in header (document with magnifying glass icon)
+  - Keyboard shortcut: `Cmd+Shift+F` (Mac) / `Ctrl+Shift+F` (Windows)
+  - Modal with instant search, keyboard navigation, and match highlighting
+  - Click result to navigate to note and open for editing
+
+- **Study Session Tracking**: Auto-track what you study for Claude's memory/context
+  - Logs when Bible chapters are viewed
+  - Logs when doctrine entries are opened
+  - Logs when notes are edited
+  - Backend API: `GET/POST /api/sessions`, `GET /api/sessions/summary`
+  - New database table: `study_sessions`
+
+- **MCP Tools for Study History**: 4 new tools for Claude to understand your study patterns
+  - `get_recent_sessions` - Get recent study sessions with filtering
+  - `get_study_summary` - Aggregated statistics (top chapters, doctrines, notes)
+  - `find_related_sessions` - Find sessions related to a book/doctrine
+  - `get_last_studied` - When you last studied a specific reference
+
 ### Fixed
 - **Sidebar Collapse**: Content now properly fills space when sidebar is collapsed (was leaving black gap due to inline style override)
 

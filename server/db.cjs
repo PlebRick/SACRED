@@ -177,6 +177,24 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_sct_chapter ON systematic_chapter_tags(chapter_number);
   CREATE INDEX IF NOT EXISTS idx_sct_tag ON systematic_chapter_tags(tag_id);
+
+  -- ===========================================
+  -- STUDY SESSION TRACKING
+  -- ===========================================
+
+  -- Track what the user studies for Claude's memory
+  CREATE TABLE IF NOT EXISTS study_sessions (
+    id TEXT PRIMARY KEY,                    -- UUID
+    session_type TEXT NOT NULL,             -- 'bible', 'doctrine', 'note'
+    reference_id TEXT NOT NULL,             -- 'JHN:3', 'ch32', note UUID
+    reference_label TEXT,                   -- 'John 3', 'The Trinity', note title
+    duration_seconds INTEGER,               -- Time spent (optional, for future use)
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_sessions_type ON study_sessions(session_type);
+  CREATE INDEX IF NOT EXISTS idx_sessions_date ON study_sessions(created_at);
+  CREATE INDEX IF NOT EXISTS idx_sessions_ref ON study_sessions(reference_id);
 `);
 
 // Full-text search for systematic theology

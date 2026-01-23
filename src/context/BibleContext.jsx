@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
-import { getNextChapter, getPrevChapter } from '../utils/bibleBooks';
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
+import { getNextChapter, getPrevChapter, getBookById } from '../utils/bibleBooks';
+import { sessionsService } from '../services/sessionsService';
 
 const BibleContext = createContext();
 
@@ -92,9 +93,35 @@ export const BibleProvider = ({ children }) => {
     }
   }, [state.bookId, state.chapter, navigate]);
 
+  // Track last logged session to avoid duplicates
+  const lastLoggedRef = useRef(null);
+
   const setVerses = useCallback((verses, reference) => {
     dispatch({ type: 'LOAD_SUCCESS', verses, reference });
   }, []);
+
+  // Log study session when chapter is successfully loaded
+  useEffect(() => {
+    // Only log when verses are loaded (not during loading)
+    if (state.loading || state.verses.length === 0) return;
+
+    const sessionKey = `${state.bookId}:${state.chapter}`;
+
+    // Avoid duplicate logs for the same chapter
+    if (lastLoggedRef.current === sessionKey) return;
+    lastLoggedRef.current = sessionKey;
+
+    // Get book name for label
+    const book = getBookById(state.bookId);
+    const label = book ? `${book.name} ${state.chapter}` : sessionKey;
+
+    // Log the session (fire and forget)
+    sessionsService.log({
+      sessionType: 'bible',
+      referenceId: sessionKey,
+      referenceLabel: label
+    });
+  }, [state.bookId, state.chapter, state.loading, state.verses.length]);
 
   const setError = useCallback((error) => {
     dispatch({ type: 'LOAD_ERROR', error });

@@ -17,6 +17,15 @@ export interface MockNote {
   updated_at: string;
 }
 
+export interface MockSession {
+  id: string;
+  session_type: string;
+  reference_id: string;
+  reference_label: string | null;
+  duration_seconds: number | null;
+  created_at: string;
+}
+
 interface PreparedStatement<T = MockNote> {
   run: (...args: (string | number | null)[]) => { changes: number };
   get: (...args: (string | number | null)[]) => T | undefined;
@@ -25,6 +34,7 @@ interface PreparedStatement<T = MockNote> {
 
 export class MockDatabase {
   private notes: Map<string, MockNote> = new Map();
+  private sessions: Map<string, MockSession> = new Map();
 
   prepare(sql: string): PreparedStatement {
     const db = this;
@@ -90,7 +100,7 @@ export class MockDatabase {
       };
     }
 
-    if (sqlLower.startsWith('select count')) {
+    if (sqlLower.startsWith('select count') && sqlLower.includes('from notes')) {
       return {
         run: () => ({ changes: 0 }),
         get: () => ({ count: db.notes.size }),
@@ -207,6 +217,91 @@ export class MockDatabase {
       };
     }
 
+    // Session queries
+    if (sqlLower.startsWith('insert into study_sessions')) {
+      return {
+        run: (
+          id: string,
+          session_type: string,
+          reference_id: string,
+          reference_label: string | null,
+          duration_seconds: number | null,
+          created_at: string
+        ) => {
+          db.sessions.set(id, {
+            id,
+            session_type,
+            reference_id,
+            reference_label,
+            duration_seconds,
+            created_at,
+          });
+          return { changes: 1 };
+        },
+        get: () => undefined,
+        all: () => [],
+      };
+    }
+
+    if (sqlLower.startsWith('select * from study_sessions where id')) {
+      return {
+        run: () => ({ changes: 0 }),
+        get: (id: string) => db.sessions.get(id),
+        all: () => Array.from(db.sessions.values()),
+      };
+    }
+
+    if (sqlLower.includes('select * from study_sessions') && sqlLower.includes('order by created_at desc')) {
+      return {
+        run: () => ({ changes: 0 }),
+        get: () => undefined,
+        all: (...args: (string | number | null)[]) => {
+          let results = Array.from(db.sessions.values());
+          // Simple filtering - in real tests we'd parse more carefully
+          results = results.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          // Apply limit if provided (last two args are usually limit, offset)
+          const limit = typeof args[args.length - 2] === 'number' ? args[args.length - 2] as number : 50;
+          return results.slice(0, limit);
+        },
+      };
+    }
+
+    if (sqlLower.includes('select') && sqlLower.includes('from study_sessions') && sqlLower.includes('group by session_type')) {
+      return {
+        run: () => ({ changes: 0 }),
+        get: () => undefined,
+        all: () => {
+          const counts: Record<string, number> = {};
+          db.sessions.forEach(s => {
+            counts[s.session_type] = (counts[s.session_type] || 0) + 1;
+          });
+          return Object.entries(counts).map(([type, count]) => ({ type, count }));
+        },
+      };
+    }
+
+    if (sqlLower.includes('count(*)') && sqlLower.includes('study_sessions') && !sqlLower.includes('group by')) {
+      return {
+        run: () => ({ changes: 0 }),
+        get: () => ({ count: db.sessions.size }),
+        all: () => [{ count: db.sessions.size }],
+      };
+    }
+
+    if (sqlLower.startsWith('delete from study_sessions')) {
+      return {
+        run: () => {
+          const count = db.sessions.size;
+          db.sessions.clear();
+          return { changes: count };
+        },
+        get: () => undefined,
+        all: () => [],
+      };
+    }
+
     // Default fallback
     return {
       run: () => ({ changes: 0 }),
@@ -225,6 +320,7 @@ export class MockDatabase {
 
   clear(): void {
     this.notes.clear();
+    this.sessions.clear();
   }
 }
 

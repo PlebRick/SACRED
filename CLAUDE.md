@@ -129,6 +129,16 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
 | DELETE | `/api/systematic/annotations/:id` | Delete annotation |
 | GET | `/api/systematic/:id/referencing-notes` | Notes linking to entry |
 
+### Study Sessions API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/sessions` | Log a study session |
+| GET | `/api/sessions` | Get recent sessions (supports `type`, `startDate`, `endDate` filters) |
+| GET | `/api/sessions/summary` | Aggregated statistics (top chapters, doctrines, daily activity) |
+| GET | `/api/sessions/related` | Find sessions related to book/doctrine |
+| DELETE | `/api/sessions` | Clear old sessions (requires `olderThan` date) |
+
 ## Styling Guide
 
 ### CSS Variables (defined in `src/index.css`)
@@ -319,7 +329,7 @@ Link formats:
 
 ## MCP Tools for Claude
 
-SACRED provides 56 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
+SACRED provides 60 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
 
 ### When to Use MCP Tools
 
@@ -331,6 +341,8 @@ SACRED provides 56 MCP tools for Bible study assistance. **Always prefer MCP too
 | "Create a note on this passage" | `create_note` |
 | "Explain election simply" | `explain_doctrine_simply` |
 | "Export my notes" | `export_notes` or `full_export` |
+| "What have I been studying?" | `get_recent_sessions`, `get_study_summary` |
+| "When did I last look at Romans 3?" | `get_last_studied` |
 
 ### Tool Categories
 
@@ -363,6 +375,12 @@ SACRED provides 56 MCP tools for Bible study assistance. **Always prefer MCP too
 - `full_import` - Import backup data
 - `get_last_modified` - Last modification timestamp
 
+**Study Sessions:**
+- `get_recent_sessions` - Get recent study sessions (Bible chapters, doctrines, notes viewed)
+- `get_study_summary` - Aggregated stats (top chapters, most viewed doctrines, daily activity)
+- `find_related_sessions` - Find sessions related to a Bible book or doctrine chapter
+- `get_last_studied` - When user last studied a specific reference
+
 ### Best Practices
 
 1. **Start with summaries**: Use `get_notes_summary` or `get_systematic_summary` to understand the data scope
@@ -387,6 +405,14 @@ SACRED provides 56 MCP tools for Bible study assistance. **Always prefer MCP too
 2. get_systematic_section("Ch36") - full chapter
 3. get_systematic_section("Ch36:C") - specific section
 4. explain_doctrine_simply(36) - simple explanation
+```
+
+**Understanding Study Patterns:**
+```
+1. get_study_summary(30) - what's been studied in last 30 days
+2. get_recent_sessions(type="bible") - recent Bible chapters viewed
+3. find_related_sessions(book="ROM") - all Romans study sessions
+4. get_last_studied("JHN:3") - when John 3 was last viewed
 ```
 
 ## Important Notes for Claude

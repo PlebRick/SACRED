@@ -192,6 +192,26 @@
   color: var(--text-primary);
 }
 
+/* Note Search Button */
+.noteSearchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.noteSearchButton:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent);
+}
+
 /* Main Content Area */
 .main {
   display: flex;

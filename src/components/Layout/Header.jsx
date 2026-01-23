@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { ThemeToggle } from '../UI/ThemeToggle';
 import { SettingsModal } from '../UI/SettingsModal';
 import { SyncIndicator } from '../UI/SyncIndicator';
 import { VerseSearch } from './VerseSearch';
+import { NoteSearch } from './NoteSearch';
 import { useBible } from '../../context/BibleContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getBookById } from '../../utils/bibleBooks';
@@ -11,6 +13,20 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
   const { bookId, chapter } = useBible();
   const { highlightsVisible, toggleHighlights } = useTheme();
   const book = getBookById(bookId);
+  const [noteSearchOpen, setNoteSearchOpen] = useState(false);
+
+  // Keyboard shortcut: Cmd/Ctrl + Shift + F to open note search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'f') {
+        e.preventDefault();
+        setNoteSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const brandStyle = sidebarWidth && sidebarOpen ? { width: sidebarWidth, minWidth: sidebarWidth } : undefined;
 
@@ -36,6 +52,19 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
       <div className={styles.headerContent}>
         <div className={styles.headerLeft}>
           <VerseSearch />
+          <button
+            className={styles.noteSearchButton}
+            onClick={() => setNoteSearchOpen(true)}
+            aria-label="Search notes"
+            title="Search notes (Cmd+Shift+F)"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <circle cx="11" cy="14" r="3" />
+              <path d="m14 17-1.5-1.5" />
+            </svg>
+          </button>
         </div>
 
         <div className={styles.headerCenter}>
@@ -68,6 +97,10 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
           <SettingsModal />
         </div>
       </div>
+
+      {noteSearchOpen && (
+        <NoteSearch onClose={() => setNoteSearchOpen(false)} />
+      )}
     </header>
   );
 };

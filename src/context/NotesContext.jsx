@@ -1,5 +1,7 @@
-import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { notesService } from '../services/notesService';
+import { sessionsService } from '../services/sessionsService';
+import { getBookById } from '../utils/bibleBooks';
 
 const NotesContext = createContext();
 
@@ -130,9 +132,31 @@ export const NotesProvider = ({ children }) => {
     }
   }, []);
 
+  // Track last logged note session to avoid duplicates
+  const lastLoggedNoteRef = useRef(null);
+
   const setEditingNote = useCallback((id) => {
     dispatch({ type: 'SET_EDITING', id });
-  }, []);
+
+    // Log study session when a note is opened for editing
+    if (id && lastLoggedNoteRef.current !== id) {
+      lastLoggedNoteRef.current = id;
+
+      // Find the note to get its label
+      const note = state.notes.find(n => n.id === id);
+      if (note) {
+        const book = getBookById(note.book);
+        const bookName = book?.name || note.book;
+        const label = note.title || `${bookName} ${note.startChapter}${note.startVerse ? `:${note.startVerse}` : ''}`;
+
+        sessionsService.log({
+          sessionType: 'note',
+          referenceId: id,
+          referenceLabel: label
+        });
+      }
+    }
+  }, [state.notes]);
 
   const setSelectedNote = useCallback((id) => {
     dispatch({ type: 'SET_SELECTED', id });
