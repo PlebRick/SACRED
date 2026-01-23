@@ -198,6 +198,7 @@ rm -rf node_modules && npm install && npm run electron:build
 - `docs/ROADMAP.md` - Planned features and priorities
 - `docs/TESTING.md` - Test workflows and future test setup
 - `docs/CHANGELOG.md` - Version history
+- `docs/SYSTEMATIC-THEOLOGY-SCHEMA.md` - JSON format for importing custom theology content
 
 ## Systematic Theology Feature
 
