@@ -450,5 +450,489 @@ export function registerSystematicTools(server) {
             };
         }
     });
-    logger.info('Registered systematic theology tools: search_systematic_theology, get_systematic_section, find_doctrines_for_passage, summarize_doctrine_for_sermon, extract_doctrines_from_note, explain_doctrine_simply, get_systematic_summary');
+    // list_systematic_tags - Get doctrine category tags
+    server.tool('list_systematic_tags', 'Get all systematic theology category tags (e.g., Doctrine of God, Christology)', {}, async () => {
+        try {
+            const tags = db
+                .prepare(`
+            SELECT t.*, COUNT(ct.chapter_number) as chapter_count
+            FROM systematic_tags t
+            LEFT JOIN systematic_chapter_tags ct ON t.id = ct.tag_id
+            GROUP BY t.id
+            ORDER BY t.sort_order
+          `)
+                .all();
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            tags: tags.map((t) => ({
+                                id: t.id,
+                                name: t.name,
+                                color: t.color,
+                                sortOrder: t.sort_order,
+                                chapterCount: t.chapter_count,
+                            })),
+                            total: tags.length,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error listing systematic tags:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // get_chapters_by_tag - Get chapters by category tag
+    server.tool('get_chapters_by_tag', 'Get systematic theology chapters filtered by category tag', {
+        tagId: z.string().describe('Tag ID (e.g., "doctrine-god", "doctrine-salvation")'),
+    }, async ({ tagId }) => {
+        try {
+            const chapters = db
+                .prepare(`
+            SELECT st.* FROM systematic_theology st
+            JOIN systematic_chapter_tags ct ON st.chapter_number = ct.chapter_number
+            WHERE ct.tag_id = ? AND st.entry_type = 'chapter'
+            ORDER BY st.chapter_number
+          `)
+                .all(tagId);
+            const tag = db.prepare('SELECT * FROM systematic_tags WHERE id = ?').get(tagId);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            tag: tag ? { id: tag.id, name: tag.name, color: tag.color } : null,
+                            chapters: chapters.map((c) => ({
+                                ...toApiFormat(c),
+                                linkSyntax: `[[ST:Ch${c.chapter_number}]]`,
+                            })),
+                            count: chapters.length,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error getting chapters by tag:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // get_systematic_chapter - Get full chapter with sections, tags, related
+    server.tool('get_systematic_chapter', 'Get a complete systematic theology chapter with all sections, scripture references, related chapters, and tags', {
+        chapterNumber: z.number().describe('Chapter number (1-57)'),
+    }, async ({ chapterNumber }) => {
+        try {
+            // Get the chapter entry
+            const chapter = db
+                .prepare(`
+            SELECT * FROM systematic_theology
+            WHERE entry_type = 'chapter' AND chapter_number = ?
+          `)
+                .get(chapterNumber);
+            if (!chapter) {
+                return {
+                    content: [{ type: 'text', text: `Chapter ${chapterNumber} not found` }],
+                    isError: true,
+                };
+            }
+            // Get all sections and subsections for this chapter
+            const sections = db
+                .prepare(`
+            SELECT * FROM systematic_theology
+            WHERE chapter_number = ? AND entry_type IN ('section', 'subsection')
+            ORDER BY sort_order
+          `)
+                .all(chapterNumber);
+            // Get scripture references for this chapter
+            const scriptureRefs = db
+                .prepare(`
+            SELECT ssi.* FROM systematic_scripture_index ssi
+            JOIN systematic_theology st ON ssi.systematic_id = st.id
+            WHERE st.chapter_number = ?
+            ORDER BY ssi.is_primary DESC, ssi.book, ssi.chapter, ssi.start_verse
+          `)
+                .all(chapterNumber);
+            // Get related chapters
+            const related = db
+                .prepare(`
+            SELECT sr.*, st.title as target_title
+            FROM systematic_related sr
+            JOIN systematic_theology st ON sr.target_chapter = st.chapter_number AND st.entry_type = 'chapter'
+            WHERE sr.source_chapter = ?
+          `)
+                .all(chapterNumber);
+            // Get tags for this chapter
+            const tags = db
+                .prepare(`
+            SELECT t.* FROM systematic_tags t
+            JOIN systematic_chapter_tags ct ON t.id = ct.tag_id
+            WHERE ct.chapter_number = ?
+          `)
+                .all(chapterNumber);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            ...toApiFormat(chapter),
+                            linkSyntax: `[[ST:Ch${chapterNumber}]]`,
+                            sections: sections.map((s) => ({
+                                ...toApiFormat(s),
+                                linkSyntax: s.subsection_number
+                                    ? `[[ST:Ch${chapterNumber}:${s.section_letter}.${s.subsection_number}]]`
+                                    : `[[ST:Ch${chapterNumber}:${s.section_letter}]]`,
+                            })),
+                            scriptureReferences: scriptureRefs.map((r) => ({
+                                book: r.book,
+                                chapter: r.chapter,
+                                startVerse: r.start_verse,
+                                endVerse: r.end_verse,
+                                isPrimary: r.is_primary === 1,
+                                contextSnippet: r.context_snippet,
+                            })),
+                            relatedChapters: related.map((r) => ({
+                                chapterNumber: r.target_chapter,
+                                title: r.target_title,
+                                relationshipType: r.relationship_type,
+                                linkSyntax: `[[ST:Ch${r.target_chapter}]]`,
+                            })),
+                            tags: tags.map((t) => ({
+                                id: t.id,
+                                name: t.name,
+                                color: t.color,
+                            })),
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error getting systematic chapter:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // add_systematic_annotation - Add highlight or note annotation
+    server.tool('add_systematic_annotation', 'Add a highlight or note annotation to a systematic theology entry', {
+        systematicId: z.string().describe('The UUID of the systematic theology entry'),
+        annotationType: z.enum(['highlight', 'note']).describe('Type of annotation'),
+        color: z.string().optional().describe('Highlight color (yellow, green, blue, pink)'),
+        content: z.string().optional().describe("User's note text (for note type)"),
+        textSelection: z.string().optional().describe('The selected text being annotated'),
+        positionStart: z.number().optional().describe('Character position start'),
+        positionEnd: z.number().optional().describe('Character position end'),
+    }, async ({ systematicId, annotationType, color, content, textSelection, positionStart, positionEnd }) => {
+        try {
+            // Verify systematic entry exists
+            const entry = db.prepare('SELECT id, title FROM systematic_theology WHERE id = ?').get(systematicId);
+            if (!entry) {
+                return {
+                    content: [{ type: 'text', text: `Systematic theology entry not found: ${systematicId}` }],
+                    isError: true,
+                };
+            }
+            const id = require('uuid').v4();
+            const now = new Date().toISOString();
+            db.prepare(`
+          INSERT INTO systematic_annotations (
+            id, systematic_id, annotation_type, color, content, text_selection,
+            position_start, position_end, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(id, systematicId, annotationType, color ?? null, content ?? null, textSelection ?? null, positionStart ?? null, positionEnd ?? null, now, now);
+            const annotation = db.prepare('SELECT * FROM systematic_annotations WHERE id = ?').get(id);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: 'Annotation created successfully',
+                            annotation: {
+                                id: annotation.id,
+                                systematicId: annotation.systematic_id,
+                                annotationType: annotation.annotation_type,
+                                color: annotation.color,
+                                content: annotation.content,
+                                textSelection: annotation.text_selection,
+                                positionStart: annotation.position_start,
+                                positionEnd: annotation.position_end,
+                                createdAt: annotation.created_at,
+                                updatedAt: annotation.updated_at,
+                            },
+                            entry: { id: entry.id, title: entry.title },
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error creating annotation:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // get_systematic_annotations - Get annotations for an entry
+    server.tool('get_systematic_annotations', 'Get all annotations (highlights and notes) for a systematic theology entry', {
+        systematicId: z.string().describe('The UUID of the systematic theology entry'),
+    }, async ({ systematicId }) => {
+        try {
+            const annotations = db
+                .prepare(`
+            SELECT * FROM systematic_annotations
+            WHERE systematic_id = ?
+            ORDER BY position_start, created_at
+          `)
+                .all(systematicId);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            systematicId,
+                            annotations: annotations.map((a) => ({
+                                id: a.id,
+                                systematicId: a.systematic_id,
+                                annotationType: a.annotation_type,
+                                color: a.color,
+                                content: a.content,
+                                textSelection: a.text_selection,
+                                positionStart: a.position_start,
+                                positionEnd: a.position_end,
+                                createdAt: a.created_at,
+                                updatedAt: a.updated_at,
+                            })),
+                            count: annotations.length,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error getting annotations:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // delete_systematic_annotation - Delete an annotation
+    server.tool('delete_systematic_annotation', 'Delete a systematic theology annotation by ID', {
+        annotationId: z.string().describe('The UUID of the annotation to delete'),
+    }, async ({ annotationId }) => {
+        try {
+            const existing = db.prepare('SELECT * FROM systematic_annotations WHERE id = ?').get(annotationId);
+            if (!existing) {
+                return {
+                    content: [{ type: 'text', text: `Annotation not found: ${annotationId}` }],
+                    isError: true,
+                };
+            }
+            db.prepare('DELETE FROM systematic_annotations WHERE id = ?').run(annotationId);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: 'Annotation deleted successfully',
+                            deletedAnnotation: {
+                                id: existing.id,
+                                systematicId: existing.systematic_id,
+                                annotationType: existing.annotation_type,
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error deleting annotation:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // get_referencing_notes - Get notes that link to a doctrine entry
+    server.tool('get_referencing_notes', 'Get all notes that contain links to a specific systematic theology entry', {
+        systematicId: z.string().describe('The UUID of the systematic theology entry'),
+    }, async ({ systematicId }) => {
+        try {
+            // Get the entry to find its chapter number
+            const entry = db.prepare('SELECT chapter_number, section_letter, subsection_number, title FROM systematic_theology WHERE id = ?').get(systematicId);
+            if (!entry) {
+                return {
+                    content: [{ type: 'text', text: `Entry not found: ${systematicId}` }],
+                    isError: true,
+                };
+            }
+            // Build the link pattern to search for in notes
+            let linkPattern;
+            if (entry.subsection_number) {
+                linkPattern = `[[ST:Ch${entry.chapter_number}:${entry.section_letter}.${entry.subsection_number}]]`;
+            }
+            else if (entry.section_letter) {
+                linkPattern = `[[ST:Ch${entry.chapter_number}:${entry.section_letter}]]`;
+            }
+            else if (entry.chapter_number) {
+                linkPattern = `[[ST:Ch${entry.chapter_number}]]`;
+            }
+            else {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({ entry: { id: systematicId, title: entry.title }, notes: [], count: 0 }, null, 2),
+                        },
+                    ],
+                };
+            }
+            // Search notes for this link pattern
+            const notes = db
+                .prepare(`
+            SELECT * FROM notes
+            WHERE content LIKE ?
+            ORDER BY updated_at DESC
+          `)
+                .all(`%${linkPattern}%`);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            entry: { id: systematicId, title: entry.title, linkPattern },
+                            notes: notes.map((n) => ({
+                                id: n.id,
+                                book: n.book,
+                                startChapter: n.start_chapter,
+                                startVerse: n.start_verse,
+                                endChapter: n.end_chapter,
+                                endVerse: n.end_verse,
+                                title: n.title,
+                                type: n.type,
+                                updatedAt: n.updated_at,
+                            })),
+                            count: notes.length,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error getting referencing notes:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    // export_systematic_theology - Export all systematic theology data
+    server.tool('export_systematic_theology', 'Export all systematic theology data as JSON (entries, scripture index, tags, related chapters)', {}, async () => {
+        try {
+            // Fetch all data from each table
+            const entries = db.prepare('SELECT * FROM systematic_theology ORDER BY sort_order').all();
+            const scriptureIndex = db.prepare('SELECT * FROM systematic_scripture_index').all();
+            const tags = db.prepare('SELECT * FROM systematic_tags ORDER BY sort_order').all();
+            const chapterTags = db.prepare('SELECT * FROM systematic_chapter_tags').all();
+            const related = db.prepare('SELECT * FROM systematic_related').all();
+            const annotations = db.prepare('SELECT * FROM systematic_annotations').all();
+            const exportData = {
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                systematic_theology: entries.map((e) => ({
+                    id: e.id,
+                    entry_type: e.entry_type,
+                    part_number: e.part_number,
+                    chapter_number: e.chapter_number,
+                    section_letter: e.section_letter,
+                    subsection_number: e.subsection_number,
+                    title: e.title,
+                    content: e.content,
+                    summary: e.summary,
+                    parent_id: e.parent_id,
+                    sort_order: e.sort_order,
+                    word_count: e.word_count,
+                    created_at: e.created_at,
+                    updated_at: e.updated_at,
+                })),
+                scripture_index: scriptureIndex.map((s) => ({
+                    id: s.id,
+                    systematic_id: s.systematic_id,
+                    book: s.book,
+                    chapter: s.chapter,
+                    start_verse: s.start_verse,
+                    end_verse: s.end_verse,
+                    is_primary: s.is_primary,
+                    context_snippet: s.context_snippet,
+                    created_at: s.created_at,
+                })),
+                tags: tags.map((t) => ({
+                    id: t.id,
+                    name: t.name,
+                    color: t.color,
+                    sort_order: t.sort_order,
+                    created_at: t.created_at,
+                })),
+                chapter_tags: chapterTags.map((ct) => ({
+                    chapter_number: ct.chapter_number,
+                    tag_id: ct.tag_id,
+                })),
+                related: related.map((r) => ({
+                    id: r.id,
+                    source_chapter: r.source_chapter,
+                    target_chapter: r.target_chapter,
+                    relationship_type: r.relationship_type,
+                    note: r.note,
+                    created_at: r.created_at,
+                })),
+                annotations: annotations.map((a) => ({
+                    id: a.id,
+                    systematic_id: a.systematic_id,
+                    annotation_type: a.annotation_type,
+                    color: a.color,
+                    content: a.content,
+                    text_selection: a.text_selection,
+                    position_start: a.position_start,
+                    position_end: a.position_end,
+                    created_at: a.created_at,
+                    updated_at: a.updated_at,
+                })),
+                statistics: {
+                    entries: entries.length,
+                    scriptureReferences: scriptureIndex.length,
+                    tags: tags.length,
+                    annotations: annotations.length,
+                },
+            };
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify(exportData, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            logger.error('Error exporting systematic theology:', error);
+            return {
+                content: [{ type: 'text', text: `Error: ${error}` }],
+                isError: true,
+            };
+        }
+    });
+    logger.info('Registered systematic theology tools: search_systematic_theology, get_systematic_section, find_doctrines_for_passage, summarize_doctrine_for_sermon, extract_doctrines_from_note, explain_doctrine_simply, get_systematic_summary, list_systematic_tags, get_chapters_by_tag, get_systematic_chapter, add_systematic_annotation, get_systematic_annotations, delete_systematic_annotation, get_referencing_notes, export_systematic_theology');
 }
