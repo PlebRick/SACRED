@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Note Type Indicators in Right Panel**: Visual indicators showing note type (note, commentary, sermon) in NoteCard and NoteEditor
+  - NoteCard: Shows type icon badge and colored left border accent
+  - NoteEditor: Shows type badge with label in header
+  - New reusable `NoteTypeIndicator` component using existing CSS variables
 - **Systematic Theology Backup/Restore**: Full data management in Settings
   - Export: Download all doctrine data as JSON (`sacred-systematic-theology-YYYY-MM-DD.json`)
   - Import: Load doctrine data from JSON file (already existed)
