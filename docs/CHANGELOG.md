@@ -6,13 +6,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Scripture search now accepts book names without chapter (e.g., "John" → John 1)
+
+---
+
+## [0.0.7] - 2026-01-22
+
 ### Added
-- **Nested Chapter Dropdowns in Systematic Tree**: Expandable/collapsible chapter sections in the sidebar
-  - Chevron icon on chapters that have sections (click to expand/collapse)
-  - Clicking chapter title still opens full chapter content
-  - "Expand All | Collapse All" controls above the tree
-  - Sections only shown when chapter is expanded (cleaner default view)
-  - Controls hidden during search mode
+
+#### Systematic Theology Integration
+- **Doctrine Sidebar Tab**: New "Doctrine" tab in sidebar with hierarchical tree view
+  - Parts → Chapters → Sections → Subsections navigation
+  - Expandable/collapsible chapters with chevron icons
+  - "Expand All | Collapse All" controls
+  - Full-text search across all doctrine content
+  - Filter by 7 category tags (Doctrine of God, Christ, Holy Spirit, etc.)
+
+- **Doctrine Panel**: Slide-over panel for viewing doctrine content
+  - Full chapter content with sections
+  - Scripture references with clickable links
+  - Related chapters ("See Also") navigation
+  - Personal highlight annotations with color picker
+  - "Your Highlights" section with delete capability
+  - Bidirectional linking: shows notes that reference this doctrine
+
+- **Note ↔ Doctrine Linking**:
+  - Insert Doctrine Link modal (`Cmd+Shift+D` or toolbar book icon)
+  - Search doctrines by title or content
+  - Auto-link syntax: type or paste `[[ST:Ch32]]` → clickable link
+  - Link granularity: chapter, section, or subsection (`[[ST:Ch32:A.1]]`)
+  - Hover tooltips showing doctrine title
+
+- **Related Doctrines in Notes Panel**: Auto-populated suggestions based on current Bible chapter's scripture index
+
+- **MCP Tools for Claude**: 7 new tools for AI-assisted study
+  - `search_systematic_theology` - Full-text search
+  - `get_systematic_section` - Get by reference
+  - `find_doctrines_for_passage` - Doctrines citing a passage
+  - `summarize_doctrine_for_sermon` - Sermon prep summary
+  - `extract_doctrines_from_note` - Suggest related doctrines
+  - `explain_doctrine_simply` - Jargon-free explanation
+  - `get_systematic_summary` - Statistics
+
+#### Note Editor Enhancements
+- **Cross-Reference Navigation**: Cross-ref inline tags now navigate to Bible text when clicked
+- **Inline Highlight Rendering**: User highlights on doctrine content display inline with saved colors
+- **Paste-to-Link**: Pasting `[[ST:ChX]]` syntax auto-converts to clickable link
+
+### Technical
+- 8 new database tables for systematic theology (entries, scripture index, annotations, tags, related, FTS5)
+- Auto-restore mechanism in Electron: imports bundled JSON on first launch
+- `extraResources` build config for bundling data without committing to git
+- Foreign key constraint handling for bulk imports
+- Debug endpoints for troubleshooting (`/api/debug/systematic-status`, `/api/debug/restore-systematic`)
+
+### Fixed
+- Electron build now includes systematic theology routes
+- FK constraint errors during data import (disabled during bulk operations)
 
 ---
 

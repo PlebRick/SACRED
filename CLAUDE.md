@@ -32,16 +32,26 @@ SACRED/
 ├── src/                    # React frontend (ESM)
 │   ├── components/         # Organized by feature
 │   │   ├── Bible/         # Reader components (BibleReader, ChapterView, Verse)
-│   │   ├── Layout/        # Header, Sidebar, VerseSearch, ResizableDivider
-│   │   ├── Notes/         # NoteCard, NoteEditor, NotesPanel, AddNoteModal
+│   │   ├── Layout/        # Header, Sidebar, VerseSearch, SystematicTree
+│   │   ├── Notes/         # NoteCard, NoteEditor, NotesPanel, InsertDoctrineModal
+│   │   ├── Systematic/    # SystematicPanel (doctrine viewer)
 │   │   └── UI/            # Button, ThemeToggle, SettingsModal
-│   ├── context/           # BibleContext, NotesContext, ThemeContext
-│   ├── services/          # API calls (bibleApi.js, notesService.js)
+│   ├── context/           # BibleContext, NotesContext, SystematicContext
+│   ├── extensions/        # Tiptap extensions (InlineTagMark, SystematicLinkMark)
+│   ├── services/          # API calls (bibleApi.js, notesService.js, systematicService.js)
 │   └── utils/             # Helpers (parseReference, bibleBooks, verseRange)
 ├── server/                 # Express backend (CommonJS .cjs)
-│   ├── routes/            # notes.cjs, backup.cjs
-│   ├── db.cjs             # SQLite setup
+│   ├── routes/            # notes.cjs, backup.cjs, systematic.cjs
+│   ├── db.cjs             # SQLite setup (includes systematic theology tables)
 │   └── index.cjs          # Server entry
+├── electron/               # Electron main process
+│   ├── main.cjs           # App entry, server startup, auto-restore
+│   └── preload.js         # Context bridge
+├── mcp/                    # MCP server for Claude integration
+│   └── src/tools/         # systematic.ts (7 Claude tools)
+├── myfiles/                # Personal data (gitignored)
+│   └── grudem-sys-theo-parsed/
+│       └── systematic-theology-complete.json
 └── data/                   # SQLite database storage
 ```
 
@@ -86,6 +96,8 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
 
 ## API Reference
 
+### Notes API
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/notes` | All notes |
@@ -98,6 +110,24 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
 | POST | `/api/notes/import` | Import (upsert) |
 | DELETE | `/api/notes` | Delete all notes |
 | GET | `/api/notes/count` | Get total note count |
+
+### Systematic Theology API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/systematic` | Tree structure of all entries |
+| GET | `/api/systematic/flat` | Flat list of all entries |
+| GET | `/api/systematic/:id` | Single entry with children & scripture refs |
+| GET | `/api/systematic/chapter/:num` | Chapter with sections, tags, related |
+| GET | `/api/systematic/for-passage/:book/:chapter` | Doctrines for Bible passage |
+| GET | `/api/systematic/tags` | All tags with chapter counts |
+| GET | `/api/systematic/by-tag/:tagId` | Chapters filtered by tag |
+| GET | `/api/systematic/search?q=term` | Full-text search with snippets |
+| GET | `/api/systematic/summary` | Statistics (counts by type) |
+| POST | `/api/systematic/:id/annotations` | Add highlight/note annotation |
+| GET | `/api/systematic/:id/annotations` | Get annotations for entry |
+| DELETE | `/api/systematic/annotations/:id` | Delete annotation |
+| GET | `/api/systematic/:id/referencing-notes` | Notes linking to entry |
 
 ## Styling Guide
 
@@ -151,6 +181,128 @@ No test framework yet. Manual testing only. See `docs/TESTING.md` for test workf
 - `docs/TESTING.md` - Test workflows and future test setup
 - `docs/CHANGELOG.md` - Version history
 
+## Systematic Theology Feature
+
+### Overview
+
+SACRED includes an optional Systematic Theology module for studying doctrine alongside Scripture. The feature provides:
+
+- **Sidebar Tree View**: Hierarchical navigation (Parts → Chapters → Sections → Subsections)
+- **Doctrine Panel**: Slide-over panel displaying doctrine content with highlights
+- **Note Integration**: Link notes to doctrine chapters with `[[ST:Ch32]]` syntax
+- **Scripture Index**: 4800+ verse references mapped to doctrines
+- **Related Doctrines**: Auto-populated suggestions based on current Bible chapter
+- **Personal Annotations**: Highlight text with colors, add notes
+
+### Architecture
+
+The systematic theology content is **separated from code**:
+
+- **Code** (public): All React components, API routes, database schema
+- **Content** (private): JSON data file with actual doctrine text
+
+This allows the code to be open source while keeping copyrighted content private.
+
+### Database Tables
+
+```sql
+-- Main entries (parts, chapters, sections, subsections)
+systematic_theology (id, entry_type, part_number, chapter_number, ...)
+
+-- Scripture verse references
+systematic_scripture_index (systematic_id, book, chapter, start_verse, ...)
+
+-- User highlights and notes
+systematic_annotations (systematic_id, annotation_type, text_selection, color, ...)
+
+-- Cross-references between chapters
+systematic_related (source_chapter, target_chapter, relationship_type)
+
+-- Category tags (7 Grudem parts)
+systematic_tags (id, name, color)
+systematic_chapter_tags (chapter_number, tag_id)
+
+-- Full-text search
+systematic_theology_fts (FTS5 virtual table)
+```
+
+### Building with Systematic Theology Data
+
+The JSON data file is **not committed to git** (personal license). To build a Mac app with data:
+
+1. **Place your JSON data file** at:
+   ```
+   myfiles/grudem-sys-theo-parsed/systematic-theology-complete.json
+   ```
+
+2. **Build the DMG**:
+   ```bash
+   npm run electron:build
+   ```
+
+3. **How it works**:
+   - `electron-builder` copies the JSON to `Contents/Resources/` via `extraResources`
+   - On first app launch, `electron/main.cjs` detects empty database
+   - Auto-restore imports all data (776 entries, 4800+ scripture refs, tags)
+   - Foreign key constraints disabled during bulk import
+
+### JSON Data Format
+
+```json
+{
+  "systematic_theology": [
+    {
+      "id": "uuid",
+      "entry_type": "chapter",
+      "chapter_number": 1,
+      "title": "Introduction to Systematic Theology",
+      "content": "<p>HTML content...</p>",
+      "summary": "AI-generated summary",
+      "parent_id": "parent-uuid",
+      "sort_order": 1
+    }
+  ],
+  "scripture_index": [
+    { "systematic_id": "uuid", "book": "JHN", "chapter": 1, "start_verse": 1 }
+  ],
+  "tags": [
+    { "id": "uuid", "name": "Doctrine of God", "color": "#4a90d9" }
+  ],
+  "chapter_tags": [
+    { "chapter_number": 1, "tag_id": "uuid" }
+  ],
+  "related": [
+    { "source_chapter": 1, "target_chapter": 2, "relationship_type": "see_also" }
+  ]
+}
+```
+
+### Linking Notes to Doctrines
+
+In the note editor:
+- **Toolbar button**: Click book icon or press `Cmd+Shift+D` to open Insert Doctrine modal
+- **Type syntax**: Type `[[ST:Ch32]]` and it auto-converts to a clickable link
+- **Paste syntax**: Paste `[[ST:Ch32:A.1]]` and it auto-converts
+
+Link formats:
+- `[[ST:Ch32]]` - Link to chapter 32
+- `[[ST:Ch32:A]]` - Link to section A of chapter 32
+- `[[ST:Ch32:A.1]]` - Link to subsection A.1 of chapter 32
+
+### MCP Tools for Claude
+
+Seven tools available in `mcp/src/tools/systematic.ts`:
+
+| Tool | Description |
+|------|-------------|
+| `search_systematic_theology` | Full-text search with snippets |
+| `get_systematic_section` | Get by ID or reference (Ch32, Ch32:A) |
+| `find_doctrines_for_passage` | Find doctrines citing a Bible passage |
+| `summarize_doctrine_for_sermon` | Sermon prep summary with key points |
+| `extract_doctrines_from_note` | Analyze note and suggest related doctrines |
+| `explain_doctrine_simply` | Jargon-free explanation |
+| `get_systematic_summary` | Overview statistics |
+
 ## Important Notes for Claude
 
 - Server uses CommonJS (`.cjs`) because better-sqlite3 requires it
@@ -159,3 +311,4 @@ No test framework yet. Manual testing only. See `docs/TESTING.md` for test workf
 - All timestamps are ISO strings
 - Note content is HTML (from Tiptap editor)
 - When adding features, follow existing patterns in similar components
+- Systematic theology data is NOT in git - must be provided separately for builds

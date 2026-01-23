@@ -18,10 +18,19 @@
   - Browse by Tag section in sidebar
   - Highlight visibility toggle for distraction-free reading
 
-- [ ] **Cross-reference linking between verses**
-  - Link notes to multiple verse ranges
-  - "Related notes" suggestions
-  - Bidirectional linking
+- [x] **Systematic Theology Integration** ✓ v0.0.7
+  - Doctrine sidebar with hierarchical tree (Parts → Chapters → Sections)
+  - Slide-over panel for viewing doctrine content
+  - Note ↔ Doctrine linking with `[[ST:Ch32]]` syntax
+  - Scripture-to-doctrine cross-reference index (4800+ refs)
+  - Personal highlights and annotations on doctrine text
+  - 7 MCP tools for Claude integration
+  - Auto-restore mechanism for bundled content
+
+- [x] **Cross-reference linking between verses** ✓ v0.0.7 (partial)
+  - Cross-ref inline tags now navigate to Bible text
+  - Doctrine links provide bidirectional linking
+  - Related doctrines suggestions based on scripture index
 
 ## Medium Priority
 
@@ -54,6 +63,8 @@
 
 ## Completed
 
+- **v0.0.7** - Systematic Theology integration with note linking, MCP tools, auto-restore
+- **v0.0.6** - Visual note type distinction, independent scrolling, Mac app fixes
 - **v0.0.5** - Inline tagging system with Browse by Tag
 - **v0.0.4** - Hierarchical topics system and sidebar redesign
 - **v0.0.3** - Mac App (Electron) with DMG distribution

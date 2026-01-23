@@ -1,7 +1,7 @@
 {
   "name": "sacred",
   "private": true,
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Personal Bible study app with rich text notes, commentary, and sermon management",
   "author": "SACRED",
   "license": "MIT",
@@ -78,6 +78,12 @@
       "server/**/*",
       "electron/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "myfiles/grudem-sys-theo-parsed/systematic-theology-complete.json",
+        "to": "systematic-theology-complete.json"
+      }
     ],
     "asarUnpack": [
       "node_modules/better-sqlite3/**/*"
