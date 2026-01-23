@@ -9,6 +9,7 @@ import { abbreviations, getBookById, books } from './bibleBooks';
  * - "Romans 1" -> whole chapter
  * - "Genesis 1:1-2:3" -> cross-chapter range
  * - "Rom 1:1-7" -> abbreviations
+ * - "Romans" or "Rom" -> book only (defaults to chapter 1)
  * - Case insensitive
  *
  * @param {string} reference - The reference string to parse
@@ -39,6 +40,10 @@ export const parseReference = (reference) => {
   // Pattern: Book Chapter (whole chapter)
   // Example: "Romans 1", "rom 1"
   const chapterOnlyPattern = /^(\d?\s*[a-z]+(?:\s+[a-z]+)?)\s+(\d+)$/i;
+
+  // Pattern: Book only (no chapter - defaults to chapter 1)
+  // Example: "Romans", "rom", "1 Corinthians"
+  const bookOnlyPattern = /^(\d?\s*[a-z]+(?:\s+[a-z]+)?)$/i;
 
   let bookStr, startChapter, startVerse, endChapter, endVerse;
 
@@ -78,7 +83,17 @@ export const parseReference = (reference) => {
           endChapter = startChapter;
           endVerse = null;
         } else {
-          return null;
+          // Try book only (defaults to chapter 1)
+          match = trimmed.match(bookOnlyPattern);
+          if (match) {
+            bookStr = match[1];
+            startChapter = 1;
+            startVerse = null;
+            endChapter = 1;
+            endVerse = null;
+          } else {
+            return null;
+          }
         }
       }
     }

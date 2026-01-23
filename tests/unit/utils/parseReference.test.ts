@@ -314,8 +314,24 @@ describe('parseReference', () => {
       expect(parseReference('Romans 5:1-3:1')).toBeNull();
     });
 
-    it('returns null for just a book name', () => {
-      expect(parseReference('Romans')).toBeNull();
+    it('parses book-only input and defaults to chapter 1', () => {
+      const result = parseReference('Romans');
+      expect(result).not.toBeNull();
+      expect(result?.bookId).toBe('ROM');
+      expect(result?.startChapter).toBe(1);
+      expect(result?.isWholeChapter).toBe(true);
+    });
+
+    it('parses abbreviated book-only input', () => {
+      const result = parseReference('Rom');
+      expect(result?.bookId).toBe('ROM');
+      expect(result?.startChapter).toBe(1);
+    });
+
+    it('parses numbered book-only input', () => {
+      const result = parseReference('1 Corinthians');
+      expect(result?.bookId).toBe('1CO');
+      expect(result?.startChapter).toBe(1);
     });
 
     it('returns null for gibberish', () => {
