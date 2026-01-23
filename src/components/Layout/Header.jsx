@@ -7,14 +7,16 @@ import { useTheme } from '../../context/ThemeContext';
 import { getBookById } from '../../utils/bibleBooks';
 import styles from './Layout.module.css';
 
-export const Header = ({ onToggleSidebar, sidebarOpen }) => {
+export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
   const { bookId, chapter } = useBible();
   const { highlightsVisible, toggleHighlights } = useTheme();
   const book = getBookById(bookId);
 
+  const brandStyle = sidebarWidth && sidebarOpen ? { width: sidebarWidth, minWidth: sidebarWidth } : undefined;
+
   return (
     <header className={styles.header}>
-      <div className={styles.headerBrand}>
+      <div className={styles.headerBrand} style={brandStyle}>
         <button
           className={styles.menuButton}
           onClick={onToggleSidebar}
