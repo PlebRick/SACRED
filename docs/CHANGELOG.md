@@ -26,6 +26,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `find_related_sessions` - Find sessions related to a book/doctrine
   - `get_last_studied` - When you last studied a specific reference
 
+- **MCP Tools for Sermon Preparation**: 3 new tools to assist with sermon writing
+  - `get_similar_sermons` - Find past sermons by book, chapter, topic, or keyword
+  - `compile_illustrations_for_topic` - Gather illustrations by topic keyword or doctrine
+  - `generate_sermon_structure` - Generate a structured sermon outline scaffold with resources
+
 ### Fixed
 - **Sidebar Collapse**: Content now properly fills space when sidebar is collapsed (was leaving black gap due to inline style override)
 
