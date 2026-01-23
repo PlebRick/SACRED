@@ -10,6 +10,7 @@ const toApiFormat = (row) => ({
   name: row.name,
   parentId: row.parent_id,
   sortOrder: row.sort_order,
+  systematicTagId: row.systematic_tag_id,
   createdAt: row.created_at,
   updatedAt: row.updated_at
 });
@@ -166,7 +167,7 @@ router.get('/:id/notes', (req, res) => {
 // POST /api/topics - Create topic
 router.post('/', (req, res) => {
   try {
-    const { name, parentId = null, sortOrder = 0 } = req.body;
+    const { name, parentId = null, sortOrder = 0, systematicTagId = null } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Topic name is required' });
@@ -180,13 +181,21 @@ router.post('/', (req, res) => {
       }
     }
 
+    // Validate systematic tag exists if provided
+    if (systematicTagId) {
+      const tag = db.prepare('SELECT id FROM systematic_tags WHERE id = ?').get(systematicTagId);
+      if (!tag) {
+        return res.status(400).json({ error: 'Systematic tag not found' });
+      }
+    }
+
     const id = uuidv4();
     const now = new Date().toISOString();
 
     db.prepare(`
-      INSERT INTO topics (id, name, parent_id, sort_order, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(id, name.trim(), parentId, sortOrder, now, now);
+      INSERT INTO topics (id, name, parent_id, sort_order, systematic_tag_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(id, name.trim(), parentId, sortOrder, systematicTagId, now, now);
 
     const topic = db.prepare('SELECT * FROM topics WHERE id = ?').get(id);
     res.status(201).json(toApiFormat(topic));
@@ -209,7 +218,8 @@ router.put('/:id', (req, res) => {
     const {
       name = existing.name,
       parentId = existing.parent_id,
-      sortOrder = existing.sort_order
+      sortOrder = existing.sort_order,
+      systematicTagId = existing.systematic_tag_id
     } = req.body;
 
     // Prevent setting self as parent
@@ -229,13 +239,21 @@ router.put('/:id', (req, res) => {
       }
     }
 
+    // Validate systematic tag exists if provided
+    if (systematicTagId) {
+      const tag = db.prepare('SELECT id FROM systematic_tags WHERE id = ?').get(systematicTagId);
+      if (!tag) {
+        return res.status(400).json({ error: 'Systematic tag not found' });
+      }
+    }
+
     const now = new Date().toISOString();
 
     db.prepare(`
       UPDATE topics
-      SET name = ?, parent_id = ?, sort_order = ?, updated_at = ?
+      SET name = ?, parent_id = ?, sort_order = ?, systematic_tag_id = ?, updated_at = ?
       WHERE id = ?
-    `).run(name.trim(), parentId, sortOrder, now, id);
+    `).run(name.trim(), parentId, sortOrder, systematicTagId, now, id);
 
     const topic = db.prepare('SELECT * FROM topics WHERE id = ?').get(id);
     res.json(toApiFormat(topic));
@@ -281,39 +299,157 @@ router.post('/seed', (req, res) => {
 
     const now = new Date().toISOString();
 
-    const createTopic = (name, parentId = null, sortOrder = 0) => {
+    // Helper to create a topic with optional systematic_tag_id
+    const createTopic = (name, parentId = null, sortOrder = 0, systematicTagId = null) => {
       const id = uuidv4();
       db.prepare(`
-        INSERT INTO topics (id, name, parent_id, sort_order, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(id, name, parentId, sortOrder, now, now);
+        INSERT INTO topics (id, name, parent_id, sort_order, systematic_tag_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(id, name, parentId, sortOrder, systematicTagId, now, now);
       return id;
     };
 
-    // Seed default topic structure
-    const systematic = createTopic('Systematic Theology', null, 0);
-    createTopic('Bibliology (Doctrine of Scripture)', systematic, 0);
-    createTopic('Theology Proper (Doctrine of God)', systematic, 1);
-    createTopic('Christology (Doctrine of Christ)', systematic, 2);
-    createTopic('Pneumatology (Doctrine of the Holy Spirit)', systematic, 3);
-    createTopic('Anthropology (Doctrine of Man)', systematic, 4);
-    createTopic('Hamartiology (Doctrine of Sin)', systematic, 5);
-    createTopic('Soteriology (Doctrine of Salvation)', systematic, 6);
-    createTopic('Ecclesiology (Doctrine of the Church)', systematic, 7);
-    createTopic('Eschatology (Doctrine of Last Things)', systematic, 8);
+    // ===========================================
+    // DOCTRINAL - Maps to Grudem's 7 Parts with Sub-topics
+    // ===========================================
+    const doctrinal = createTopic('Doctrinal', null, 0);
 
-    const practical = createTopic('Practical', null, 1);
-    createTopic('Discipleship', practical, 0);
-    createTopic('Marriage & Family', practical, 1);
-    createTopic('Leadership', practical, 2);
-    createTopic('Prayer', practical, 3);
-    createTopic('Evangelism', practical, 4);
+    // Word of God
+    createTopic('Word of God', doctrinal, 0, 'doctrine-word');
 
-    const resources = createTopic('Resources', null, 2);
+    // God with sub-topics
+    const doctrineGod = createTopic('God', doctrinal, 1, 'doctrine-god');
+    createTopic('Trinity', doctrineGod, 0);
+    createTopic('Attributes of God', doctrineGod, 1);
+    createTopic('Providence', doctrineGod, 2);
+
+    // Man with sub-topics
+    const doctrineMan = createTopic('Man', doctrinal, 2, 'doctrine-man');
+    createTopic('Image of God', doctrineMan, 0);
+    createTopic('Fall & Original Sin', doctrineMan, 1);
+    createTopic('Human Nature', doctrineMan, 2);
+
+    // Christ with sub-topics
+    const doctrineChrist = createTopic('Christ', doctrinal, 3, 'doctrine-christ-spirit');
+    createTopic('Incarnation', doctrineChrist, 0);
+    createTopic('Atonement', doctrineChrist, 1);
+    createTopic('Resurrection of Christ', doctrineChrist, 2);
+    createTopic('Ascension', doctrineChrist, 3);
+
+    // Holy Spirit with sub-topics
+    const doctrineSpirit = createTopic('Holy Spirit', doctrinal, 4);
+    createTopic('Baptism of the Spirit', doctrineSpirit, 0);
+    createTopic('Filling of the Spirit', doctrineSpirit, 1);
+    createTopic('Fruit of the Spirit', doctrineSpirit, 2);
+
+    // Salvation (Ordo Salutis) with sub-topics
+    const doctrineSalvation = createTopic('Salvation', doctrinal, 5, 'doctrine-salvation');
+    createTopic('Election', doctrineSalvation, 0);
+    createTopic('Calling', doctrineSalvation, 1);
+    createTopic('Regeneration', doctrineSalvation, 2);
+    createTopic('Conversion', doctrineSalvation, 3);
+    createTopic('Justification', doctrineSalvation, 4);
+    createTopic('Adoption', doctrineSalvation, 5);
+    createTopic('Sanctification', doctrineSalvation, 6);
+    createTopic('Perseverance', doctrineSalvation, 7);
+    createTopic('Glorification', doctrineSalvation, 8);
+    createTopic('Union with Christ', doctrineSalvation, 9);
+
+    // Church with sub-topics
+    const doctrineChurch = createTopic('Church', doctrinal, 6, 'doctrine-church');
+    createTopic('Nature of the Church', doctrineChurch, 0);
+    createTopic('Marks of the Church', doctrineChurch, 1);
+    createTopic('Offices & Governance', doctrineChurch, 2);
+
+    // Future with sub-topics
+    const doctrineFuture = createTopic('Future', doctrinal, 7, 'doctrine-future');
+    createTopic('Return of Christ', doctrineFuture, 0);
+    createTopic('Resurrection', doctrineFuture, 1);
+    createTopic('Judgment', doctrineFuture, 2);
+    createTopic('Heaven', doctrineFuture, 3);
+    createTopic('Hell', doctrineFuture, 4);
+    createTopic('New Creation', doctrineFuture, 5);
+
+    // ===========================================
+    // PASTORAL - Comprehensive sermon prep topics
+    // ===========================================
+    const pastoral = createTopic('Pastoral', null, 1);
+
+    // Spiritual Life
+    const spiritualLife = createTopic('Spiritual Life', pastoral, 0);
+    createTopic('Prayer', spiritualLife, 0);
+    createTopic('Worship', spiritualLife, 1);
+    createTopic('Faith', spiritualLife, 2);
+    createTopic('Obedience', spiritualLife, 3);
+    createTopic('Spiritual Disciplines', spiritualLife, 4);
+    createTopic('Fasting', spiritualLife, 5);
+
+    // Relationships
+    const relationships = createTopic('Relationships', pastoral, 1);
+    createTopic('Marriage', relationships, 0);
+    createTopic('Parenting & Family', relationships, 1);
+    createTopic('Singleness', relationships, 2);
+    createTopic('Friendship', relationships, 3);
+    createTopic('Community & Fellowship', relationships, 4);
+
+    // Ministry & Service
+    const ministry = createTopic('Ministry & Service', pastoral, 2);
+    createTopic('Evangelism', ministry, 0);
+    createTopic('Discipleship', ministry, 1);
+    createTopic('Leadership', ministry, 2);
+    createTopic('Spiritual Gifts', ministry, 3);
+    createTopic('Missions', ministry, 4);
+    createTopic('Giving & Stewardship', ministry, 5);
+    createTopic('Hospitality', ministry, 6);
+
+    // Life Challenges
+    const challenges = createTopic('Life Challenges', pastoral, 3);
+    createTopic('Suffering & Trials', challenges, 0);
+    createTopic('Grief & Loss', challenges, 1);
+    createTopic('Anxiety & Fear', challenges, 2);
+    createTopic('Healing', challenges, 3);
+    createTopic('Forgiveness', challenges, 4);
+    createTopic('Temptation & Sin', challenges, 5);
+    createTopic('Death & Dying', challenges, 6);
+
+    // Christian Character
+    const character = createTopic('Christian Character', pastoral, 4);
+    createTopic('Holiness', character, 0);
+    createTopic('Humility', character, 1);
+    createTopic('Patience', character, 2);
+    createTopic('Gratitude', character, 3);
+    createTopic('Love', character, 4);
+    createTopic('Joy', character, 5);
+    createTopic('Peace', character, 6);
+    createTopic('Hope', character, 7);
+
+    // Work & World
+    const workWorld = createTopic('Work & World', pastoral, 5);
+    createTopic('Work & Vocation', workWorld, 0);
+    createTopic('Rest & Sabbath', workWorld, 1);
+    createTopic('Money & Finances', workWorld, 2);
+    createTopic('Culture & Society', workWorld, 3);
+    createTopic('Justice & Compassion', workWorld, 4);
+    createTopic('Creation Care', workWorld, 5);
+
+    // Church Life
+    const churchLife = createTopic('Church Life', pastoral, 6);
+    createTopic('Unity', churchLife, 0);
+    createTopic('Church Membership', churchLife, 1);
+    createTopic('Baptism', churchLife, 2);
+    createTopic('Communion', churchLife, 3);
+    createTopic('Accountability', churchLife, 4);
+
+    // ===========================================
+    // SERMON RESOURCES - Material types
+    // ===========================================
+    const resources = createTopic('Sermon Resources', null, 2);
     createTopic('Illustrations', resources, 0);
-    createTopic('Applications', resources, 1);
-    createTopic('Quotes', resources, 2);
-    createTopic('Word Studies', resources, 3);
+    createTopic('Quotes', resources, 1);
+    createTopic('Word Studies', resources, 2);
+    createTopic('Applications', resources, 3);
+    createTopic('Outlines', resources, 4);
+    createTopic('Series', resources, 5);
 
     res.status(201).json({ success: true, message: 'Default topics seeded successfully' });
   } catch (error) {
