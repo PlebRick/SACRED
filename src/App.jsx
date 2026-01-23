@@ -66,8 +66,8 @@ function AppContent() {
         {sidebarOpen && (
           <ResizableDivider
             onResize={handleSidebarResize}
-            minWidth={200}
-            maxWidth={400}
+            minWidth={120}
+            maxWidth={500}
             direction="left"
             className={styles.sidebarDivider}
           />
@@ -78,7 +78,7 @@ function AppContent() {
             <BibleReader onVisibleVerseChange={handleVisibleVerseChange} />
           </div>
 
-          <ResizableDivider onResize={handleNotesResize} />
+          <ResizableDivider onResize={handleNotesResize} maxWidth={900} />
 
           <div
             className={`${styles.rightColumn} ${mobileNotesOpen ? styles.mobileOpen : ''}`}
