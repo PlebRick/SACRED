@@ -121,11 +121,30 @@
   background: var(--accent-subtle);
 }
 
+/* Left border accent by note type */
+.noteCard[data-type="note"] {
+  border-left: 3px solid var(--type-note);
+}
+
+.noteCard[data-type="commentary"] {
+  border-left: 3px solid var(--type-commentary);
+}
+
+.noteCard[data-type="sermon"] {
+  border-left: 3px solid var(--type-sermon);
+}
+
 .cardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.5rem;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .reference {
@@ -194,6 +213,12 @@
   justify-content: space-between;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
+}
+
+.editorHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .editorReference {
