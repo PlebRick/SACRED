@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useBible } from '../../context/BibleContext';
 import { useNotes } from '../../context/NotesContext';
 import { books, getBookById } from '../../utils/bibleBooks';
 import { formatVerseRange } from '../../utils/verseRange';
+import { notesService } from '../../services/notesService';
 import styles from './NotesTree.module.css';
 
 // Helper to get type icon SVG
@@ -40,9 +41,38 @@ const getTypeIcon = (type) => {
 export const NotesTree = () => {
   const [expandedBooks, setExpandedBooks] = useState({});
   const [expandedChapters, setExpandedChapters] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const { navigate } = useBible();
   const { notes, setSelectedNote, setEditingNote } = useNotes();
+
+  // Debounced search
+  const handleSearch = useCallback(async (query) => {
+    setSearchQuery(query);
+
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await notesService.search(query);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+  };
 
   // Group notes by book and chapter (starting chapter only, per spec)
   const notesByBook = useMemo(() => {
@@ -100,7 +130,54 @@ export const NotesTree = () => {
     setEditingNote(note.id);
   };
 
-  if (notes.length === 0) {
+  // Render search results
+  const renderSearchResults = () => (
+    <div className={styles.searchResults}>
+      {isSearching ? (
+        <div className={styles.searchStatus}>Searching...</div>
+      ) : searchResults.length === 0 ? (
+        <div className={styles.searchStatus}>No results found</div>
+      ) : (
+        <>
+          <div className={styles.searchStatus}>
+            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+          </div>
+          {searchResults.map(result => (
+            <button
+              key={result.id}
+              className={styles.searchResultItem}
+              onClick={() => handleNoteClick(result)}
+            >
+              <span className={styles.noteTypeIcon} data-type={result.type || 'note'}>
+                {getTypeIcon(result.type || 'note')}
+              </span>
+              <div className={styles.searchResultContent}>
+                <div className={styles.searchResultHeader}>
+                  <span className={styles.noteReference}>
+                    {getBookById(result.book)?.name} {formatVerseRange(result)}
+                  </span>
+                </div>
+                {result.titleSnippet && (
+                  <div
+                    className={styles.searchResultTitle}
+                    dangerouslySetInnerHTML={{ __html: result.titleSnippet }}
+                  />
+                )}
+                {result.contentSnippet && (
+                  <div
+                    className={styles.searchResultSnippet}
+                    dangerouslySetInnerHTML={{ __html: result.contentSnippet }}
+                  />
+                )}
+              </div>
+            </button>
+          ))}
+        </>
+      )}
+    </div>
+  );
+
+  if (notes.length === 0 && !searchQuery) {
     return (
       <div className={styles.emptyState}>
         <p>No notes yet.</p>
@@ -111,7 +188,47 @@ export const NotesTree = () => {
 
   return (
     <div className={styles.container}>
-      {books.map(book => {
+      {/* Search Input */}
+      <div className={styles.searchContainer}>
+        <div className={styles.searchInputWrapper}>
+          <svg
+            className={styles.searchIcon}
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search notes..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              className={styles.clearButton}
+              onClick={clearSearch}
+              aria-label="Clear search"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Search Results or Book Tree */}
+      {searchQuery.trim().length >= 2 ? (
+        renderSearchResults()
+      ) : (
+        books.map(book => {
         const bookData = notesByBook[book.id];
         const hasNotes = bookData.noteCount > 0;
         const isExpanded = expandedBooks[book.id];
@@ -209,7 +326,8 @@ export const NotesTree = () => {
             )}
           </div>
         );
-      })}
+      })
+      )}
     </div>
   );
 };

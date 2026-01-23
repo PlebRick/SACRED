@@ -50,6 +50,13 @@ export const notesService = {
     const res = await fetch(`${API_BASE}/lastModified`);
     if (!res.ok) throw new Error('Failed to get last modified');
     return res.json();
+  },
+
+  search: async (query, limit = 20) => {
+    const params = new URLSearchParams({ q: query, limit: limit.toString() });
+    const res = await fetch(`${API_BASE}/search?${params}`);
+    if (!res.ok) throw new Error('Failed to search notes');
+    return res.json();
   }
 };
 

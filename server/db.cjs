@@ -210,6 +210,53 @@ db.exec(`
   END;
 `);
 
+// Full-text search for notes
+db.exec(`
+  CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
+    title,
+    content,
+    content='notes',
+    content_rowid='rowid'
+  );
+`);
+
+// Triggers to keep notes FTS in sync
+db.exec(`
+  CREATE TRIGGER IF NOT EXISTS notes_ai AFTER INSERT ON notes BEGIN
+    INSERT INTO notes_fts(rowid, title, content)
+    VALUES (NEW.rowid, NEW.title, NEW.content);
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS notes_ad AFTER DELETE ON notes BEGIN
+    INSERT INTO notes_fts(notes_fts, rowid, title, content)
+    VALUES ('delete', OLD.rowid, OLD.title, OLD.content);
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS notes_au AFTER UPDATE ON notes BEGIN
+    INSERT INTO notes_fts(notes_fts, rowid, title, content)
+    VALUES ('delete', OLD.rowid, OLD.title, OLD.content);
+    INSERT INTO notes_fts(rowid, title, content)
+    VALUES (NEW.rowid, NEW.title, NEW.content);
+  END;
+`);
+
+// Rebuild notes FTS index from existing data (one-time migration)
+function rebuildNotesFtsIndex() {
+  try {
+    const notesCount = db.prepare('SELECT COUNT(*) as c FROM notes').get().c;
+
+    if (notesCount > 0) {
+      // For external content FTS5 tables, use the 'rebuild' command
+      db.exec(`INSERT INTO notes_fts(notes_fts) VALUES('rebuild')`);
+      console.log(`Notes FTS index rebuilt for ${notesCount} notes.`);
+    }
+  } catch (err) {
+    console.error('Failed to rebuild notes FTS index:', err.message);
+  }
+}
+
+rebuildNotesFtsIndex();
+
 // Migration: Add primary_topic_id to notes table if it doesn't exist
 const columns = db.prepare("PRAGMA table_info(notes)").all();
 const hasPrimaryTopicId = columns.some(col => col.name === 'primary_topic_id');

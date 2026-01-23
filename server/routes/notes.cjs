@@ -99,6 +99,40 @@ const syncInlineTags = (noteId, htmlContent) => {
   });
 };
 
+// GET /api/notes/search - Full-text search across notes
+// Must be before GET /api/notes/:id to avoid "search" being treated as an id
+router.get('/search', (req, res) => {
+  try {
+    const { q, limit = 20 } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({ error: 'Query must be at least 2 characters' });
+    }
+
+    // Search using FTS5 with snippets
+    const results = db.prepare(`
+      SELECT
+        n.*,
+        snippet(notes_fts, 0, '<mark>', '</mark>', '...', 10) as title_snippet,
+        snippet(notes_fts, 1, '<mark>', '</mark>', '...', 30) as content_snippet
+      FROM notes n
+      JOIN notes_fts fts ON n.rowid = fts.rowid
+      WHERE notes_fts MATCH ?
+      ORDER BY rank
+      LIMIT ?
+    `).all(q.trim(), parseInt(limit, 10));
+
+    res.json(results.map(row => ({
+      ...toApiFormat(row),
+      titleSnippet: row.title_snippet,
+      contentSnippet: row.content_snippet
+    })));
+  } catch (error) {
+    console.error('Error searching notes:', error);
+    res.status(500).json({ error: 'Failed to search notes' });
+  }
+});
+
 // GET /api/notes - Get all notes
 router.get('/', (req, res) => {
   try {
