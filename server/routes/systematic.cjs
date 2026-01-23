@@ -310,6 +310,287 @@ router.get('/summary', (req, res) => {
   }
 });
 
+// GET /api/systematic/count - Get entry count (for delete confirmation)
+router.get('/count', (req, res) => {
+  try {
+    const count = db.prepare('SELECT COUNT(*) as c FROM systematic_theology').get().c;
+    const annotationCount = db.prepare('SELECT COUNT(*) as c FROM systematic_annotations').get().c;
+    res.json({ count, annotationCount });
+  } catch (error) {
+    console.error('Error fetching count:', error);
+    res.status(500).json({ error: 'Failed to fetch count' });
+  }
+});
+
+// GET /api/systematic/export - Export all systematic theology data
+router.get('/export', (req, res) => {
+  try {
+    // Fetch all data from each table
+    const entries = db.prepare('SELECT * FROM systematic_theology ORDER BY sort_order').all();
+    const scriptureIndex = db.prepare('SELECT * FROM systematic_scripture_index').all();
+    const tags = db.prepare('SELECT * FROM systematic_tags ORDER BY sort_order').all();
+    const chapterTags = db.prepare('SELECT * FROM systematic_chapter_tags').all();
+    const related = db.prepare('SELECT * FROM systematic_related').all();
+
+    // Format for export (matching import format)
+    const exportData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      systematic_theology: entries.map(e => ({
+        id: e.id,
+        entry_type: e.entry_type,
+        part_number: e.part_number,
+        chapter_number: e.chapter_number,
+        section_letter: e.section_letter,
+        subsection_number: e.subsection_number,
+        title: e.title,
+        content: e.content,
+        summary: e.summary,
+        parent_id: e.parent_id,
+        sort_order: e.sort_order,
+        word_count: e.word_count,
+        created_at: e.created_at,
+        updated_at: e.updated_at
+      })),
+      scripture_index: scriptureIndex.map(s => ({
+        id: s.id,
+        systematic_id: s.systematic_id,
+        book: s.book,
+        chapter: s.chapter,
+        start_verse: s.start_verse,
+        end_verse: s.end_verse,
+        is_primary: s.is_primary,
+        context_snippet: s.context_snippet,
+        created_at: s.created_at
+      })),
+      tags: tags.map(t => ({
+        id: t.id,
+        name: t.name,
+        color: t.color,
+        sort_order: t.sort_order,
+        created_at: t.created_at
+      })),
+      chapter_tags: chapterTags.map(ct => ({
+        chapter_number: ct.chapter_number,
+        tag_id: ct.tag_id
+      })),
+      related: related.map(r => ({
+        id: r.id,
+        source_chapter: r.source_chapter,
+        target_chapter: r.target_chapter,
+        relationship_type: r.relationship_type,
+        note: r.note,
+        created_at: r.created_at
+      }))
+    };
+
+    res.json(exportData);
+  } catch (error) {
+    console.error('Error exporting systematic theology:', error);
+    res.status(500).json({ error: 'Failed to export systematic theology' });
+  }
+});
+
+// DELETE /api/systematic - Delete all systematic theology data
+router.delete('/', (req, res) => {
+  try {
+    const transaction = db.transaction(() => {
+      // Delete in order respecting foreign keys
+      // Annotations are auto-deleted via ON DELETE CASCADE
+      const scriptureDeleted = db.prepare('DELETE FROM systematic_scripture_index').run().changes;
+      const chapterTagsDeleted = db.prepare('DELETE FROM systematic_chapter_tags').run().changes;
+      const relatedDeleted = db.prepare('DELETE FROM systematic_related').run().changes;
+      const tagsDeleted = db.prepare('DELETE FROM systematic_tags').run().changes;
+      const entriesDeleted = db.prepare('DELETE FROM systematic_theology').run().changes;
+
+      return {
+        entries: entriesDeleted,
+        scriptureRefs: scriptureDeleted,
+        tags: tagsDeleted,
+        chapterTags: chapterTagsDeleted,
+        related: relatedDeleted
+      };
+    });
+
+    const result = transaction();
+
+    res.json({
+      success: true,
+      deleted: result
+    });
+  } catch (error) {
+    console.error('Error deleting systematic theology:', error);
+    res.status(500).json({ error: 'Failed to delete systematic theology' });
+  }
+});
+
+// POST /api/systematic/import - Import systematic theology data
+router.post('/import', (req, res) => {
+  try {
+    const data = req.body;
+
+    // Validate request body has systematic_theology array
+    if (!data.systematic_theology || !Array.isArray(data.systematic_theology)) {
+      return res.status(400).json({ error: 'Invalid data: systematic_theology array required' });
+    }
+
+    const entries = data.systematic_theology;
+
+    // Disable foreign keys for bulk import
+    db.pragma('foreign_keys = OFF');
+
+    const transaction = db.transaction(() => {
+      // Clear existing data (except annotations - user data)
+      db.prepare('DELETE FROM systematic_scripture_index').run();
+      db.prepare('DELETE FROM systematic_chapter_tags').run();
+      db.prepare('DELETE FROM systematic_related').run();
+      db.prepare('DELETE FROM systematic_tags').run();
+      db.prepare('DELETE FROM systematic_theology').run();
+
+      // Insert main entries
+      const insertEntry = db.prepare(`
+        INSERT OR REPLACE INTO systematic_theology (
+          id, entry_type, part_number, chapter_number, section_letter, subsection_number,
+          title, content, summary, parent_id, sort_order, word_count, created_at, updated_at
+        ) VALUES (
+          @id, @entry_type, @part_number, @chapter_number, @section_letter, @subsection_number,
+          @title, @content, @summary, @parent_id, @sort_order, @word_count, @created_at, @updated_at
+        )
+      `);
+
+      for (const entry of entries) {
+        insertEntry.run({
+          id: entry.id,
+          entry_type: entry.entry_type,
+          part_number: entry.part_number || null,
+          chapter_number: entry.chapter_number || null,
+          section_letter: entry.section_letter || null,
+          subsection_number: entry.subsection_number || null,
+          title: entry.title,
+          content: entry.content || null,
+          summary: entry.summary || null,
+          parent_id: entry.parent_id || null,
+          sort_order: entry.sort_order || 0,
+          word_count: entry.word_count || 0,
+          created_at: entry.created_at,
+          updated_at: entry.updated_at
+        });
+      }
+
+      // Scripture index
+      let scriptureCount = 0;
+      if (data.scripture_index?.length > 0) {
+        const insertScripture = db.prepare(`
+          INSERT OR REPLACE INTO systematic_scripture_index (
+            id, systematic_id, book, chapter, start_verse, end_verse,
+            is_primary, context_snippet, created_at
+          ) VALUES (
+            @id, @systematic_id, @book, @chapter, @start_verse, @end_verse,
+            @is_primary, @context_snippet, @created_at
+          )
+        `);
+
+        for (const ref of data.scripture_index) {
+          insertScripture.run({
+            id: ref.id,
+            systematic_id: ref.systematic_id,
+            book: ref.book,
+            chapter: ref.chapter,
+            start_verse: ref.start_verse || null,
+            end_verse: ref.end_verse || null,
+            is_primary: ref.is_primary || 0,
+            context_snippet: ref.context_snippet || null,
+            created_at: ref.created_at
+          });
+        }
+        scriptureCount = data.scripture_index.length;
+      }
+
+      // Tags
+      let tagCount = 0;
+      if (data.tags?.length > 0) {
+        const insertTag = db.prepare(`
+          INSERT OR REPLACE INTO systematic_tags (id, name, color, sort_order, created_at)
+          VALUES (@id, @name, @color, @sort_order, @created_at)
+        `);
+
+        for (const tag of data.tags) {
+          insertTag.run({
+            id: tag.id,
+            name: tag.name,
+            color: tag.color || null,
+            sort_order: tag.sort_order || 0,
+            created_at: tag.created_at
+          });
+        }
+        tagCount = data.tags.length;
+      }
+
+      // Chapter tags
+      let chapterTagCount = 0;
+      if (data.chapter_tags?.length > 0) {
+        const insertChapterTag = db.prepare(`
+          INSERT OR REPLACE INTO systematic_chapter_tags (chapter_number, tag_id)
+          VALUES (@chapter_number, @tag_id)
+        `);
+
+        for (const ct of data.chapter_tags) {
+          insertChapterTag.run({
+            chapter_number: ct.chapter_number,
+            tag_id: ct.tag_id
+          });
+        }
+        chapterTagCount = data.chapter_tags.length;
+      }
+
+      // Related chapters
+      let relatedCount = 0;
+      if (data.related?.length > 0) {
+        const insertRelated = db.prepare(`
+          INSERT OR REPLACE INTO systematic_related (
+            id, source_chapter, target_chapter, relationship_type, note, created_at
+          ) VALUES (
+            @id, @source_chapter, @target_chapter, @relationship_type, @note, @created_at
+          )
+        `);
+
+        for (const rel of data.related) {
+          insertRelated.run({
+            id: rel.id,
+            source_chapter: rel.source_chapter,
+            target_chapter: rel.target_chapter,
+            relationship_type: rel.relationship_type || 'see_also',
+            note: rel.note || null,
+            created_at: rel.created_at
+          });
+        }
+        relatedCount = data.related.length;
+      }
+
+      return { entries: entries.length, scriptureCount, tagCount, chapterTagCount, relatedCount };
+    });
+
+    const result = transaction();
+
+    // Re-enable foreign keys
+    db.pragma('foreign_keys = ON');
+
+    res.json({
+      success: true,
+      entries: result.entries,
+      scriptureRefs: result.scriptureCount,
+      tags: result.tagCount,
+      chapterTags: result.chapterTagCount,
+      related: result.relatedCount
+    });
+  } catch (error) {
+    // Re-enable foreign keys even on error
+    try { db.pragma('foreign_keys = ON'); } catch (_) {}
+    console.error('Error importing systematic theology:', error);
+    res.status(500).json({ error: 'Failed to import: ' + error.message });
+  }
+});
+
 // DELETE /api/systematic/annotations/:id - Delete annotation
 // NOTE: Must be before /:id to avoid "annotations" being matched as an id
 router.delete('/annotations/:id', (req, res) => {

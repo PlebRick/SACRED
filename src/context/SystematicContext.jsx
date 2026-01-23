@@ -253,6 +253,21 @@ export const SystematicProvider = ({ children }) => {
     }
   }, []);
 
+  // Refresh tree data (after import)
+  const refreshTree = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
+    try {
+      const [tree, tags] = await Promise.all([
+        systematicService.getAll(),
+        systematicService.getTags()
+      ]);
+      dispatch({ type: 'LOAD_SUCCESS', tree });
+      dispatch({ type: 'SET_TAGS', tags });
+    } catch (error) {
+      dispatch({ type: 'LOAD_ERROR', error: error.message });
+    }
+  }, []);
+
   // Parse ST link reference and navigate
   const navigateToLink = useCallback(async (linkRef) => {
     // Parse link format: [[ST:Ch32]], [[ST:Ch32:A]], [[ST:Ch32:B.1]]
@@ -322,6 +337,7 @@ export const SystematicProvider = ({ children }) => {
       addAnnotation,
       deleteAnnotation,
       getReferencingNotes,
+      refreshTree,
       navigateToLink,
       findChapterInTree
     }}>

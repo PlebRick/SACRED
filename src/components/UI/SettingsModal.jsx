@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNotes } from '../../context/NotesContext';
+import { useSystematic } from '../../context/SystematicContext';
+import { systematicService } from '../../services/systematicService';
 import styles from './Settings.module.css';
 
 const API_BASE = '/api/notes';
@@ -13,6 +15,16 @@ export const SettingsModal = () => {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
   const { refreshNotes } = useNotes();
+
+  // Systematic theology state
+  const { refreshTree } = useSystematic();
+  const [showSTImportConfirm, setShowSTImportConfirm] = useState(false);
+  const [showSTDeleteConfirm, setShowSTDeleteConfirm] = useState(false);
+  const [stFileData, setStFileData] = useState(null);
+  const [stEntryCount, setStEntryCount] = useState(0);
+  const [stAnnotationCount, setStAnnotationCount] = useState(0);
+  const [stDeleteConfirmText, setStDeleteConfirmText] = useState('');
+  const stFileInputRef = useRef(null);
 
   const openModal = () => {
     setIsOpen(true);
@@ -29,6 +41,12 @@ export const SettingsModal = () => {
       if (showDeleteConfirm) {
         setShowDeleteConfirm(false);
         setDeleteConfirmText('');
+      } else if (showSTImportConfirm) {
+        setShowSTImportConfirm(false);
+        setStFileData(null);
+      } else if (showSTDeleteConfirm) {
+        setShowSTDeleteConfirm(false);
+        setStDeleteConfirmText('');
       } else {
         closeModal();
       }
@@ -145,6 +163,116 @@ export const SettingsModal = () => {
     }
   };
 
+  // Systematic Theology Import
+  const handleSTImportClick = () => {
+    stFileInputRef.current?.click();
+  };
+
+  const handleSTFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      if (!data.systematic_theology || !Array.isArray(data.systematic_theology)) {
+        setStatus({ type: 'error', message: 'Invalid file: systematic_theology array required' });
+        e.target.value = '';
+        return;
+      }
+
+      setStFileData(data);
+      setStEntryCount(data.systematic_theology.length);
+      setShowSTImportConfirm(true);
+    } catch (error) {
+      setStatus({ type: 'error', message: 'Failed to parse JSON file' });
+    }
+    e.target.value = '';
+  };
+
+  const handleSTImportConfirm = async () => {
+    if (!stFileData) return;
+
+    setLoading(true);
+    setStatus({ type: null, message: '' });
+
+    try {
+      const result = await systematicService.importData(stFileData);
+      await refreshTree();
+
+      setShowSTImportConfirm(false);
+      setStFileData(null);
+      setStatus({
+        type: 'success',
+        message: `Imported ${result.entries} entries, ${result.scriptureRefs} scripture refs`
+      });
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Systematic Theology Export
+  const handleSTExport = async () => {
+    setLoading(true);
+    setStatus({ type: null, message: '' });
+
+    try {
+      const data = await systematicService.exportData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sacred-systematic-theology-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setStatus({ type: 'success', message: `Exported ${data.systematic_theology.length} entries successfully` });
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Systematic Theology Delete - show confirmation
+  const handleSTDeleteClick = async () => {
+    try {
+      const { count, annotationCount } = await systematicService.getCount();
+      setStEntryCount(count);
+      setStAnnotationCount(annotationCount);
+      setShowSTDeleteConfirm(true);
+      setStDeleteConfirmText('');
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message });
+    }
+  };
+
+  // Confirm ST delete
+  const handleSTDeleteConfirm = async () => {
+    if (stDeleteConfirmText !== 'DELETE') return;
+
+    setLoading(true);
+    setStatus({ type: null, message: '' });
+
+    try {
+      const result = await systematicService.deleteAll();
+      await refreshTree();
+
+      setShowSTDeleteConfirm(false);
+      setStDeleteConfirmText('');
+      setStatus({ type: 'success', message: `Deleted ${result.deleted.entries} entries` });
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Gear button for header
   const GearButton = (
     <button
@@ -207,6 +335,118 @@ export const SettingsModal = () => {
                 className={styles.deleteButton}
                 onClick={handleDeleteConfirm}
                 disabled={deleteConfirmText !== 'DELETE' || loading}
+              >
+                {loading ? 'Deleting...' : 'Delete All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ST Import confirmation modal
+  if (showSTImportConfirm) {
+    return (
+      <>
+        {GearButton}
+        <div className={styles.modalOverlay} onClick={() => { setShowSTImportConfirm(false); setStFileData(null); }}>
+          <div
+            className={`${styles.modal} ${styles.confirmModal}`}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={handleKeyDown}
+          >
+            <div className={styles.confirmBody}>
+              <div className={`${styles.confirmIcon} ${styles.importIcon}`}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </div>
+              <h3 className={styles.confirmTitle}>Import Systematic Theology?</h3>
+              <p className={styles.confirmText}>
+                This will import <strong>{stEntryCount}</strong> entries, replacing any existing systematic theology data.
+              </p>
+              <p className={styles.confirmText} style={{ color: 'var(--accent)' }}>
+                Your annotations will be preserved.
+              </p>
+            </div>
+            <div className={styles.confirmFooter}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => {
+                  setShowSTImportConfirm(false);
+                  setStFileData(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.importButton}
+                onClick={handleSTImportConfirm}
+                disabled={loading}
+              >
+                {loading ? 'Importing...' : 'Import'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ST Delete confirmation modal
+  if (showSTDeleteConfirm) {
+    return (
+      <>
+        {GearButton}
+        <div className={styles.modalOverlay} onClick={() => { setShowSTDeleteConfirm(false); setStDeleteConfirmText(''); }}>
+          <div
+            className={`${styles.modal} ${styles.confirmModal}`}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={handleKeyDown}
+          >
+            <div className={styles.confirmBody}>
+              <div className={styles.confirmIcon}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </div>
+              <h3 className={styles.confirmTitle}>Delete All Systematic Theology?</h3>
+              <p className={styles.confirmText}>
+                This will permanently delete <strong>{stEntryCount}</strong> doctrine entries.
+              </p>
+              {stAnnotationCount > 0 && (
+                <p className={styles.confirmText} style={{ color: '#ef4444' }}>
+                  Warning: {stAnnotationCount} annotation{stAnnotationCount !== 1 ? 's' : ''} will also be deleted.
+                </p>
+              )}
+              <p className={styles.confirmText}>
+                Type <strong>DELETE</strong> to confirm:
+              </p>
+              <input
+                type="text"
+                className={styles.confirmInput}
+                value={stDeleteConfirmText}
+                onChange={(e) => setStDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                autoFocus
+              />
+            </div>
+            <div className={styles.confirmFooter}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => {
+                  setShowSTDeleteConfirm(false);
+                  setStDeleteConfirmText('');
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.deleteButton}
+                onClick={handleSTDeleteConfirm}
+                disabled={stDeleteConfirmText !== 'DELETE' || loading}
               >
                 {loading ? 'Deleting...' : 'Delete All'}
               </button>
@@ -316,6 +556,81 @@ export const SettingsModal = () => {
                 accept=".json"
                 className={styles.fileInput}
                 onChange={handleFileChange}
+              />
+            </div>
+
+            <div className={styles.divider} />
+
+            {/* Systematic Theology Section */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <span className={styles.sectionIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </span>
+                Systematic Theology
+              </h3>
+
+              <button
+                className={styles.actionButton}
+                onClick={handleSTExport}
+                disabled={loading}
+              >
+                <div className={styles.actionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                </div>
+                <div className={styles.actionContent}>
+                  <div className={styles.actionTitle}>Export Systematic Theology</div>
+                  <div className={styles.actionDescription}>Download doctrine data as JSON</div>
+                </div>
+              </button>
+
+              <button
+                className={styles.actionButton}
+                onClick={handleSTImportClick}
+                disabled={loading}
+              >
+                <div className={styles.actionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                </div>
+                <div className={styles.actionContent}>
+                  <div className={styles.actionTitle}>Import Systematic Theology</div>
+                  <div className={styles.actionDescription}>Load doctrine data from JSON file</div>
+                </div>
+              </button>
+
+              <button
+                className={`${styles.actionButton} ${styles.dangerButton}`}
+                onClick={handleSTDeleteClick}
+                disabled={loading}
+              >
+                <div className={styles.actionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </div>
+                <div className={styles.actionContent}>
+                  <div className={styles.actionTitle}>Delete All Systematic Theology</div>
+                  <div className={styles.actionDescription}>Remove all doctrine data and annotations</div>
+                </div>
+              </button>
+
+              <input
+                ref={stFileInputRef}
+                type="file"
+                accept=".json"
+                className={styles.fileInput}
+                onChange={handleSTFileChange}
               />
             </div>
 
