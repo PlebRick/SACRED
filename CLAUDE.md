@@ -170,6 +170,24 @@ No test framework yet. Manual testing only. See `docs/TESTING.md` for test workf
 - Output: `release/SACRED-*.dmg`
 - Database: `~/Library/Application Support/sacred/sacred.db`
 
+### Node.js Version Warning
+
+This project uses `better-sqlite3`, a native C++ module compiled for a specific Node.js version. Electron bundles its own Node.js internally, which may differ from your system Node.js.
+
+**After upgrading Node.js**, you MUST rebuild native modules for Electron:
+```bash
+npx electron-rebuild -f -w better-sqlite3
+```
+
+**Symptoms of version mismatch:**
+- White screen on app launch
+- Error: "NODE_MODULE_VERSION X. This version of Node.js requires NODE_MODULE_VERSION Y"
+
+**Alternative fix:** Delete `node_modules` and reinstall before building:
+```bash
+rm -rf node_modules && npm install && npm run electron:build
+```
+
 ### Environment Variables
 - `PORT`: Server port (default 3000)
 - `NODE_ENV`: 'development' or 'production'
