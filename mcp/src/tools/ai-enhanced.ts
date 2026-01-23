@@ -1320,7 +1320,491 @@ export function registerAiEnhancedTools(server: McpServer): void {
     }
   );
 
+  // get_similar_sermons - Find past sermons on similar topics
+  server.tool(
+    'get_similar_sermons',
+    'Find past sermons related to a passage, topic, or keyword. Use this to see what you have preached on similar topics.',
+    {
+      book: z.string().optional().describe('3-letter Bible book code to find sermons in (e.g., "ROM", "JHN")'),
+      chapter: z.number().optional().describe('Chapter number to find sermons near'),
+      topic: z.string().optional().describe('Topic name to search for in sermon titles/content'),
+      keyword: z.string().optional().describe('Keyword to search in sermon content'),
+      limit: z.number().optional().describe('Maximum results (default: 20)'),
+    },
+    async ({ book, chapter, topic, keyword, limit = 20 }) => {
+      try {
+        const results: (DbNote & { matchType: string })[] = [];
+
+        // Find sermons by book/chapter proximity
+        if (book) {
+          const bookUpper = book.toUpperCase();
+          let chapterQuery = `
+            SELECT * FROM notes
+            WHERE type = 'sermon' AND book = ?
+          `;
+          const params: (string | number)[] = [bookUpper];
+
+          if (chapter) {
+            // Find sermons within 3 chapters
+            chapterQuery += ' AND ((start_chapter >= ? AND start_chapter <= ?) OR (end_chapter >= ? AND end_chapter <= ?))';
+            params.push(chapter - 3, chapter + 3, chapter - 3, chapter + 3);
+          }
+
+          chapterQuery += ' ORDER BY start_chapter, updated_at DESC LIMIT ?';
+          params.push(limit);
+
+          const bookSermons = db.prepare(chapterQuery).all(...params) as DbNote[];
+          results.push(...bookSermons.map((s) => ({ ...s, matchType: 'same_book' })));
+        }
+
+        // Find sermons by topic (search in title and primary topic)
+        if (topic) {
+          // First try to find the topic by name
+          const topicMatch = db
+            .prepare("SELECT id FROM topics WHERE name LIKE ? OR name LIKE ?")
+            .get(`%${topic}%`, topic) as { id: string } | undefined;
+
+          if (topicMatch) {
+            const topicSermons = db
+              .prepare(`
+                SELECT DISTINCT n.* FROM notes n
+                LEFT JOIN note_tags nt ON n.id = nt.note_id
+                WHERE n.type = 'sermon'
+                  AND (n.primary_topic_id = ? OR nt.topic_id = ?)
+                ORDER BY n.updated_at DESC
+                LIMIT ?
+              `)
+              .all(topicMatch.id, topicMatch.id, limit) as DbNote[];
+            results.push(...topicSermons.map((s) => ({ ...s, matchType: 'topic_match' })));
+          }
+
+          // Also search by title containing topic keyword
+          const titleSermons = db
+            .prepare(`
+              SELECT * FROM notes
+              WHERE type = 'sermon' AND title LIKE ?
+              ORDER BY updated_at DESC
+              LIMIT ?
+            `)
+            .all(`%${topic}%`, limit) as DbNote[];
+          results.push(...titleSermons.map((s) => ({ ...s, matchType: 'title_match' })));
+        }
+
+        // Find sermons by keyword in content (FTS)
+        if (keyword) {
+          try {
+            const ftsSermons = db
+              .prepare(`
+                SELECT n.* FROM notes n
+                JOIN notes_fts fts ON n.id = fts.id
+                WHERE notes_fts MATCH ? AND n.type = 'sermon'
+                ORDER BY rank
+                LIMIT ?
+              `)
+              .all(keyword, limit) as DbNote[];
+            results.push(...ftsSermons.map((s) => ({ ...s, matchType: 'content_match' })));
+          } catch {
+            // FTS might not exist, fall back to LIKE
+            const likeSermons = db
+              .prepare(`
+                SELECT * FROM notes
+                WHERE type = 'sermon' AND (content LIKE ? OR title LIKE ?)
+                ORDER BY updated_at DESC
+                LIMIT ?
+              `)
+              .all(`%${keyword}%`, `%${keyword}%`, limit) as DbNote[];
+            results.push(...likeSermons.map((s) => ({ ...s, matchType: 'content_match' })));
+          }
+        }
+
+        // If no specific filter, get most recent sermons
+        if (!book && !topic && !keyword) {
+          const recentSermons = db
+            .prepare(`
+              SELECT * FROM notes
+              WHERE type = 'sermon'
+              ORDER BY updated_at DESC
+              LIMIT ?
+            `)
+            .all(limit) as DbNote[];
+          results.push(...recentSermons.map((s) => ({ ...s, matchType: 'recent' })));
+        }
+
+        // Deduplicate
+        const seen = new Set<string>();
+        const uniqueSermons = results.filter((s) => {
+          if (seen.has(s.id)) return false;
+          seen.add(s.id);
+          return true;
+        });
+
+        // Get total sermon count for context
+        const { count: totalSermons } = db
+          .prepare("SELECT COUNT(*) as count FROM notes WHERE type = 'sermon'")
+          .get() as { count: number };
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(
+                {
+                  sermons: uniqueSermons.slice(0, limit).map((s) => ({
+                    ...toApiFormat(s),
+                    matchType: s.matchType,
+                    tags: getNoteTags(s.id),
+                    reference: `${s.book} ${s.start_chapter}${s.start_verse ? ':' + s.start_verse : ''}${s.end_chapter !== s.start_chapter ? '-' + s.end_chapter : s.end_verse && s.end_verse !== s.start_verse ? '-' + s.end_verse : ''}`,
+                  })),
+                  filters: { book, chapter, topic, keyword },
+                  totalSermonsInLibrary: totalSermons,
+                  count: Math.min(uniqueSermons.length, limit),
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        logger.error('Error getting similar sermons:', error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${error}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // compile_illustrations_for_topic - Get illustrations by topic/keyword
+  server.tool(
+    'compile_illustrations_for_topic',
+    'Gather all illustrations tagged in notes that relate to a specific topic or keyword. Great for finding stories and examples for sermons.',
+    {
+      topic: z.string().optional().describe('Topic keyword to search (e.g., "grace", "faith", "redemption")'),
+      doctrineChapter: z.number().optional().describe('Systematic theology chapter number to find illustrations from related passages'),
+      limit: z.number().optional().describe('Maximum results (default: 30)'),
+    },
+    async ({ topic, doctrineChapter, limit = 30 }) => {
+      try {
+        const illustrations: (DbInlineTag & { source: string })[] = [];
+
+        // Search by topic keyword
+        if (topic) {
+          const topicIllustrations = db
+            .prepare(`
+              SELECT it.*, n.title as note_title, n.book, n.start_chapter, n.start_verse, n.end_chapter, n.end_verse
+              FROM inline_tags it
+              JOIN notes n ON it.note_id = n.id
+              WHERE it.tag_type = 'illustration' AND it.text_content LIKE ?
+              ORDER BY n.updated_at DESC
+              LIMIT ?
+            `)
+            .all(`%${topic}%`, limit) as DbInlineTag[];
+          illustrations.push(...topicIllustrations.map((i) => ({ ...i, source: 'keyword_match' })));
+
+          // Also find illustrations from notes with matching titles/topics
+          const noteIllustrations = db
+            .prepare(`
+              SELECT it.*, n.title as note_title, n.book, n.start_chapter, n.start_verse, n.end_chapter, n.end_verse
+              FROM inline_tags it
+              JOIN notes n ON it.note_id = n.id
+              WHERE it.tag_type = 'illustration' AND n.title LIKE ?
+              ORDER BY n.updated_at DESC
+              LIMIT ?
+            `)
+            .all(`%${topic}%`, limit) as DbInlineTag[];
+          illustrations.push(...noteIllustrations.map((i) => ({ ...i, source: 'note_title_match' })));
+        }
+
+        // Find illustrations from passages that relate to a doctrine chapter
+        if (doctrineChapter) {
+          // Get scripture references for this doctrine
+          const scriptures = db
+            .prepare(`
+              SELECT DISTINCT ssi.book, ssi.chapter
+              FROM systematic_scripture_index ssi
+              JOIN systematic_theology st ON ssi.systematic_id = st.id
+              WHERE st.chapter_number = ? AND ssi.is_primary = 1
+              LIMIT 20
+            `)
+            .all(doctrineChapter) as { book: string; chapter: number }[];
+
+          for (const scripture of scriptures) {
+            const passageIllustrations = db
+              .prepare(`
+                SELECT it.*, n.title as note_title, n.book, n.start_chapter, n.start_verse, n.end_chapter, n.end_verse
+                FROM inline_tags it
+                JOIN notes n ON it.note_id = n.id
+                WHERE it.tag_type = 'illustration'
+                  AND n.book = ?
+                  AND n.start_chapter <= ?
+                  AND n.end_chapter >= ?
+                LIMIT 5
+              `)
+              .all(scripture.book, scripture.chapter, scripture.chapter) as DbInlineTag[];
+            illustrations.push(
+              ...passageIllustrations.map((i) => ({
+                ...i,
+                source: `doctrine_ch${doctrineChapter}_${scripture.book}_${scripture.chapter}`,
+              }))
+            );
+          }
+        }
+
+        // If no filter, get recent illustrations
+        if (!topic && !doctrineChapter) {
+          const recentIllustrations = db
+            .prepare(`
+              SELECT it.*, n.title as note_title, n.book, n.start_chapter, n.start_verse, n.end_chapter, n.end_verse
+              FROM inline_tags it
+              JOIN notes n ON it.note_id = n.id
+              WHERE it.tag_type = 'illustration'
+              ORDER BY n.updated_at DESC
+              LIMIT ?
+            `)
+            .all(limit) as DbInlineTag[];
+          illustrations.push(...recentIllustrations.map((i) => ({ ...i, source: 'recent' })));
+        }
+
+        // Deduplicate by ID
+        const seen = new Set<string>();
+        const uniqueIllustrations = illustrations.filter((i) => {
+          if (seen.has(i.id)) return false;
+          seen.add(i.id);
+          return true;
+        });
+
+        // Get total illustration count
+        const { count: totalIllustrations } = db
+          .prepare("SELECT COUNT(*) as count FROM inline_tags WHERE tag_type = 'illustration'")
+          .get() as { count: number };
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(
+                {
+                  illustrations: uniqueIllustrations.slice(0, limit).map((i) => ({
+                    ...inlineTagToApiFormat(i),
+                    source: i.source,
+                  })),
+                  filters: { topic, doctrineChapter },
+                  totalIllustrationsInLibrary: totalIllustrations,
+                  count: Math.min(uniqueIllustrations.length, limit),
+                  tip: 'Use these illustrations in your sermon to make doctrines concrete and memorable',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        logger.error('Error compiling illustrations:', error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${error}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // generate_sermon_structure - Generate a structured sermon outline scaffold
+  server.tool(
+    'generate_sermon_structure',
+    'Generate a structured sermon outline scaffold for a passage with suggested sections based on the text, related doctrines, and your existing notes. Claude can then fill in the details.',
+    {
+      book: z.string().describe('3-letter book code (e.g., "ROM", "JHN")'),
+      startChapter: z.number().describe('Starting chapter'),
+      startVerse: z.number().optional().describe('Starting verse'),
+      endChapter: z.number().optional().describe('Ending chapter (default: same as start)'),
+      endVerse: z.number().optional().describe('Ending verse'),
+      sermonTitle: z.string().optional().describe('Optional sermon title'),
+      mainTheme: z.string().optional().describe('Optional main theme or big idea'),
+    },
+    async ({ book, startChapter, startVerse, endChapter, endVerse, sermonTitle, mainTheme }) => {
+      try {
+        const bookUpper = book.toUpperCase();
+        const end = endChapter ?? startChapter;
+
+        // Build reference string
+        const passageRef = endVerse
+          ? `${bookUpper} ${startChapter}:${startVerse}-${end}:${endVerse}`
+          : startVerse
+          ? `${bookUpper} ${startChapter}:${startVerse}${endVerse ? '-' + endVerse : ''}`
+          : `${bookUpper} ${startChapter}${end !== startChapter ? '-' + end : ''}`;
+
+        // Get existing notes for this passage
+        const existingNotes = db
+          .prepare(`
+            SELECT * FROM notes
+            WHERE book = ?
+              AND ((start_chapter >= ? AND start_chapter <= ?) OR (end_chapter >= ? AND end_chapter <= ?))
+            ORDER BY start_chapter, start_verse
+          `)
+          .all(bookUpper, startChapter, end, startChapter, end) as DbNote[];
+
+        // Get related doctrines
+        const doctrines = db
+          .prepare(`
+            SELECT DISTINCT st.chapter_number, st.title, st.summary, ssi.is_primary
+            FROM systematic_theology st
+            JOIN systematic_scripture_index ssi ON st.id = ssi.systematic_id
+            WHERE ssi.book = ? AND ssi.chapter >= ? AND ssi.chapter <= ?
+            ORDER BY ssi.is_primary DESC
+            LIMIT 10
+          `)
+          .all(bookUpper, startChapter, end) as {
+          chapter_number: number;
+          title: string;
+          summary: string | null;
+          is_primary: number;
+        }[];
+
+        // Get illustrations and applications from this passage
+        const illustrations = db
+          .prepare(`
+            SELECT it.text_content FROM inline_tags it
+            JOIN notes n ON it.note_id = n.id
+            WHERE n.book = ? AND n.start_chapter >= ? AND n.end_chapter <= ? AND it.tag_type = 'illustration'
+            LIMIT 5
+          `)
+          .all(bookUpper, startChapter, end) as { text_content: string }[];
+
+        const applications = db
+          .prepare(`
+            SELECT it.text_content FROM inline_tags it
+            JOIN notes n ON it.note_id = n.id
+            WHERE n.book = ? AND n.start_chapter >= ? AND n.end_chapter <= ? AND it.tag_type = 'application'
+            LIMIT 5
+          `)
+          .all(bookUpper, startChapter, end) as { text_content: string }[];
+
+        const keyPoints = db
+          .prepare(`
+            SELECT it.text_content FROM inline_tags it
+            JOIN notes n ON it.note_id = n.id
+            WHERE n.book = ? AND n.start_chapter >= ? AND n.end_chapter <= ? AND it.tag_type = 'keypoint'
+            LIMIT 10
+          `)
+          .all(bookUpper, startChapter, end) as { text_content: string }[];
+
+        // Check for similar past sermons
+        const similarSermons = db
+          .prepare(`
+            SELECT title, book, start_chapter, start_verse, updated_at FROM notes
+            WHERE type = 'sermon' AND book = ?
+              AND ((start_chapter >= ? AND start_chapter <= ?) OR (end_chapter >= ? AND end_chapter <= ?))
+            ORDER BY updated_at DESC
+            LIMIT 5
+          `)
+          .all(bookUpper, startChapter - 2, end + 2, startChapter - 2, end + 2) as {
+          title: string;
+          book: string;
+          start_chapter: number;
+          start_verse: number | null;
+          updated_at: string;
+        }[];
+
+        // Build the sermon structure scaffold
+        const structure = {
+          metadata: {
+            passage: passageRef,
+            title: sermonTitle || `[Sermon on ${passageRef}]`,
+            mainTheme: mainTheme || '[To be determined from text study]',
+            dateCreated: new Date().toISOString(),
+          },
+          outline: {
+            introduction: {
+              hook: '[Opening story, question, or observation to capture attention]',
+              context: '[Historical/literary context of the passage]',
+              thesis: mainTheme || '[Central truth/proposition of this sermon]',
+              preview: '[Brief overview of main points]',
+            },
+            mainPoints: [
+              {
+                point: '[Main Point 1 - derived from text]',
+                scripture: '[Supporting verses]',
+                explanation: '[Exegetical explanation]',
+                illustration: illustrations[0]?.text_content || '[Illustration needed]',
+                application: applications[0]?.text_content || '[Application needed]',
+              },
+              {
+                point: '[Main Point 2 - derived from text]',
+                scripture: '[Supporting verses]',
+                explanation: '[Exegetical explanation]',
+                illustration: illustrations[1]?.text_content || '[Illustration needed]',
+                application: applications[1]?.text_content || '[Application needed]',
+              },
+              {
+                point: '[Main Point 3 - derived from text]',
+                scripture: '[Supporting verses]',
+                explanation: '[Exegetical explanation]',
+                illustration: illustrations[2]?.text_content || '[Illustration needed]',
+                application: applications[2]?.text_content || '[Application needed]',
+              },
+            ],
+            conclusion: {
+              summary: '[Recap of main points]',
+              finalApplication: '[Call to action/response]',
+              closingIllustration: '[Final story or image]',
+              invitation: '[Gospel invitation if appropriate]',
+            },
+          },
+          resources: {
+            existingNotes: existingNotes.map((n) => ({
+              id: n.id,
+              title: n.title,
+              type: n.type,
+              preview: (n.content || '').slice(0, 200).replace(/<[^>]*>/g, ''),
+            })),
+            relatedDoctrines: doctrines.map((d) => ({
+              chapter: d.chapter_number,
+              title: d.title,
+              summary: d.summary,
+              isPrimary: d.is_primary === 1,
+              linkSyntax: `[[ST:Ch${d.chapter_number}]]`,
+            })),
+            keyPointsFromNotes: keyPoints.map((k) => k.text_content),
+            similarPastSermons: similarSermons.map((s) => ({
+              title: s.title,
+              passage: `${s.book} ${s.start_chapter}${s.start_verse ? ':' + s.start_verse : ''}`,
+              date: s.updated_at,
+            })),
+          },
+          instructions: {
+            nextSteps: [
+              '1. Study the passage carefully and refine the main points',
+              '2. Use sermon_prep_bundle to gather more context',
+              '3. Use get_similar_sermons to check what you\'ve preached before',
+              '4. Use compile_illustrations_for_topic to find more illustrations',
+              '5. Fill in the outline scaffold with your exegesis',
+              '6. Create the sermon note with create_note (type: "sermon")',
+            ],
+            doctrineLinks: doctrines.slice(0, 3).map((d) => `[[ST:Ch${d.chapter_number}]] - ${d.title}`),
+          },
+        };
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(structure, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        logger.error('Error generating sermon structure:', error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${error}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
   logger.info(
-    'Registered AI-enhanced tools: parse_verse_reference, sermon_prep_bundle, doctrine_study_bundle, suggest_topics_for_passage, extract_illustrations, extract_applications, find_related_notes, summarize_topic_notes, create_enriched_note, auto_tag_note, insert_doctrine_links'
+    'Registered AI-enhanced tools: parse_verse_reference, sermon_prep_bundle, doctrine_study_bundle, suggest_topics_for_passage, extract_illustrations, extract_applications, find_related_notes, summarize_topic_notes, create_enriched_note, auto_tag_note, insert_doctrine_links, get_similar_sermons, compile_illustrations_for_topic, generate_sermon_structure'
   );
 }

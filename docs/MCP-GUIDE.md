@@ -250,6 +250,54 @@ Create a sermon note on Romans 8:28-30 with:
 | `delete_all_notes` | Clear all notes (requires confirm) | "Delete all notes (confirm=true)" |
 | `get_last_modified` | Last modification time | "When was my last edit?" |
 
+### Study Session Tools
+
+SACRED tracks what you study (Bible chapters, doctrines, notes) to help Claude understand your study patterns and make relevant suggestions.
+
+| Tool | Purpose | Example |
+|------|---------|---------|
+| `get_recent_sessions` | Get recent study sessions | "What have I been studying lately?" |
+| `get_study_summary` | Aggregated statistics | "Show my study summary for the last 30 days" |
+| `find_related_sessions` | Sessions for a book/doctrine | "When have I studied Romans?" |
+| `get_last_studied` | When a reference was last viewed | "When did I last study John 3?" |
+
+**Session types tracked:**
+- `bible` - Bible chapters viewed (reference: "ROM:3")
+- `doctrine` - Systematic theology viewed (reference: "ch32")
+- `note` - Notes opened for editing
+
+### Sermon Preparation Tools
+
+Specialized tools for sermon writing and research:
+
+| Tool | Purpose | Example |
+|------|---------|---------|
+| `generate_sermon_structure` | Generate outline scaffold | "Create sermon structure for John 3:16-21" |
+| `get_similar_sermons` | Find past sermons | "Find sermons similar to Romans 8" |
+| `compile_illustrations_for_topic` | Gather illustrations | "Find illustrations about grace" |
+| `sermon_prep_bundle` | All resources for a passage | "Get sermon prep bundle for Ephesians 2:1-10" |
+
+**`generate_sermon_structure` parameters:**
+- `book` - 3-letter Bible book code (required)
+- `startChapter` - Starting chapter (required)
+- `startVerse` - Starting verse (optional)
+- `endChapter` - Ending chapter (optional, defaults to startChapter)
+- `endVerse` - Ending verse (optional)
+- `sermonTitle` - Custom title (optional)
+- `mainTheme` - Central thesis (optional)
+
+**`get_similar_sermons` filters:**
+- `book` - Bible book to search in
+- `chapter` - Find sermons near this chapter (±3 chapters)
+- `topic` - Search by topic tag name
+- `keyword` - Full-text search in content/title
+- `limit` - Max results (default: 20)
+
+**`compile_illustrations_for_topic` filters:**
+- `topic` - Keyword to search in illustration text
+- `doctrineChapter` - Find illustrations from passages citing this doctrine
+- `limit` - Max results (default: 30)
+
 ### AI-Enhanced Composite Tools
 
 These tools combine multiple operations for common workflows:
@@ -272,38 +320,132 @@ These tools combine multiple operations for common workflows:
 
 ## Common Workflows
 
-### Workflow 1: Sermon Preparation
+### Workflow 1: Sermon Preparation (Complete Guide)
 
 **Scenario:** Preparing a sermon on Romans 8:28-30
 
-**Step 1: Get the sermon prep bundle**
+The sermon preparation workflow uses multiple tools to gather resources, check for repetition, find illustrations, and generate an outline scaffold.
+
+#### Step 1: Generate a Sermon Structure
+
+Start by generating an outline scaffold with all available resources:
+
+```
+Generate a sermon structure for Romans 8:28-30 with:
+- Title: "The Golden Chain of Redemption"
+- Main theme: "God's sovereign plan guarantees our salvation from start to finish"
+```
+
+**What you get back:**
+- **Metadata**: Passage reference, title, theme, date
+- **Outline scaffold**: Introduction (hook, context, thesis, preview), main points with illustration/application slots, conclusion
+- **Resources**: Your existing notes on this passage, related doctrine chapters, key points from your notes, similar past sermons
+- **Next steps**: Instructions for completing the sermon
+
+#### Step 2: Check What You've Preached Before
+
+Avoid repetition by searching your sermon history:
+
+```
+Find similar sermons to Romans 8 - show me anything I've preached on election or perseverance
+```
+
+Or more specifically:
+```
+Get similar sermons for:
+- Book: ROM
+- Topic: election
+- Keyword: predestination
+```
+
+**Match types returned:**
+- `same_book` - Sermons from the same Bible book
+- `topic_match` - Sermons with matching topic tags
+- `title_match` - Sermons with the keyword in the title
+- `content_match` - Sermons containing the keyword in content
+
+#### Step 3: Find Illustrations
+
+Gather illustrations for your sermon points:
+
+```
+Compile illustrations for the topic "perseverance"
+```
+
+Or find illustrations related to a specific doctrine:
+```
+Compile illustrations for doctrine chapter 40 (Perseverance of the Saints)
+```
+
+**Results include:**
+- Illustration text from your notes
+- Source passage reference
+- How the match was found (keyword_match, doctrine reference, etc.)
+
+#### Step 4: Get the Full Prep Bundle
+
+Now gather all contextual data:
+
 ```
 Get a sermon prep bundle for Romans 8:28-30
 ```
 
 This returns:
 - All existing notes on this passage
-- Related systematic theology doctrines
+- Related systematic theology doctrines with summaries
 - Illustrations from nearby passages
 - Applications you've written
 - Key points you've marked
 
-**Step 2: Explore relevant doctrines**
+#### Step 5: Deep Dive into Relevant Doctrines
+
+Explore the theology behind your passage:
+
 ```
-Show me the doctrine study bundle for chapter 32 (Election)
+Show me the doctrine study bundle for chapter 32 (Election and Reprobation)
 ```
 
-**Step 3: Create your sermon note**
+This provides:
+- Full chapter content with sections
+- All scripture references (primary and secondary)
+- Related chapters (e.g., Providence, Predestination)
+- Your annotations/highlights
+- Notes that link to this chapter
+
+#### Step 6: Create Your Sermon Note
+
+Save your completed sermon:
+
 ```
-Create a sermon note on Romans 8:28-30 titled "The Golden Chain" with:
-- Primary topic: Salvation/Election
-- Include this outline: [your content]
+Create a sermon note on Romans 8:28-30 titled "The Golden Chain of Redemption" with:
+- Type: sermon
+- Primary topic: Salvation/Perseverance
+- Content: [your sermon outline in HTML]
 ```
 
-**Step 4: Add doctrine links**
+#### Step 7: Add Doctrine Links
+
+Connect your sermon to systematic theology:
+
 ```
-Insert doctrine links into my new note
+Insert doctrine links into my new sermon note
 ```
+
+This adds links like `[[ST:Ch32]]` (Election), `[[ST:Ch40]]` (Perseverance) to the end of your note.
+
+---
+
+#### Sermon Prep Tools Summary
+
+| Tool | What It Does | When to Use |
+|------|--------------|-------------|
+| `generate_sermon_structure` | Creates outline scaffold with resources | First - start your sermon |
+| `get_similar_sermons` | Finds past sermons by book/topic/keyword | Check what you've preached |
+| `compile_illustrations_for_topic` | Gathers illustrations by keyword/doctrine | Find stories and examples |
+| `sermon_prep_bundle` | All notes, doctrines, illustrations for a passage | Get full context |
+| `doctrine_study_bundle` | Deep dive into a doctrine chapter | Understand the theology |
+| `create_note` (type: sermon) | Save your sermon | Store completed work |
+| `insert_doctrine_links` | Add theology connections | Link to systematic theology |
 
 ---
 
@@ -425,7 +567,56 @@ Create a sermon series note for Ephesians 1:1-14 titled "Spiritual Blessings" wi
 
 ---
 
-### Workflow 7: Backup and Restore
+### Workflow 7: Understanding Your Study Patterns
+
+**Scenario:** You want to see what you've been studying and identify gaps
+
+**Step 1: Get your recent study sessions**
+```
+What have I been studying in the last 7 days?
+```
+
+Returns a list of sessions with:
+- Session type (bible, doctrine, note)
+- Reference (e.g., "ROM:3", "ch32", note UUID)
+- Reference label (e.g., "Romans 3", "Election", note title)
+- Timestamp
+
+**Step 2: Get aggregated statistics**
+```
+Show my study summary for the last 30 days
+```
+
+Returns:
+- Total sessions by type (bible, doctrine, note)
+- Unique references by type (how many different chapters/doctrines/notes)
+- Top 10 most studied Bible chapters
+- Top 10 most viewed doctrines
+- Top 10 most accessed notes
+- Daily activity (sessions per day)
+
+**Step 3: Check when you last studied something**
+```
+When did I last study Romans 8?
+```
+
+Returns:
+- Last session timestamp
+- Total times you've studied this reference
+
+**Step 4: Find related sessions**
+```
+Find all my study sessions related to Romans
+```
+
+Or for doctrine:
+```
+Find study sessions related to doctrine chapter 32 (Election)
+```
+
+---
+
+### Workflow 8: Backup and Restore
 
 **Step 1: Export your data**
 ```
@@ -550,9 +741,14 @@ After creating a note, use `find_related_notes` to discover connections you migh
 | Set topic | "Set primary topic of note X to Justification" |
 | Find illustrations | "Search illustrations for 'shepherd'" |
 | Find applications | "Show applications in Hebrews" |
-| Sermon prep | "Get sermon prep bundle for Romans 8:28-30" |
+| **Start a sermon** | "Generate sermon structure for Romans 8:28-30" |
+| **Find past sermons** | "Find sermons similar to Romans 8" |
+| **Gather illustrations** | "Compile illustrations about grace" |
+| Sermon prep bundle | "Get sermon prep bundle for Romans 8:28-30" |
 | Doctrine search | "Search theology for 'atonement'" |
 | Doctrine details | "Get doctrine study bundle for chapter 32" |
+| **Study history** | "What have I been studying lately?" |
+| **Study stats** | "Show my study summary for the last 30 days" |
 | Export backup | "Export my SACRED backup" |
 | Auto-organize | "Auto-tag note X and apply suggestions" |
 
@@ -566,8 +762,10 @@ After creating a note, use `find_related_notes` to discover connections you migh
 | Inline Tags | 8 |
 | Systematic Theology | 15 |
 | Backup | 4 |
+| Study Sessions | 4 |
+| Sermon Preparation | 4 |
 | AI-Enhanced | 11 |
-| **Total** | **56** |
+| **Total** | **63** |
 
 ---
 
@@ -655,9 +853,20 @@ After creating a note, use `find_related_notes` to discover connections you migh
 - `delete_all_notes`
 - `get_last_modified`
 
+### Study Session Tools
+- `get_recent_sessions`
+- `get_study_summary`
+- `find_related_sessions`
+- `get_last_studied`
+
+### Sermon Preparation Tools
+- `generate_sermon_structure`
+- `get_similar_sermons`
+- `compile_illustrations_for_topic`
+- `sermon_prep_bundle`
+
 ### AI-Enhanced Tools
 - `parse_verse_reference`
-- `sermon_prep_bundle`
 - `doctrine_study_bundle`
 - `suggest_topics_for_passage`
 - `extract_illustrations`
@@ -670,4 +879,4 @@ After creating a note, use `find_related_notes` to discover connections you migh
 
 ---
 
-*This guide is for SACRED MCP Server v1.0.0*
+*This guide is for SACRED MCP Server v1.1.0 (63 tools)*

@@ -329,20 +329,22 @@ Link formats:
 
 ## MCP Tools for Claude
 
-SACRED provides 60 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
+SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
 
 ### When to Use MCP Tools
 
 | User Request | Tools to Use |
 |--------------|--------------|
 | "What notes do I have on Romans?" | `get_chapter_notes`, `search_notes` |
-| "Help me prepare a sermon on John 3" | `get_chapter_notes`, `find_doctrines_for_passage`, `summarize_doctrine_for_sermon` |
+| "Help me prepare a sermon on John 3" | `sermon_prep_bundle`, `generate_sermon_structure`, `get_similar_sermons` |
 | "What does the Bible say about justification?" | `search_systematic_theology`, `get_systematic_section` |
 | "Create a note on this passage" | `create_note` |
 | "Explain election simply" | `explain_doctrine_simply` |
 | "Export my notes" | `export_notes` or `full_export` |
 | "What have I been studying?" | `get_recent_sessions`, `get_study_summary` |
 | "When did I last look at Romans 3?" | `get_last_studied` |
+| "What sermons have I done on faith?" | `get_similar_sermons` |
+| "Find illustrations about grace" | `compile_illustrations_for_topic` |
 
 ### Tool Categories
 
@@ -381,6 +383,12 @@ SACRED provides 60 MCP tools for Bible study assistance. **Always prefer MCP too
 - `find_related_sessions` - Find sessions related to a Bible book or doctrine chapter
 - `get_last_studied` - When user last studied a specific reference
 
+**Sermon Preparation:**
+- `sermon_prep_bundle` - Comprehensive data for a passage (notes, doctrines, illustrations, applications)
+- `get_similar_sermons` - Find past sermons by book, chapter, topic, or keyword
+- `compile_illustrations_for_topic` - Gather illustrations by topic keyword or doctrine chapter
+- `generate_sermon_structure` - Generate a structured sermon outline scaffold with resources
+
 ### Best Practices
 
 1. **Start with summaries**: Use `get_notes_summary` or `get_systematic_summary` to understand the data scope
@@ -393,10 +401,11 @@ SACRED provides 60 MCP tools for Bible study assistance. **Always prefer MCP too
 
 **Sermon Preparation:**
 ```
-1. get_chapter_notes("JHN", 3) - existing notes
-2. find_doctrines_for_passage("JHN", 3) - relevant doctrines
-3. summarize_doctrine_for_sermon(34) - if studying regeneration
-4. create_note(...) - save sermon outline
+1. generate_sermon_structure("JHN", 3, 16, 21) - get outline scaffold
+2. get_similar_sermons(book="JHN") - check what you've preached before
+3. compile_illustrations_for_topic("regeneration") - find illustrations
+4. sermon_prep_bundle("JHN", 3, 16, 3, 21) - gather all related data
+5. create_note(type="sermon", ...) - save completed sermon
 ```
 
 **Doctrine Study:**
