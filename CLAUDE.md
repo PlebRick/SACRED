@@ -317,19 +317,77 @@ Link formats:
 - `[[ST:Ch32:A]]` - Link to section A of chapter 32
 - `[[ST:Ch32:A.1]]` - Link to subsection A.1 of chapter 32
 
-### MCP Tools for Claude
+## MCP Tools for Claude
 
-Seven tools available in `mcp/src/tools/systematic.ts`:
+SACRED provides 56 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
 
-| Tool | Description |
-|------|-------------|
-| `search_systematic_theology` | Full-text search with snippets |
-| `get_systematic_section` | Get by ID or reference (Ch32, Ch32:A) |
-| `find_doctrines_for_passage` | Find doctrines citing a Bible passage |
-| `summarize_doctrine_for_sermon` | Sermon prep summary with key points |
-| `extract_doctrines_from_note` | Analyze note and suggest related doctrines |
-| `explain_doctrine_simply` | Jargon-free explanation |
-| `get_systematic_summary` | Overview statistics |
+### When to Use MCP Tools
+
+| User Request | Tools to Use |
+|--------------|--------------|
+| "What notes do I have on Romans?" | `get_chapter_notes`, `search_notes` |
+| "Help me prepare a sermon on John 3" | `get_chapter_notes`, `find_doctrines_for_passage`, `summarize_doctrine_for_sermon` |
+| "What does the Bible say about justification?" | `search_systematic_theology`, `get_systematic_section` |
+| "Create a note on this passage" | `create_note` |
+| "Explain election simply" | `explain_doctrine_simply` |
+| "Export my notes" | `export_notes` or `full_export` |
+
+### Tool Categories
+
+**Notes - Reading:**
+- `list_notes` - Get all notes (paginated)
+- `get_note` - Get single note by ID
+- `get_chapter_notes` - Notes overlapping a Bible chapter
+- `get_notes_summary` - Statistics (counts by book, type)
+- `search_notes` - Full-text search
+- `get_books_with_notes` - Which books have notes
+- `export_notes` - Export all notes as JSON
+
+**Notes - Writing:**
+- `create_note` - Create new note (supports `primaryTopicId`, `tags[]`)
+- `update_note` - Update existing note
+- `delete_note` - Delete note by ID
+- `import_notes` - Bulk import (upsert)
+
+**Systematic Theology:**
+- `search_systematic_theology` - Search doctrine content
+- `get_systematic_section` - Get by reference (`Ch32`, `Ch32:A`, `Ch32:A.1`)
+- `get_systematic_summary` - Statistics (776 entries, 57 chapters)
+- `find_doctrines_for_passage` - Doctrines citing a Bible passage
+- `summarize_doctrine_for_sermon` - Sermon prep bundle
+- `explain_doctrine_simply` - Jargon-free explanation
+- `extract_doctrines_from_note` - Suggest doctrines for a note
+
+**Backup:**
+- `full_export` - Export everything (notes, topics, inline tags)
+- `full_import` - Import backup data
+- `get_last_modified` - Last modification timestamp
+
+### Best Practices
+
+1. **Start with summaries**: Use `get_notes_summary` or `get_systematic_summary` to understand the data scope
+2. **Use specific queries**: `get_chapter_notes(book, chapter)` is faster than filtering `list_notes`
+3. **Reference syntax**: Use `[[ST:Ch32]]` format when linking notes to doctrines
+4. **Book codes**: Use 3-letter codes: `GEN`, `EXO`, `ROM`, `JHN`, `REV`, etc.
+5. **HTML content**: Note content is HTML from Tiptap editor - preserve formatting
+
+### Example Workflows
+
+**Sermon Preparation:**
+```
+1. get_chapter_notes("JHN", 3) - existing notes
+2. find_doctrines_for_passage("JHN", 3) - relevant doctrines
+3. summarize_doctrine_for_sermon(34) - if studying regeneration
+4. create_note(...) - save sermon outline
+```
+
+**Doctrine Study:**
+```
+1. search_systematic_theology("justification")
+2. get_systematic_section("Ch36") - full chapter
+3. get_systematic_section("Ch36:C") - specific section
+4. explain_doctrine_simply(36) - simple explanation
+```
 
 ## Important Notes for Claude
 
@@ -340,3 +398,5 @@ Seven tools available in `mcp/src/tools/systematic.ts`:
 - Note content is HTML (from Tiptap editor)
 - When adding features, follow existing patterns in similar components
 - Systematic theology data is NOT in git - must be provided separately for builds
+- **Always use MCP tools** to read/write SACRED data - never access the database directly
+- See `docs/MCP-GUIDE.md` for comprehensive tool documentation
