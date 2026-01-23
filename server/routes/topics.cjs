@@ -342,8 +342,15 @@ router.post('/seed', (req, res) => {
     createTopic('Filling of the Spirit', doctrineSpirit, 1);
     createTopic('Fruit of the Spirit', doctrineSpirit, 2);
 
+    // Angels & Demons (Grudem chapters 19-20)
+    const angelsDemons = createTopic('Angels & Demons', doctrinal, 5);
+    createTopic('Angels', angelsDemons, 0);
+    createTopic('Satan', angelsDemons, 1);
+    createTopic('Demons', angelsDemons, 2);
+    createTopic('Spiritual Warfare', angelsDemons, 3);
+
     // Salvation (Ordo Salutis) with sub-topics
-    const doctrineSalvation = createTopic('Salvation', doctrinal, 5, 'doctrine-salvation');
+    const doctrineSalvation = createTopic('Salvation', doctrinal, 6, 'doctrine-salvation');
     createTopic('Election', doctrineSalvation, 0);
     createTopic('Calling', doctrineSalvation, 1);
     createTopic('Regeneration', doctrineSalvation, 2);
@@ -356,13 +363,13 @@ router.post('/seed', (req, res) => {
     createTopic('Union with Christ', doctrineSalvation, 9);
 
     // Church with sub-topics
-    const doctrineChurch = createTopic('Church', doctrinal, 6, 'doctrine-church');
+    const doctrineChurch = createTopic('Church', doctrinal, 7, 'doctrine-church');
     createTopic('Nature of the Church', doctrineChurch, 0);
     createTopic('Marks of the Church', doctrineChurch, 1);
     createTopic('Offices & Governance', doctrineChurch, 2);
 
     // Future with sub-topics
-    const doctrineFuture = createTopic('Future', doctrinal, 7, 'doctrine-future');
+    const doctrineFuture = createTopic('Future', doctrinal, 8, 'doctrine-future');
     createTopic('Return of Christ', doctrineFuture, 0);
     createTopic('Resurrection', doctrineFuture, 1);
     createTopic('Judgment', doctrineFuture, 2);
@@ -386,11 +393,12 @@ router.post('/seed', (req, res) => {
 
     // Relationships
     const relationships = createTopic('Relationships', pastoral, 1);
-    createTopic('Marriage', relationships, 0);
-    createTopic('Parenting & Family', relationships, 1);
-    createTopic('Singleness', relationships, 2);
-    createTopic('Friendship', relationships, 3);
-    createTopic('Community & Fellowship', relationships, 4);
+    createTopic('With God', relationships, 0);
+    createTopic('Marriage', relationships, 1);
+    createTopic('Parenting & Family', relationships, 2);
+    createTopic('Singleness', relationships, 3);
+    createTopic('Friendship', relationships, 4);
+    createTopic('Community & Fellowship', relationships, 5);
 
     // Ministry & Service
     const ministry = createTopic('Ministry & Service', pastoral, 2);
@@ -450,6 +458,17 @@ router.post('/seed', (req, res) => {
     createTopic('Applications', resources, 3);
     createTopic('Outlines', resources, 4);
     createTopic('Series', resources, 5);
+
+    // Special Occasions
+    const occasions = createTopic('Special Occasions', resources, 6);
+    createTopic('Wedding', occasions, 0);
+    createTopic('Funeral', occasions, 1);
+    createTopic('Baptism Service', occasions, 2);
+    createTopic('Communion Service', occasions, 3);
+    createTopic('Ordination', occasions, 4);
+    createTopic('Dedication', occasions, 5);
+    createTopic('Holiday', occasions, 6);
+    createTopic('Special Event', occasions, 7);
 
     res.status(201).json({ success: true, message: 'Default topics seeded successfully' });
   } catch (error) {
