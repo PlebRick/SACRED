@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Sidebar Collapse**: Content now properly fills space when sidebar is collapsed (was leaving black gap due to inline style override)
+
+### Changed
+- **Sidebar Resize Range**: Expanded from 200-400px to 120-500px for more flexibility
+- **Notes Panel Max Width**: Increased from 600px to 900px, allowing the panel to extend past screen midpoint
+
 ---
 
 ## [0.0.8] - 2026-01-23
