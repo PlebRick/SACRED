@@ -1,9 +1,9 @@
 # Sidebar Redesign: Bible-Structured Notes + Topics System
 
-> **Status**: Phase 1 complete (v0.0.4) | Phase 2 pending
+> **Status**: Complete (v0.0.5)
 >
-> - [x] Phase 1: Topic system + sidebar restructure
-> - [ ] Phase 2: Inline tagging (highlight + tag within notes)
+> - [x] Phase 1: Topic system + sidebar restructure (v0.0.4)
+> - [x] Phase 2: Inline tagging (highlight + tag within notes) (v0.0.5)
 
 ## Overview
 

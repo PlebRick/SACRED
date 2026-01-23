@@ -71,7 +71,7 @@
 
 ## Tests
 
-Current: 520 tests, 46.9% line coverage
+Current: 522 tests | Run `npm run test:coverage` for latest metrics
 
 *Note: Coverage % decreased due to new topics system code. Key new files have excellent coverage.*
 
