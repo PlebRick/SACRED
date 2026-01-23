@@ -264,6 +264,15 @@ if (!hasPrimaryTopicId) {
   db.exec(`ALTER TABLE notes ADD COLUMN primary_topic_id TEXT REFERENCES topics(id)`);
 }
 
+// Migration: Add systematic_tag_id to topics table for Grudem integration
+const topicColumns = db.prepare("PRAGMA table_info(topics)").all();
+const hasSystematicTagId = topicColumns.some(col => col.name === 'systematic_tag_id');
+if (!hasSystematicTagId) {
+  db.exec(`ALTER TABLE topics ADD COLUMN systematic_tag_id TEXT REFERENCES systematic_tags(id) ON DELETE SET NULL`);
+  // Create index for efficient lookups
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_topics_systematic_tag ON topics(systematic_tag_id)`);
+}
+
 // Seed default inline tag types if table is empty
 function seedDefaultInlineTagTypes() {
   const count = db.prepare('SELECT COUNT(*) as count FROM inline_tag_types').get().count;
