@@ -21,7 +21,7 @@ export const Sidebar = ({ isOpen, width }) => {
     navigate(bookId, chapterNum);
   };
 
-  const sidebarStyle = width ? { width, minWidth: width } : undefined;
+  const sidebarStyle = isOpen && width ? { width, minWidth: width } : undefined;
 
   return (
     <aside
