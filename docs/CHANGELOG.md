@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Systematic Theology Backup/Restore**: Full data management in Settings
+  - Export: Download all doctrine data as JSON (`sacred-systematic-theology-YYYY-MM-DD.json`)
+  - Import: Load doctrine data from JSON file (already existed)
+  - Delete All: Remove all doctrine data with confirmation (warns about annotation loss)
+  - Separate from Notes backup for cleaner data management
+
 ### Fixed
 - Scripture search now accepts book names without chapter (e.g., "John" → John 1)
 

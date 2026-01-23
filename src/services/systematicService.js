@@ -97,6 +97,41 @@ export const systematicService = {
     const res = await fetch(`${API_BASE}/${systematicId}/referencing-notes`);
     if (!res.ok) throw new Error('Failed to fetch referencing notes');
     return res.json();
+  },
+
+  // Import systematic theology data
+  importData: async (data) => {
+    const res = await fetch(`${API_BASE}/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to import');
+    }
+    return res.json();
+  },
+
+  // Export systematic theology data
+  exportData: async () => {
+    const res = await fetch(`${API_BASE}/export`);
+    if (!res.ok) throw new Error('Failed to export systematic theology');
+    return res.json();
+  },
+
+  // Delete all systematic theology data
+  deleteAll: async () => {
+    const res = await fetch(API_BASE, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete systematic theology');
+    return res.json();
+  },
+
+  // Get count (for delete confirmation)
+  getCount: async () => {
+    const res = await fetch(`${API_BASE}/count`);
+    if (!res.ok) throw new Error('Failed to get count');
+    return res.json();
   }
 };
 

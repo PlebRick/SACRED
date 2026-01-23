@@ -343,3 +343,31 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Import Button (for Systematic Theology) */
+.importButton {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: white;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.importButton:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.importButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Import Icon (non-danger confirmation) */
+.importIcon {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
