@@ -63,6 +63,7 @@
 
 ## Completed
 
+- **v0.0.8** - Note type indicators in right panel, systematic theology backup, resizable sidebar
 - **v0.0.7** - Systematic Theology integration with note linking, MCP tools, auto-restore
 - **v0.0.6** - Visual note type distinction, independent scrolling, Mac app fixes
 - **v0.0.5** - Inline tagging system with Browse by Tag

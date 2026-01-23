@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [0.0.8] - 2026-01-23
+
 ### Added
 - **Note Type Indicators in Right Panel**: Visual indicators showing note type (note, commentary, sermon) in NoteCard and NoteEditor
   - NoteCard: Shows type icon badge and colored left border accent
@@ -16,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Import: Load doctrine data from JSON file (already existed)
   - Delete All: Remove all doctrine data with confirmation (warns about annotation loss)
   - Separate from Notes backup for cleaner data management
+- **Resizable Sidebar**: Drag handle to resize sidebar width with persistence
 
 ### Fixed
 - Scripture search now accepts book names without chapter (e.g., "John" → John 1)
