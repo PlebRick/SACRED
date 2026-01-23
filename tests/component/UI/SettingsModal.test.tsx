@@ -11,6 +11,12 @@ vi.mock('../../../src/context/NotesContext', () => ({
   }),
 }));
 
+vi.mock('../../../src/context/SystematicContext', () => ({
+  useSystematic: () => ({
+    refreshTree: vi.fn(),
+  }),
+}));
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

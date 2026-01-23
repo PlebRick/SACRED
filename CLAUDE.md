@@ -161,7 +161,16 @@ Dark theme is default. Light theme available. Respects system preference via The
 
 ## Testing
 
-No test framework yet. Manual testing only. See `docs/TESTING.md` for test workflows and future plans.
+Full test suite using Vitest with React Testing Library.
+
+```bash
+npm test              # Run all tests
+npm run test:coverage # Run with coverage
+```
+
+Structure: `tests/unit/`, `tests/component/`, `tests/integration/`
+
+Current: **522 tests** | See `docs/TESTING.md` for patterns and coverage details.
 
 ## Deployment
 
