@@ -1,5 +1,56 @@
 # Claude Cowork Startup Prompt
 
+## MCP Server Setup
+
+Before using Cowork with SACRED, you need to configure the MCP server connection.
+
+### 1. Build the MCP Server
+
+```bash
+cd /path/to/Sacred/mcp
+npm install
+npm run build
+```
+
+### 2. Configure Cowork MCP Settings
+
+Add the SACRED MCP server to your Claude configuration file:
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "sacred-bible-notes": {
+      "command": "node",
+      "args": ["/path/to/Sacred/mcp/build/index.js"],
+      "env": {
+        "DB_PATH": "/path/to/sacred.db"
+      }
+    }
+  }
+}
+```
+
+**Important paths to customize:**
+- `args`: Full path to the built MCP server (`mcp/build/index.js`)
+- `DB_PATH`: Path to your SACRED database
+  - macOS app: `~/Library/Application Support/sacred/sacred.db`
+  - Development: `./data/sacred.db` in project root
+
+### 3. Restart Cowork
+
+After saving the config, restart Claude Cowork to load the MCP server.
+
+### 4. Verify Connection
+
+Ask Cowork: "Can you list my Bible study notes?" - it should call `list_notes` and return results.
+
+---
+
+## Startup Prompt
+
 Copy and paste the following at the start of your Cowork session:
 
 ---
