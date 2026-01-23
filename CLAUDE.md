@@ -35,7 +35,7 @@ SACRED/
 │   │   ├── Layout/        # Header, Sidebar, VerseSearch, SystematicTree
 │   │   ├── Notes/         # NoteCard, NoteEditor, NotesPanel, InsertDoctrineModal
 │   │   ├── Systematic/    # SystematicPanel (doctrine viewer)
-│   │   └── UI/            # Button, ThemeToggle, SettingsModal
+│   │   └── UI/            # Button, ThemeToggle, SettingsModal, NoteTypeIndicator
 │   ├── context/           # BibleContext, NotesContext, SystematicContext
 │   ├── extensions/        # Tiptap extensions (InlineTagMark, SystematicLinkMark)
 │   ├── services/          # API calls (bibleApi.js, notesService.js, systematicService.js)
