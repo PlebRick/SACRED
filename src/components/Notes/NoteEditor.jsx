@@ -9,6 +9,7 @@ import { SystematicLinkTooltip } from './SystematicLinkTooltip';
 import { formatVerseRange } from '../../utils/verseRange';
 import { parseReference } from '../../utils/parseReference';
 import { TopicSelector } from '../UI/TopicSelector';
+import { NoteTypeIndicator } from '../UI/NoteTypeIndicator';
 import { useTopics } from '../../context/TopicsContext';
 import { useInlineTags } from '../../context/InlineTagsContext';
 import { useSystematic } from '../../context/SystematicContext';
@@ -387,7 +388,10 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   return (
     <div className={styles.editor}>
       <div className={styles.editorHeader}>
-        <span className={styles.editorReference}>{formatVerseRange(note)}</span>
+        <div className={styles.editorHeaderLeft}>
+          <span className={styles.editorReference}>{formatVerseRange(note)}</span>
+          <NoteTypeIndicator type={note.type} showLabel size="md" />
+        </div>
         <div className={styles.editorActions}>
           {isSaving && <span className={styles.savingIndicator}>Saving...</span>}
           <button className={styles.closeButton} onClick={onClose} aria-label="Close editor">

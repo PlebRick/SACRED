@@ -1,4 +1,5 @@
 import { formatVerseRange } from '../../utils/verseRange';
+import { NoteTypeIndicator } from '../UI/NoteTypeIndicator';
 import styles from './Notes.module.css';
 
 export const NoteCard = ({ note, isSelected, isActive, onSelect, onDelete }) => {
@@ -28,9 +29,13 @@ export const NoteCard = ({ note, isSelected, isActive, onSelect, onDelete }) => 
       className={cardClasses}
       onClick={() => onSelect(note.id)}
       data-note-id={note.id}
+      data-type={note.type || 'note'}
     >
       <div className={styles.cardHeader}>
-        <span className={styles.reference}>{formatVerseRange(note)}</span>
+        <div className={styles.cardHeaderLeft}>
+          <span className={styles.reference}>{formatVerseRange(note)}</span>
+          <NoteTypeIndicator type={note.type} />
+        </div>
         <button
           className={styles.deleteButton}
           onClick={handleDelete}
