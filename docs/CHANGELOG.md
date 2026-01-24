@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.0.9] - 2026-01-23
 
 ### Added
 - **Full-Text Search for Notes**: Search across all note titles and content with highlighted matches
