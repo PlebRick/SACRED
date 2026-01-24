@@ -582,3 +582,136 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ========== Illustrations Section ========== */
+
+.illustrationsSection {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 0.25rem 0;
+}
+
+.illustrationsSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.illustrationsSectionHeader:hover {
+  background: var(--bg-tertiary);
+}
+
+.illustrationsIcon {
+  font-size: 0.875rem;
+}
+
+.illustrationCount {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+.illustrationsContent {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.illustrationSearchWrapper {
+  position: relative;
+  padding: 0.5rem;
+}
+
+.illustrationSearchInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  font-size: 0.8125rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.illustrationSearchInput:focus {
+  border-color: var(--accent);
+}
+
+.illustrationSearchInput::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.illustrationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.illustrationItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.illustrationItem:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+.illustrationRef {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.illustrationText {
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  font-style: italic;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.illustrationNoteTitle {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.noIllustrations {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}

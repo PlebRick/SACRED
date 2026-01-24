@@ -150,6 +150,12 @@ export const TopicsTree = () => {
   const [selectedTagType, setSelectedTagType] = useState(null);
   const [tagSearch, setTagSearch] = useState('');
 
+  // Illustrations section state
+  const [illustrationsExpanded, setIllustrationsExpanded] = useState(false);
+  const [illustrations, setIllustrations] = useState([]);
+  const [illustrationSearch, setIllustrationSearch] = useState('');
+  const [loadingIllustrations, setLoadingIllustrations] = useState(false);
+
   const { topics, loading, createTopic, updateTopic, deleteTopic, seedDefaultTopics, refreshTopics } = useTopics();
   const {
     tagCountsByType,
@@ -287,6 +293,51 @@ export const TopicsTree = () => {
 
   const totalTagCount = tagCountsByType.reduce((sum, t) => sum + (t.count || 0), 0);
 
+  // Get illustration count from tag counts
+  const illustrationCount = tagCountsByType.find(t => t.id === 'illustration')?.count || 0;
+
+  // Load illustrations when section is expanded
+  const loadIllustrations = async (search = '') => {
+    setLoadingIllustrations(true);
+    try {
+      const instances = await loadTagInstances({
+        tagType: 'illustration',
+        search: search || undefined,
+        limit: 50
+      });
+      setIllustrations(instances || []);
+    } catch (error) {
+      console.error('Failed to load illustrations:', error);
+      setIllustrations([]);
+    }
+    setLoadingIllustrations(false);
+  };
+
+  // Load illustrations when expanded
+  useEffect(() => {
+    if (illustrationsExpanded && illustrations.length === 0 && !illustrationSearch) {
+      loadIllustrations();
+    }
+  }, [illustrationsExpanded]);
+
+  // Handle illustration search with debounce
+  const handleIllustrationSearch = (e) => {
+    const query = e.target.value;
+    setIllustrationSearch(query);
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      loadIllustrations(query);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Handle clicking an illustration
+  const handleIllustrationClick = (illustration) => {
+    navigate(illustration.book, illustration.startChapter);
+    setSelectedNote(illustration.noteId);
+    setEditingNote(illustration.noteId);
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading topics...</div>;
   }
@@ -331,6 +382,95 @@ export const TopicsTree = () => {
               >
                 Add
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* Illustrations Section - always visible */}
+        <div className={styles.illustrationsSection}>
+          <button
+            className={styles.illustrationsSectionHeader}
+            onClick={() => setIllustrationsExpanded(!illustrationsExpanded)}
+          >
+            <svg
+              className={`${styles.expandIcon} ${illustrationsExpanded ? styles.expanded : ''}`}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span className={styles.illustrationsIcon}>💡</span>
+            <span>Illustrations</span>
+            {illustrationCount > 0 && (
+              <span className={styles.illustrationCount}>{illustrationCount}</span>
+            )}
+          </button>
+
+          {illustrationsExpanded && (
+            <div className={styles.illustrationsContent}>
+              <div className={styles.illustrationSearchWrapper}>
+                <svg
+                  className={styles.searchIcon}
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  className={styles.illustrationSearchInput}
+                  placeholder="Search illustrations..."
+                  value={illustrationSearch}
+                  onChange={handleIllustrationSearch}
+                />
+              </div>
+
+              {loadingIllustrations ? (
+                <div className={styles.loadingNotes}>Loading...</div>
+              ) : illustrations.length === 0 ? (
+                <div className={styles.noIllustrations}>
+                  {illustrationSearch
+                    ? 'No illustrations match your search'
+                    : 'No illustrations yet. Tag text in notes with 💡 to add illustrations.'}
+                </div>
+              ) : (
+                <div className={styles.illustrationsList}>
+                  {illustrations.map(ill => (
+                    <button
+                      key={ill.id}
+                      className={styles.illustrationItem}
+                      onClick={() => handleIllustrationClick(ill)}
+                    >
+                      <span className={styles.illustrationRef}>
+                        {formatVerseRange({
+                          book: ill.book,
+                          startChapter: ill.startChapter,
+                          startVerse: ill.startVerse,
+                          endChapter: ill.endChapter,
+                          endVerse: ill.endVerse
+                        })}
+                      </span>
+                      <span className={styles.illustrationText}>
+                        "{ill.textContent}"
+                      </span>
+                      {ill.noteTitle && (
+                        <span className={styles.illustrationNoteTitle}>
+                          {ill.noteTitle}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -510,6 +650,95 @@ export const TopicsTree = () => {
             >
               Add
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Illustrations Section */}
+      <div className={styles.illustrationsSection}>
+        <button
+          className={styles.illustrationsSectionHeader}
+          onClick={() => setIllustrationsExpanded(!illustrationsExpanded)}
+        >
+          <svg
+            className={`${styles.expandIcon} ${illustrationsExpanded ? styles.expanded : ''}`}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+          <span className={styles.illustrationsIcon}>💡</span>
+          <span>Illustrations</span>
+          {illustrationCount > 0 && (
+            <span className={styles.illustrationCount}>{illustrationCount}</span>
+          )}
+        </button>
+
+        {illustrationsExpanded && (
+          <div className={styles.illustrationsContent}>
+            <div className={styles.illustrationSearchWrapper}>
+              <svg
+                className={styles.searchIcon}
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                className={styles.illustrationSearchInput}
+                placeholder="Search illustrations..."
+                value={illustrationSearch}
+                onChange={handleIllustrationSearch}
+              />
+            </div>
+
+            {loadingIllustrations ? (
+              <div className={styles.loadingNotes}>Loading...</div>
+            ) : illustrations.length === 0 ? (
+              <div className={styles.noIllustrations}>
+                {illustrationSearch
+                  ? 'No illustrations match your search'
+                  : 'No illustrations yet. Tag text in notes with 💡 to add illustrations.'}
+              </div>
+            ) : (
+              <div className={styles.illustrationsList}>
+                {illustrations.map(ill => (
+                  <button
+                    key={ill.id}
+                    className={styles.illustrationItem}
+                    onClick={() => handleIllustrationClick(ill)}
+                  >
+                    <span className={styles.illustrationRef}>
+                      {formatVerseRange({
+                        book: ill.book,
+                        startChapter: ill.startChapter,
+                        startVerse: ill.startVerse,
+                        endChapter: ill.endChapter,
+                        endVerse: ill.endVerse
+                      })}
+                    </span>
+                    <span className={styles.illustrationText}>
+                      "{ill.textContent}"
+                    </span>
+                    {ill.noteTitle && (
+                      <span className={styles.illustrationNoteTitle}>
+                        {ill.noteTitle}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
