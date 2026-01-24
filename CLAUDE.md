@@ -50,8 +50,9 @@ SACRED/
 ├── mcp/                    # MCP server for Claude integration
 │   └── src/tools/         # systematic.ts (7 Claude tools)
 ├── myfiles/                # Personal data (gitignored)
-│   └── grudem-sys-theo-parsed/
-│       └── systematic-theology-complete.json
+│   ├── grudem-sys-theo-parsed/
+│   │   └── systematic-theology-complete.json
+│   └── web-bible-complete.json  # Offline WEB Bible (~6MB)
 └── data/                   # SQLite database storage
 ```
 
@@ -144,10 +145,16 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/bible/:translation/:book/:chapter` | Fetch chapter text |
+| GET | `/api/bible/status` | Report offline availability |
 
 **Translations:**
-- `esv` - English Standard Version (requires `ESV_API_KEY` in `.env`)
-- `web` - World English Bible (public domain, no key needed)
+- `esv` - English Standard Version (requires `ESV_API_KEY` in `.env`, online only)
+- `web` - World English Bible (public domain, offline supported in Electron app)
+
+**Offline Support:**
+- WEB Bible (~6MB) is bundled with Electron app for true offline access
+- Local data checked first, falls back to API if unavailable
+- ESV cannot be stored offline due to Crossway API terms
 
 **Response format:**
 ```json
@@ -157,6 +164,16 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
   "verses": [
     { "verse": 1, "text": "In the beginning was the Word..." }
   ]
+}
+```
+
+**Status response:**
+```json
+{
+  "translations": {
+    "web": { "available": true, "offline": true, "source": "local" },
+    "esv": { "available": true, "offline": false, "source": "api" }
+  }
 }
 ```
 
