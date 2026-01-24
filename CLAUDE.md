@@ -36,12 +36,12 @@ SACRED/
 │   │   ├── Notes/         # NoteCard, NoteEditor, NotesPanel, InsertDoctrineModal
 │   │   ├── Systematic/    # SystematicPanel (doctrine viewer)
 │   │   └── UI/            # Button, ThemeToggle, SettingsModal, NoteTypeIndicator
-│   ├── context/           # BibleContext, NotesContext, SystematicContext
+│   ├── context/           # BibleContext, NotesContext, SystematicContext, SettingsContext
 │   ├── extensions/        # Tiptap extensions (InlineTagMark, SystematicLinkMark)
 │   ├── services/          # API calls (bibleApi.js, notesService.js, systematicService.js)
 │   └── utils/             # Helpers (parseReference, bibleBooks, verseRange)
 ├── server/                 # Express backend (CommonJS .cjs)
-│   ├── routes/            # notes.cjs, backup.cjs, systematic.cjs
+│   ├── routes/            # notes.cjs, backup.cjs, systematic.cjs, bible.cjs
 │   ├── db.cjs             # SQLite setup (includes systematic theology tables)
 │   └── index.cjs          # Server entry
 ├── electron/               # Electron main process
@@ -70,7 +70,7 @@ SACRED/
 - API response fields: camelCase
 
 ### Patterns
-- Custom hooks from context: `useBible()`, `useNotes()`, `useTheme()`
+- Custom hooks from context: `useBible()`, `useNotes()`, `useTheme()`, `useSettings()`
 - API format conversion in routes: `toApiFormat()` converts snake_case to camelCase
 - Modal pattern: See `AddNoteModal.jsx` and `SettingsModal.jsx`
 
@@ -138,6 +138,27 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
 | GET | `/api/sessions/summary` | Aggregated statistics (top chapters, doctrines, daily activity) |
 | GET | `/api/sessions/related` | Find sessions related to book/doctrine |
 | DELETE | `/api/sessions` | Clear old sessions (requires `olderThan` date) |
+
+### Bible API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/bible/:translation/:book/:chapter` | Fetch chapter text |
+
+**Translations:**
+- `esv` - English Standard Version (requires `ESV_API_KEY` in `.env`)
+- `web` - World English Bible (public domain, no key needed)
+
+**Response format:**
+```json
+{
+  "reference": "John 1",
+  "translation": "ESV",
+  "verses": [
+    { "verse": 1, "text": "In the beginning was the Word..." }
+  ]
+}
+```
 
 ## Styling Guide
 
@@ -211,6 +232,7 @@ rm -rf node_modules && npm install && npm run electron:build
 - `PORT`: Server port (default 3000)
 - `NODE_ENV`: 'development' or 'production'
 - `DB_PATH`: Custom database file location
+- `ESV_API_KEY`: API key for ESV Bible translation (get one at https://api.esv.org/)
 
 ## Documentation
 
@@ -428,7 +450,9 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 
 - Server uses CommonJS (`.cjs`) because better-sqlite3 requires it
 - Vite proxies `/api` to port 3001 in development
-- Bible text comes from bible-api.com (rate limited, cached)
+- Bible text fetched via backend proxy (`/api/bible`) supporting ESV and WEB translations
+- ESV requires API key in `.env`; WEB is public domain (no key needed)
+- Translation preference stored in localStorage (`sacred_translation`)
 - All timestamps are ISO strings
 - Note content is HTML (from Tiptap editor)
 - When adding features, follow existing patterns in similar components
