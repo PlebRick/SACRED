@@ -1,0 +1,142 @@
+name: Build & Release
+
+on:
+  # Manual trigger with version input
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.1.1)'
+        required: true
+        type: string
+      create_release:
+        description: 'Create GitHub release'
+        required: true
+        type: boolean
+        default: true
+
+  # Auto-trigger on version tags
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+            runner: macos-14  # M1 runner for native ARM build
+          - os: macos-latest
+            arch: x64
+            runner: macos-13  # Intel runner for native x64 build
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file
+        run: |
+          echo "ESV_API_KEY=${{ secrets.ESV_API_KEY }}" > .env
+
+      - name: Create placeholder for systematic theology JSON
+        run: |
+          mkdir -p myfiles/grudem-sys-theo-parsed
+          echo '{"systematic_theology":[],"scripture_index":[],"tags":[],"chapter_tags":[],"related":[]}' > myfiles/grudem-sys-theo-parsed/systematic-theology-complete.json
+
+      - name: Create placeholder for WEB Bible JSON
+        run: |
+          echo '{}' > myfiles/web-bible-complete.json
+
+      - name: Build Electron app
+        run: |
+          npm run build
+          npx electron-builder --mac --${{ matrix.arch }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename DMG with architecture
+        run: |
+          cd release
+          for f in *.dmg; do
+            if [[ ! "$f" =~ (arm64|x64) ]]; then
+              mv "$f" "${f%.dmg}-${{ matrix.arch }}.dmg"
+            fi
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SACRED-${{ matrix.arch }}
+          path: release/*.dmg
+          retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download ARM64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SACRED-arm64
+          path: release/
+
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SACRED-x64
+          path: release/
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: SACRED v${{ steps.version.outputs.version }}
+          body: |
+            ## SACRED v${{ steps.version.outputs.version }}
+
+            Personal Bible study app with rich text notes, commentary, and sermon management.
+
+            ### Downloads
+            - **SACRED-*-arm64.dmg** - macOS Apple Silicon (M1/M2/M3)
+            - **SACRED-*-x64.dmg** - macOS Intel
+
+            ### Requirements
+            - macOS 10.12 or later
+            - ESV translation requires API key (get one at https://api.esv.org/)
+
+            ### Notes
+            - Database stored in `~/Library/Application Support/sacred/sacred.db`
+            - App is not code-signed; you may need to right-click → Open on first launch
+          files: release/*.dmg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
