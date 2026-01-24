@@ -40,3 +40,6 @@ coverage/
 playwright-report/
 test-results/
 seeds/
+
+# MCP build output
+mcp/build/
