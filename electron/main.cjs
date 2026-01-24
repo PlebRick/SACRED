@@ -3,6 +3,14 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 
+// Load environment variables from .env file
+// In packaged app, .env is in extraResources; in dev, it's in project root
+require('dotenv').config({
+  path: app.isPackaged
+    ? path.join(process.resourcesPath, '.env')
+    : path.join(__dirname, '..', '.env')
+});
+
 // Database path - production uses userData, dev uses local
 function getDbPath() {
   if (app.isPackaged) {
