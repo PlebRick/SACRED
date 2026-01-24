@@ -41,6 +41,12 @@
   - Per-translation caching in localStorage
   - Clear Bible Cache button for troubleshooting
 
+- [x] **Offline Bible support** ✓ v0.1.0
+  - Complete WEB Bible (~6MB) bundled with Electron app
+  - All 1,189 chapters available offline
+  - Local-first loading with API fallback
+  - ESV remains online-only (copyright)
+
 - [ ] **AI integration API**
   - Endpoint for Claude Cowork / external tools
   - Structured access to notes and verse context
@@ -65,6 +71,7 @@
 
 ## Completed
 
+- **v0.1.0** - Offline WEB Bible support, illustrations browser in sidebar
 - **v0.0.10** - ESV Bible translation support with translation selector in Settings
 - **v0.0.8** - Note type indicators in right panel, systematic theology backup, resizable sidebar
 - **v0.0.7** - Systematic Theology integration with note linking, MCP tools, auto-restore

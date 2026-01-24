@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.0] - 2026-01-24
+
+### Added
+- **Offline WEB Bible Support**: Complete World English Bible bundled with Electron app
+  - All 1,189 chapters (~6MB) available offline
+  - Instant loading from local data, API fallback when unavailable
+  - New `/api/bible/status` endpoint reports offline availability
+  - Download script (`scripts/download-web-bible.cjs`) with retry logic and resume support
+  - ESV remains online-only (copyright restrictions)
+
+- **Illustrations Browser**: New section in Topics sidebar to browse all illustrations
+  - Dedicated "💡 Illustrations" collapsible section
+  - Search within illustration content
+  - Click to navigate directly to source note
+  - Shows verse reference and preview text
+
+### Technical
+- New `loadLocalWebBible()` function checks Electron resources and dev paths
+- Bible route modified for local-first, API-fallback architecture
+- `extraResources` in electron-builder includes `web-bible-complete.json`
+
+---
+
 ## [0.0.10] - 2026-01-24
 
 ### Added
