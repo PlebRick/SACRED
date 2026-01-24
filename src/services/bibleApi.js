@@ -1,38 +1,17 @@
 // Bible API Service with caching
-// Uses bible-api.com for WEB translation
+// Uses backend proxy for multiple translations
 
-const API_BASE = 'https://bible-api.com';
+const API_BASE = '/api/bible';
 const CACHE_PREFIX = 'sacred_bible_';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // In-memory cache for session
 const memoryCache = new Map();
 
-// Rate limiting: 15 requests per 30 seconds
-const requestQueue = [];
-const MAX_REQUESTS = 15;
-const WINDOW_MS = 30000;
+const getCacheKey = (translation, book, chapter) => `${CACHE_PREFIX}${translation}_${book}_${chapter}`;
 
-const waitForRateLimit = async () => {
-  const now = Date.now();
-  // Remove old requests from queue
-  while (requestQueue.length > 0 && requestQueue[0] < now - WINDOW_MS) {
-    requestQueue.shift();
-  }
-
-  if (requestQueue.length >= MAX_REQUESTS) {
-    const waitTime = requestQueue[0] + WINDOW_MS - now;
-    await new Promise(resolve => setTimeout(resolve, waitTime));
-    return waitForRateLimit();
-  }
-
-  requestQueue.push(now);
-};
-
-const getCacheKey = (book, chapter) => `${CACHE_PREFIX}${book}_${chapter}`;
-
-const getFromCache = (book, chapter) => {
-  const key = getCacheKey(book, chapter);
+const getFromCache = (translation, book, chapter) => {
+  const key = getCacheKey(translation, book, chapter);
 
   // Check memory cache first
   if (memoryCache.has(key)) {
@@ -57,8 +36,8 @@ const getFromCache = (book, chapter) => {
   return null;
 };
 
-const setCache = (book, chapter, data) => {
-  const key = getCacheKey(book, chapter);
+const setCache = (translation, book, chapter, data) => {
+  const key = getCacheKey(translation, book, chapter);
   memoryCache.set(key, data);
 
   try {
@@ -71,121 +50,68 @@ const setCache = (book, chapter, data) => {
   }
 };
 
-// Map book IDs to bible-api.com format
-const bookIdToApiName = {
-  'GEN': 'genesis',
-  'EXO': 'exodus',
-  'LEV': 'leviticus',
-  'NUM': 'numbers',
-  'DEU': 'deuteronomy',
-  'JOS': 'joshua',
-  'JDG': 'judges',
-  'RUT': 'ruth',
-  '1SA': '1samuel',
-  '2SA': '2samuel',
-  '1KI': '1kings',
-  '2KI': '2kings',
-  '1CH': '1chronicles',
-  '2CH': '2chronicles',
-  'EZR': 'ezra',
-  'NEH': 'nehemiah',
-  'EST': 'esther',
-  'JOB': 'job',
-  'PSA': 'psalms',
-  'PRO': 'proverbs',
-  'ECC': 'ecclesiastes',
-  'SNG': 'songofsolomon',
-  'ISA': 'isaiah',
-  'JER': 'jeremiah',
-  'LAM': 'lamentations',
-  'EZK': 'ezekiel',
-  'DAN': 'daniel',
-  'HOS': 'hosea',
-  'JOL': 'joel',
-  'AMO': 'amos',
-  'OBA': 'obadiah',
-  'JON': 'jonah',
-  'MIC': 'micah',
-  'NAM': 'nahum',
-  'HAB': 'habakkuk',
-  'ZEP': 'zephaniah',
-  'HAG': 'haggai',
-  'ZEC': 'zechariah',
-  'MAL': 'malachi',
-  'MAT': 'matthew',
-  'MRK': 'mark',
-  'LUK': 'luke',
-  'JHN': 'john',
-  'ACT': 'acts',
-  'ROM': 'romans',
-  '1CO': '1corinthians',
-  '2CO': '2corinthians',
-  'GAL': 'galatians',
-  'EPH': 'ephesians',
-  'PHP': 'philippians',
-  'COL': 'colossians',
-  '1TH': '1thessalonians',
-  '2TH': '2thessalonians',
-  '1TI': '1timothy',
-  '2TI': '2timothy',
-  'TIT': 'titus',
-  'PHM': 'philemon',
-  'HEB': 'hebrews',
-  'JAS': 'james',
-  '1PE': '1peter',
-  '2PE': '2peter',
-  '1JN': '1john',
-  '2JN': '2john',
-  '3JN': '3john',
-  'JUD': 'jude',
-  'REV': 'revelation'
-};
-
-export const fetchChapter = async (bookId, chapter) => {
+export const fetchChapter = async (bookId, chapter, translation = 'esv') => {
   // Check cache first
-  const cached = getFromCache(bookId, chapter);
+  const cached = getFromCache(translation, bookId, chapter);
   if (cached) {
     return cached;
   }
 
-  // Wait for rate limit
-  await waitForRateLimit();
-
-  const apiBookName = bookIdToApiName[bookId];
-  if (!apiBookName) {
-    throw new Error(`Unknown book ID: ${bookId}`);
-  }
-
-  // Use the reference format that bible-api.com accepts
-  const url = `${API_BASE}/${apiBookName}+${chapter}?translation=web`;
-
+  // Fetch from backend proxy
+  const url = `${API_BASE}/${translation}/${bookId}/${chapter}`;
   const response = await fetch(url);
+
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${bookId} ${chapter}: ${response.status}`);
+    const error = await response.json().catch(() => ({ error: 'Failed to fetch chapter' }));
+    throw new Error(error.error || `Failed to fetch ${bookId} ${chapter}`);
   }
 
   const data = await response.json();
 
-  // Transform the response to our format
+  // Normalize response format
   const result = {
     reference: data.reference,
-    verses: data.verses.map(v => ({
-      verse: v.verse,
-      text: v.text.trim()
-    }))
+    translation: data.translation,
+    verses: data.verses
   };
 
   // Cache the result
-  setCache(bookId, chapter, result);
+  setCache(translation, bookId, chapter, result);
 
   return result;
 };
 
-export const prefetchChapter = async (bookId, chapter) => {
+export const prefetchChapter = async (bookId, chapter, translation = 'esv') => {
   // Prefetch without blocking - for adjacent chapters
   try {
-    await fetchChapter(bookId, chapter);
+    await fetchChapter(bookId, chapter, translation);
   } catch (e) {
     console.warn('Prefetch failed:', e);
+  }
+};
+
+// Clear cache for a specific translation (useful when switching)
+export const clearTranslationCache = (translation) => {
+  const prefix = `${CACHE_PREFIX}${translation}_`;
+
+  // Clear memory cache
+  for (const key of memoryCache.keys()) {
+    if (key.startsWith(prefix)) {
+      memoryCache.delete(key);
+    }
+  }
+
+  // Clear localStorage
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  } catch (e) {
+    console.warn('Cache clear error:', e);
   }
 };
