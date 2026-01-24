@@ -59,6 +59,13 @@ vi.mock('../../../src/context/BibleContext', () => ({
   useBible: () => mockBibleContext,
 }));
 
+vi.mock('../../../src/context/SettingsContext', () => ({
+  useSettings: () => ({
+    translation: 'esv',
+    setTranslation: vi.fn(),
+  }),
+}));
+
 import BibleReader from '../../../src/components/Bible/BibleReader';
 
 describe('BibleReader', () => {
@@ -102,7 +109,7 @@ describe('BibleReader', () => {
       render(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 8);
+        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 8, 'esv');
       });
     });
 
@@ -134,7 +141,7 @@ describe('BibleReader', () => {
       const { rerender } = render(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 8);
+        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 8, 'esv');
       });
 
       mockBibleContext.bookId = 'GEN';
@@ -143,7 +150,7 @@ describe('BibleReader', () => {
       rerender(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockFetchChapter).toHaveBeenCalledWith('GEN', 1);
+        expect(mockFetchChapter).toHaveBeenCalledWith('GEN', 1, 'esv');
       });
     });
 
@@ -151,7 +158,7 @@ describe('BibleReader', () => {
       const { rerender } = render(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 8);
+        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 8, 'esv');
       });
 
       mockBibleContext.chapter = 9;
@@ -159,7 +166,7 @@ describe('BibleReader', () => {
       rerender(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 9);
+        expect(mockFetchChapter).toHaveBeenCalledWith('ROM', 9, 'esv');
       });
     });
   });
@@ -169,7 +176,7 @@ describe('BibleReader', () => {
       render(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockPrefetchChapter).toHaveBeenCalledWith('ROM', 9);
+        expect(mockPrefetchChapter).toHaveBeenCalledWith('ROM', 9, 'esv');
       });
     });
 
@@ -177,7 +184,7 @@ describe('BibleReader', () => {
       render(<BibleReader onVisibleVerseChange={vi.fn()} />);
 
       await waitFor(() => {
-        expect(mockPrefetchChapter).toHaveBeenCalledWith('ROM', 7);
+        expect(mockPrefetchChapter).toHaveBeenCalledWith('ROM', 7, 'esv');
       });
     });
 
@@ -193,7 +200,7 @@ describe('BibleReader', () => {
 
       // Should only prefetch previous, not next
       expect(mockPrefetchChapter).toHaveBeenCalledTimes(1);
-      expect(mockPrefetchChapter).toHaveBeenCalledWith('REV', 21);
+      expect(mockPrefetchChapter).toHaveBeenCalledWith('REV', 21, 'esv');
     });
 
     it('does not prefetch previous when at start of Bible', async () => {
@@ -208,7 +215,7 @@ describe('BibleReader', () => {
 
       // Should only prefetch next, not previous
       expect(mockPrefetchChapter).toHaveBeenCalledTimes(1);
-      expect(mockPrefetchChapter).toHaveBeenCalledWith('GEN', 2);
+      expect(mockPrefetchChapter).toHaveBeenCalledWith('GEN', 2, 'esv');
     });
   });
 

@@ -17,6 +17,13 @@ vi.mock('../../../src/context/SystematicContext', () => ({
   }),
 }));
 
+vi.mock('../../../src/context/SettingsContext', () => ({
+  useSettings: () => ({
+    translation: 'esv',
+    setTranslation: vi.fn(),
+  }),
+}));
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
