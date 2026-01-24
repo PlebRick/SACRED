@@ -1,8 +1,74 @@
 // Bible proxy route - handles multiple translations
 // Proxies to external APIs and normalizes responses
+// Supports offline WEB translation when bundled with Electron app
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const router = express.Router();
+
+// Local WEB Bible data cache
+let webBibleData = null;
+let webBibleLoadAttempted = false;
+
+/**
+ * Load local WEB Bible data from bundled file
+ * Checks both Electron packaged location and dev location
+ */
+function loadLocalWebBible() {
+  if (webBibleLoadAttempted) {
+    return webBibleData;
+  }
+  webBibleLoadAttempted = true;
+
+  // Possible file locations
+  const possiblePaths = [];
+
+  // Electron packaged app location
+  if (process.resourcesPath) {
+    possiblePaths.push(path.join(process.resourcesPath, 'web-bible-complete.json'));
+  }
+
+  // Development location (relative to server directory)
+  possiblePaths.push(path.join(__dirname, '..', '..', 'myfiles', 'web-bible-complete.json'));
+
+  for (const filePath of possiblePaths) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, 'utf8');
+        webBibleData = JSON.parse(data);
+        console.log(`Loaded local WEB Bible from: ${filePath}`);
+        return webBibleData;
+      }
+    } catch (error) {
+      console.warn(`Failed to load WEB Bible from ${filePath}:`, error.message);
+    }
+  }
+
+  console.log('Local WEB Bible not found, will use API fallback');
+  return null;
+}
+
+/**
+ * Get chapter from local WEB Bible data
+ * Returns null if not available
+ */
+function getLocalWebChapter(bookId, chapter) {
+  const bible = loadLocalWebBible();
+  if (!bible) return null;
+
+  const bookData = bible[bookId];
+  if (!bookData) return null;
+
+  const chapterData = bookData[chapter];
+  if (!chapterData) return null;
+
+  return {
+    reference: chapterData.reference,
+    translation: 'WEB',
+    verses: chapterData.verses
+  };
+}
 
 // Book ID to name mapping for bible-api.com (WEB)
 const bookIdToApiName = {
@@ -68,8 +134,16 @@ function parseEsvVerses(text) {
   return verses;
 }
 
-// Fetch from WEB translation (bible-api.com)
+// Fetch from WEB translation
+// Tries local bundled data first, falls back to bible-api.com
 async function fetchWeb(bookId, chapter) {
+  // Try local data first (instant, works offline)
+  const localData = getLocalWebChapter(bookId, chapter);
+  if (localData) {
+    return localData;
+  }
+
+  // Fallback to API
   const apiBookName = bookIdToApiName[bookId];
   if (!apiBookName) {
     throw new Error(`Unknown book ID: ${bookId}`);
@@ -137,6 +211,27 @@ async function fetchEsv(bookId, chapter) {
     verses
   };
 }
+
+// GET /api/bible/status - Report offline availability
+router.get('/status', (req, res) => {
+  const webBible = loadLocalWebBible();
+  const esvApiKey = process.env.ESV_API_KEY;
+
+  res.json({
+    translations: {
+      web: {
+        available: true,
+        offline: webBible !== null,
+        source: webBible ? 'local' : 'api'
+      },
+      esv: {
+        available: !!esvApiKey,
+        offline: false,
+        source: esvApiKey ? 'api' : null
+      }
+    }
+  });
+});
 
 // GET /api/bible/:translation/:book/:chapter
 router.get('/:translation/:book/:chapter', async (req, res) => {
