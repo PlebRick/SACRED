@@ -44,10 +44,13 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
+  max-height: 85vh;
   margin: 1rem;
   box-shadow: 0 20px 40px var(--shadow);
   animation: slideUp 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -68,6 +71,7 @@
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .modalTitle {
@@ -100,6 +104,8 @@
 /* Modal Body */
 .modalBody {
   padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 /* Section */
@@ -370,4 +376,77 @@
 .importIcon {
   background: var(--accent-subtle);
   color: var(--accent);
+}
+
+/* Radio Group for Translation Selector */
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radioOption:hover {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.radioOption:has(.radioInput:checked) {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.radioInput {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.radioLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.radioTitle {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.radioDescription {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* Clear Cache Button */
+.clearCacheButton {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearCacheButton:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
 }

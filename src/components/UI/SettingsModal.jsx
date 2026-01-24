@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNotes } from '../../context/NotesContext';
 import { useSystematic } from '../../context/SystematicContext';
+import { useSettings } from '../../context/SettingsContext';
 import { systematicService } from '../../services/systematicService';
 import styles from './Settings.module.css';
 
@@ -15,6 +16,9 @@ export const SettingsModal = () => {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
   const { refreshNotes } = useNotes();
+
+  // Settings
+  const { translation, setTranslation } = useSettings();
 
   // Systematic theology state
   const { refreshTree } = useSystematic();
@@ -502,6 +506,65 @@ export const SettingsModal = () => {
                 {status.message}
               </div>
             )}
+
+            {/* Bible Translation Section */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <span className={styles.sectionIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </span>
+                Bible Translation
+              </h3>
+
+              <div className={styles.radioGroup}>
+                <label className={styles.radioOption}>
+                  <input
+                    type="radio"
+                    name="translation"
+                    value="esv"
+                    checked={translation === 'esv'}
+                    onChange={() => setTranslation('esv')}
+                    className={styles.radioInput}
+                  />
+                  <span className={styles.radioLabel}>
+                    <span className={styles.radioTitle}>ESV</span>
+                    <span className={styles.radioDescription}>English Standard Version</span>
+                  </span>
+                </label>
+
+                <label className={styles.radioOption}>
+                  <input
+                    type="radio"
+                    name="translation"
+                    value="web"
+                    checked={translation === 'web'}
+                    onChange={() => setTranslation('web')}
+                    className={styles.radioInput}
+                  />
+                  <span className={styles.radioLabel}>
+                    <span className={styles.radioTitle}>WEB</span>
+                    <span className={styles.radioDescription}>World English Bible (Public Domain)</span>
+                  </span>
+                </label>
+              </div>
+
+              <button
+                className={styles.clearCacheButton}
+                onClick={() => {
+                  Object.keys(localStorage)
+                    .filter(k => k.startsWith('sacred_bible_'))
+                    .forEach(k => localStorage.removeItem(k));
+                  setStatus({ type: 'success', message: 'Bible cache cleared' });
+                }}
+              >
+                Clear Bible Cache
+              </button>
+            </div>
+
+            <div className={styles.divider} />
 
             {/* Backup & Restore Section */}
             <div className={styles.section}>

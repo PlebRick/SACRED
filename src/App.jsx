@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { BibleProvider, useBible } from './context/BibleContext';
 import { NotesProvider, useNotes } from './context/NotesContext';
 import { TopicsProvider } from './context/TopicsContext';
@@ -113,17 +114,19 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <BibleProvider>
-        <NotesProvider>
-          <TopicsProvider>
-            <InlineTagsProvider>
-              <SystematicProvider>
-                <AppContent />
-              </SystematicProvider>
-            </InlineTagsProvider>
-          </TopicsProvider>
-        </NotesProvider>
-      </BibleProvider>
+      <SettingsProvider>
+        <BibleProvider>
+          <NotesProvider>
+            <TopicsProvider>
+              <InlineTagsProvider>
+                <SystematicProvider>
+                  <AppContent />
+                </SystematicProvider>
+              </InlineTagsProvider>
+            </TopicsProvider>
+          </NotesProvider>
+        </BibleProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }

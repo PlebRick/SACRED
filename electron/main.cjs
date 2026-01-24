@@ -268,11 +268,13 @@ function startServer() {
   const topicsRoutes = require('../server/routes/topics.cjs');
   const inlineTagsRoutes = require('../server/routes/inlineTags.cjs');
   const systematicRoutes = require('../server/routes/systematic.cjs');
+  const bibleRoutes = require('../server/routes/bible.cjs');
   serverApp.use('/api/notes', backupRoutes);
   serverApp.use('/api/notes', notesRoutes);
   serverApp.use('/api/topics', topicsRoutes);
   serverApp.use('/api/inline-tags', inlineTagsRoutes);
   serverApp.use('/api/systematic', systematicRoutes);
+  serverApp.use('/api/bible', bibleRoutes);
 
   // Debug endpoint to check systematic theology status
   serverApp.get('/api/debug/systematic-status', (req, res) => {
