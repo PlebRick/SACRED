@@ -2,10 +2,10 @@
 
 ## High Priority
 
-- [ ] **Full-text search across notes**
-  - Search note titles and content
-  - Highlight matching terms in results
-  - Consider SQLite FTS5 extension
+- [x] **Full-text search across notes** ✓ v0.0.5
+  - SQLite FTS5 with ranked results
+  - Highlighted snippets in search modal
+  - Cmd+K keyboard shortcut
 
 - [x] **Tags/categories for organizing notes** ✓ v0.0.4
   - Hierarchical topics with parent-child relationships
@@ -34,10 +34,12 @@
 
 ## Medium Priority
 
-- [ ] **Multiple Bible translations**
-  - Currently using WEB (World English Bible) via bible-api.com
-  - Add translation selector in UI
-  - Consider local Bible text storage for offline use
+- [x] **Multiple Bible translations** ✓ v0.0.10
+  - ESV (English Standard Version) via api.esv.org with API key
+  - WEB (World English Bible) via bible-api.com (public domain)
+  - Translation selector in Settings modal
+  - Per-translation caching in localStorage
+  - Clear Bible Cache button for troubleshooting
 
 - [ ] **AI integration API**
   - Endpoint for Claude Cowork / external tools
@@ -63,6 +65,7 @@
 
 ## Completed
 
+- **v0.0.10** - ESV Bible translation support with translation selector in Settings
 - **v0.0.8** - Note type indicators in right panel, systematic theology backup, resizable sidebar
 - **v0.0.7** - Systematic Theology integration with note linking, MCP tools, auto-restore
 - **v0.0.6** - Visual note type distinction, independent scrolling, Mac app fixes
@@ -72,7 +75,7 @@
 
 ## Tests
 
-Current: 522 tests | Run `npm run test:coverage` for latest metrics
+Current: 563 tests | Run `npm run test:coverage` for latest metrics
 
 *Note: Coverage % decreased due to new topics system code. Key new files have excellent coverage.*
 

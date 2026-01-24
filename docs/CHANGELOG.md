@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.0.10] - 2026-01-24
+
+### Added
+- **ESV Bible Translation Support**: Choose between ESV and WEB translations
+  - Backend Bible proxy route (`/api/bible/:translation/:book/:chapter`)
+  - ESV via api.esv.org (requires API key in `.env`)
+  - WEB via bible-api.com (public domain, no key needed)
+  - Translation selector in Settings modal with radio buttons
+  - Per-translation caching (localStorage keys include translation)
+  - "Clear Bible Cache" button in Settings for troubleshooting stale data
+  - New SettingsContext for persisting user preferences
+
+### Technical
+- Added `dotenv` dependency for environment variable loading
+- New `server/routes/bible.cjs` - backend proxy normalizing API responses
+- New `src/context/SettingsContext.jsx` - translation preference storage
+- Updated `bibleApi.js` to use backend proxy instead of direct API calls
+- Settings modal now scrollable with max-height constraint
+
+---
+
 ## [0.0.9] - 2026-01-23
 
 ### Added
