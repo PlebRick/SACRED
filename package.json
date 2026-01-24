@@ -88,6 +88,10 @@
       {
         "from": "myfiles/web-bible-complete.json",
         "to": "web-bible-complete.json"
+      },
+      {
+        "from": ".env",
+        "to": ".env"
       }
     ],
     "asarUnpack": [
