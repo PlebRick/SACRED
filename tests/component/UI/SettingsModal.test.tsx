@@ -17,11 +17,28 @@ vi.mock('../../../src/context/SystematicContext', () => ({
   }),
 }));
 
+const mockSetTranslation = vi.fn();
+
 vi.mock('../../../src/context/SettingsContext', () => ({
   useSettings: () => ({
     translation: 'esv',
-    setTranslation: vi.fn(),
+    setTranslation: mockSetTranslation,
   }),
+}));
+
+// Mock systematicService
+const mockImportData = vi.fn();
+const mockExportData = vi.fn();
+const mockGetCount = vi.fn();
+const mockDeleteAll = vi.fn();
+
+vi.mock('../../../src/services/systematicService', () => ({
+  systematicService: {
+    importData: (...args: any[]) => mockImportData(...args),
+    exportData: (...args: any[]) => mockExportData(...args),
+    getCount: (...args: any[]) => mockGetCount(...args),
+    deleteAll: (...args: any[]) => mockDeleteAll(...args),
+  },
 }));
 
 // Mock fetch
@@ -482,6 +499,409 @@ describe('SettingsModal', () => {
 
       const confirmButton = screen.getByRole('button', { name: 'Delete All' });
       expect(confirmButton).toBeDisabled();
+    });
+  });
+
+  describe('Bible translation settings', () => {
+    it('renders translation options', () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      expect(screen.getByText('Bible Translation')).toBeInTheDocument();
+      expect(screen.getByText('ESV')).toBeInTheDocument();
+      expect(screen.getByText('WEB')).toBeInTheDocument();
+    });
+
+    it('shows ESV as selected when translation is esv', () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const esvRadio = screen.getByRole('radio', { name: /ESV/ });
+      expect(esvRadio).toBeChecked();
+    });
+
+    it('calls setTranslation when WEB is selected', () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const webRadio = screen.getByRole('radio', { name: /WEB/ });
+      fireEvent.click(webRadio);
+
+      expect(mockSetTranslation).toHaveBeenCalledWith('web');
+    });
+
+    it('clears Bible cache when button clicked', () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const clearButton = screen.getByText('Clear Bible Cache');
+      fireEvent.click(clearButton);
+
+      // Shows success message
+      expect(screen.getByText('Bible cache cleared')).toBeInTheDocument();
+    });
+  });
+
+  describe('import functionality', () => {
+    it('triggers file input when Import Backup is clicked', () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      // Find the file input
+      const fileInput = document.querySelector('input[type="file"][accept=".json"]') as HTMLInputElement;
+      const clickSpy = vi.spyOn(fileInput, 'click');
+
+      const importButton = screen.getByText('Import Backup').closest('button');
+      fireEvent.click(importButton!);
+
+      expect(clickSpy).toHaveBeenCalled();
+    });
+
+    it('imports valid backup file', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ inserted: 3, updated: 2 }),
+      });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInput = document.querySelector('input[type="file"][accept=".json"]') as HTMLInputElement;
+      const file = new File(
+        [JSON.stringify({ notes: [{ id: '1' }, { id: '2' }, { id: '3' }] })],
+        'backup.json',
+        { type: 'application/json' }
+      );
+
+      // Mock the File.text() method
+      file.text = vi.fn().mockResolvedValue(JSON.stringify({ notes: [{ id: '1' }, { id: '2' }, { id: '3' }] }));
+
+      Object.defineProperty(fileInput, 'files', { value: [file] });
+      fireEvent.change(fileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Imported 3 new, updated 2 existing notes')).toBeInTheDocument();
+      });
+
+      expect(mockRefreshNotes).toHaveBeenCalled();
+    });
+
+    it('shows error for invalid backup format', async () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInput = document.querySelector('input[type="file"][accept=".json"]') as HTMLInputElement;
+      const file = new File(
+        [JSON.stringify({ invalid: 'format' })],
+        'backup.json',
+        { type: 'application/json' }
+      );
+
+      file.text = vi.fn().mockResolvedValue(JSON.stringify({ invalid: 'format' }));
+
+      Object.defineProperty(fileInput, 'files', { value: [file] });
+      fireEvent.change(fileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid backup file format')).toBeInTheDocument();
+      });
+    });
+
+    it('handles import API error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+      });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInput = document.querySelector('input[type="file"][accept=".json"]') as HTMLInputElement;
+      const file = new File(
+        [JSON.stringify({ notes: [{ id: '1' }] })],
+        'backup.json',
+        { type: 'application/json' }
+      );
+
+      file.text = vi.fn().mockResolvedValue(JSON.stringify({ notes: [{ id: '1' }] }));
+
+      Object.defineProperty(fileInput, 'files', { value: [file] });
+      fireEvent.change(fileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Failed to import notes')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Systematic Theology section', () => {
+    beforeEach(() => {
+      mockImportData.mockReset();
+      mockExportData.mockReset();
+      mockGetCount.mockReset();
+      mockDeleteAll.mockReset();
+    });
+
+    it('renders ST section', () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      expect(screen.getByText('Systematic Theology')).toBeInTheDocument();
+      expect(screen.getByText('Export Systematic Theology')).toBeInTheDocument();
+      expect(screen.getByText('Import Systematic Theology')).toBeInTheDocument();
+      expect(screen.getByText('Delete All Systematic Theology')).toBeInTheDocument();
+    });
+
+    it('exports ST data', async () => {
+      mockExportData.mockResolvedValue({
+        systematic_theology: [{ id: '1' }, { id: '2' }],
+      });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const exportButton = screen.getByText('Export Systematic Theology').closest('button');
+      fireEvent.click(exportButton!);
+
+      await waitFor(() => {
+        expect(mockExportData).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Exported 2 entries successfully')).toBeInTheDocument();
+      });
+    });
+
+    it('handles ST export error', async () => {
+      mockExportData.mockRejectedValue(new Error('Export failed'));
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const exportButton = screen.getByText('Export Systematic Theology').closest('button');
+      fireEvent.click(exportButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Export failed')).toBeInTheDocument();
+      });
+    });
+
+    it('shows ST import confirmation modal', async () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      // Find the ST file input (second file input)
+      const fileInputs = document.querySelectorAll('input[type="file"][accept=".json"]');
+      const stFileInput = fileInputs[1] as HTMLInputElement;
+
+      const fileContent = JSON.stringify({ systematic_theology: [{ id: '1' }, { id: '2' }, { id: '3' }] });
+      const file = new File([fileContent], 'st-backup.json', { type: 'application/json' });
+      file.text = vi.fn().mockResolvedValue(fileContent);
+
+      Object.defineProperty(stFileInput, 'files', { value: [file] });
+      fireEvent.change(stFileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Import Systematic Theology?')).toBeInTheDocument();
+      });
+
+      // The count is in a <strong> element
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByText(/entries/)).toBeInTheDocument();
+    });
+
+    it('imports ST data on confirmation', async () => {
+      mockImportData.mockResolvedValue({
+        entries: 5,
+        scriptureRefs: 100,
+      });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInputs = document.querySelectorAll('input[type="file"][accept=".json"]');
+      const stFileInput = fileInputs[1] as HTMLInputElement;
+
+      const fileContent = JSON.stringify({ systematic_theology: [{ id: '1' }] });
+      const file = new File([fileContent], 'st-backup.json', { type: 'application/json' });
+      file.text = vi.fn().mockResolvedValue(fileContent);
+
+      Object.defineProperty(stFileInput, 'files', { value: [file] });
+      fireEvent.change(stFileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Import Systematic Theology?')).toBeInTheDocument();
+      });
+
+      const importButton = screen.getByRole('button', { name: 'Import' });
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(mockImportData).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Imported 5 entries, 100 scripture refs')).toBeInTheDocument();
+      });
+    });
+
+    it('cancels ST import', async () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInputs = document.querySelectorAll('input[type="file"][accept=".json"]');
+      const stFileInput = fileInputs[1] as HTMLInputElement;
+
+      const fileContent = JSON.stringify({ systematic_theology: [{ id: '1' }] });
+      const file = new File([fileContent], 'st-backup.json', { type: 'application/json' });
+      file.text = vi.fn().mockResolvedValue(fileContent);
+
+      Object.defineProperty(stFileInput, 'files', { value: [file] });
+      fireEvent.change(stFileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Import Systematic Theology?')).toBeInTheDocument();
+      });
+
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.click(cancelButton);
+
+      // Should return to main settings
+      expect(screen.queryByText('Import Systematic Theology?')).not.toBeInTheDocument();
+      expect(screen.getByText('Backup & Restore')).toBeInTheDocument();
+    });
+
+    it('shows error for invalid ST file', async () => {
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInputs = document.querySelectorAll('input[type="file"][accept=".json"]');
+      const stFileInput = fileInputs[1] as HTMLInputElement;
+
+      const fileContent = JSON.stringify({ invalid: 'format' });
+      const file = new File([fileContent], 'st-backup.json', { type: 'application/json' });
+      file.text = vi.fn().mockResolvedValue(fileContent);
+
+      Object.defineProperty(stFileInput, 'files', { value: [file] });
+      fireEvent.change(stFileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid file: systematic_theology array required')).toBeInTheDocument();
+      });
+    });
+
+    it('shows ST delete confirmation modal', async () => {
+      mockGetCount.mockResolvedValue({ count: 10, annotationCount: 5 });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const deleteButton = screen.getByText('Delete All Systematic Theology').closest('button');
+      fireEvent.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Delete All Systematic Theology?')).toBeInTheDocument();
+      });
+
+      // Check the text content separately
+      expect(screen.getByText('10')).toBeInTheDocument();
+      expect(screen.getByText(/doctrine entries/)).toBeInTheDocument();
+      expect(screen.getByText(/5 annotations/)).toBeInTheDocument();
+    });
+
+    it('deletes ST data on confirmation', async () => {
+      mockGetCount.mockResolvedValue({ count: 3, annotationCount: 0 });
+      mockDeleteAll.mockResolvedValue({ deleted: { entries: 3 } });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const deleteButton = screen.getByText('Delete All Systematic Theology').closest('button');
+      fireEvent.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Delete All Systematic Theology?')).toBeInTheDocument();
+      });
+
+      const input = screen.getByPlaceholderText('Type DELETE');
+      fireEvent.change(input, { target: { value: 'DELETE' } });
+
+      const confirmButton = screen.getByRole('button', { name: 'Delete All' });
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(mockDeleteAll).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Deleted 3 entries')).toBeInTheDocument();
+      });
+    });
+
+    it('cancels ST delete', async () => {
+      mockGetCount.mockResolvedValue({ count: 3, annotationCount: 0 });
+
+      render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const deleteButton = screen.getByText('Delete All Systematic Theology').closest('button');
+      fireEvent.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Delete All Systematic Theology?')).toBeInTheDocument();
+      });
+
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.click(cancelButton);
+
+      expect(screen.queryByText('Delete All Systematic Theology?')).not.toBeInTheDocument();
+      expect(screen.getByText('Backup & Restore')).toBeInTheDocument();
+    });
+
+    it('closes ST delete on Escape', async () => {
+      mockGetCount.mockResolvedValue({ count: 3, annotationCount: 0 });
+
+      const { container } = render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const deleteButton = screen.getByText('Delete All Systematic Theology').closest('button');
+      fireEvent.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Delete All Systematic Theology?')).toBeInTheDocument();
+      });
+
+      const modal = container.querySelector('[class*="confirmModal"]');
+      fireEvent.keyDown(modal!, { key: 'Escape' });
+
+      await waitFor(() => {
+        expect(screen.queryByText('Delete All Systematic Theology?')).not.toBeInTheDocument();
+      });
+    });
+
+    it('closes ST import on Escape', async () => {
+      const { container } = render(<SettingsModal />);
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      const fileInputs = document.querySelectorAll('input[type="file"][accept=".json"]');
+      const stFileInput = fileInputs[1] as HTMLInputElement;
+
+      const fileContent = JSON.stringify({ systematic_theology: [{ id: '1' }] });
+      const file = new File([fileContent], 'st-backup.json', { type: 'application/json' });
+      file.text = vi.fn().mockResolvedValue(fileContent);
+
+      Object.defineProperty(stFileInput, 'files', { value: [file] });
+      fireEvent.change(stFileInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('Import Systematic Theology?')).toBeInTheDocument();
+      });
+
+      const modal = container.querySelector('[class*="confirmModal"]');
+      fireEvent.keyDown(modal!, { key: 'Escape' });
+
+      await waitFor(() => {
+        expect(screen.queryByText('Import Systematic Theology?')).not.toBeInTheDocument();
+      });
     });
   });
 });

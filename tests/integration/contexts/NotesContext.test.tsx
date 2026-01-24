@@ -14,6 +14,17 @@ vi.mock('../../../src/services/notesService', () => ({
   },
 }));
 
+// Mock the sessionsService (used for logging note edits)
+vi.mock('../../../src/services/sessionsService', () => ({
+  sessionsService: {
+    log: vi.fn().mockResolvedValue(undefined),
+    getRecent: vi.fn().mockResolvedValue([]),
+    getSummary: vi.fn().mockResolvedValue({}),
+    getRelated: vi.fn().mockResolvedValue([]),
+    clearOld: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 import { notesService } from '../../../src/services/notesService';
 
 const mockNote = {
