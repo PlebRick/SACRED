@@ -84,6 +84,10 @@
       {
         "from": "myfiles/grudem-sys-theo-parsed/systematic-theology-complete.json",
         "to": "systematic-theology-complete.json"
+      },
+      {
+        "from": "myfiles/web-bible-complete.json",
+        "to": "web-bible-complete.json"
       }
     ],
     "asarUnpack": [
