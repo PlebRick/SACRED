@@ -227,22 +227,50 @@ Current: **522 tests** | See `docs/TESTING.md` for patterns and coverage details
 - Output: `release/SACRED-*.dmg`
 - Database: `~/Library/Application Support/sacred/sacred.db`
 
-### Node.js Version Warning
+### Native Module Architecture (IMPORTANT)
 
-This project uses `better-sqlite3`, a native C++ module compiled for a specific Node.js version. Electron bundles its own Node.js internally, which may differ from your system Node.js.
+This project uses `better-sqlite3`, a native C++ module that must be compiled for a specific:
+1. **CPU Architecture** (ARM64 vs x64)
+2. **Node.js version** (system Node vs Electron's bundled Node)
 
-**After upgrading Node.js**, you MUST rebuild native modules for Electron:
+There is only ONE copy of the compiled module in `node_modules/`, so **building for different targets overwrites it**.
+
+**Build targets and their requirements:**
+
+| Environment | Node Runtime | Architecture | Command to Prepare |
+|-------------|--------------|--------------|-------------------|
+| Dev server (`npm run dev:server`) | System Node | Your CPU (ARM on M1/M2/M3) | `npm rebuild better-sqlite3` |
+| Electron dev (`npm run electron:dev`) | Electron's Node | Your CPU | `npx electron-rebuild -f -w better-sqlite3` |
+| Electron build ARM | Electron's Node | ARM64 | `npx electron-rebuild -f -w better-sqlite3 --arch=arm64` |
+| Electron build Intel | Electron's Node | x64 | `npx electron-rebuild -f -w better-sqlite3 --arch=x64` |
+
+**Common issue: White screen after building for different architecture**
+
+If you build for x64 (Intel) then try to run dev or ARM build, you'll get a white screen because the native module is compiled for the wrong architecture.
+
+**Fix:** Rebuild for your current environment:
 ```bash
+# After building x64, restore ARM for local dev:
+npm rebuild better-sqlite3
+
+# Or for Electron dev:
 npx electron-rebuild -f -w better-sqlite3
 ```
 
-**Symptoms of version mismatch:**
+**Recommended workflow for releases:**
+
+Use GitHub Actions (`.github/workflows/build.yml`) to build both architectures in CI. This avoids the need to switch locally:
+- macos-14 runner builds ARM64 natively
+- macos-13 runner builds x64 natively
+
+**Symptoms of version/architecture mismatch:**
 - White screen on app launch
 - Error: "NODE_MODULE_VERSION X. This version of Node.js requires NODE_MODULE_VERSION Y"
+- Error: "was compiled against a different Node.js version"
 
-**Alternative fix:** Delete `node_modules` and reinstall before building:
+**Nuclear option:** Delete everything and reinstall:
 ```bash
-rm -rf node_modules && npm install && npm run electron:build
+rm -rf node_modules && npm install
 ```
 
 ### Environment Variables
