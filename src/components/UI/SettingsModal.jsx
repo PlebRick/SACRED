@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNotes } from '../../context/NotesContext';
 import { useSystematic } from '../../context/SystematicContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 import { systematicService } from '../../services/systematicService';
 import styles from './Settings.module.css';
 
@@ -19,6 +20,9 @@ export const SettingsModal = () => {
 
   // Settings
   const { translation, setTranslation } = useSettings();
+
+  // Auth
+  const { authRequired, logout } = useAuth();
 
   // Systematic theology state
   const { refreshTree } = useSystematic();
@@ -275,6 +279,12 @@ export const SettingsModal = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Logout
+  const handleLogout = async () => {
+    closeModal();
+    await logout();
   };
 
   // Gear button for header
@@ -696,6 +706,42 @@ export const SettingsModal = () => {
                 onChange={handleSTFileChange}
               />
             </div>
+
+            {authRequired && (
+              <>
+                <div className={styles.divider} />
+
+                {/* Account Section */}
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>
+                    <span className={styles.sectionIcon}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    </span>
+                    Account
+                  </h3>
+
+                  <button
+                    className={styles.actionButton}
+                    onClick={handleLogout}
+                  >
+                    <div className={styles.actionIcon}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                    </div>
+                    <div className={styles.actionContent}>
+                      <div className={styles.actionTitle}>Sign Out</div>
+                      <div className={styles.actionDescription}>Log out of SACRED</div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
 
             <div className={styles.divider} />
 

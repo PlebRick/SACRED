@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { BibleProvider, useBible } from './context/BibleContext';
 import { NotesProvider, useNotes } from './context/NotesContext';
 import { TopicsProvider } from './context/TopicsContext';
@@ -13,6 +14,7 @@ import { BibleReader } from './components/Bible/BibleReader';
 import { NotesPanel } from './components/Notes/NotesPanel';
 import { SystematicPanel } from './components/Systematic/SystematicPanel';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
+import { Login } from './components/Auth/Login';
 import { isVerseInRange } from './utils/verseRange';
 import styles from './components/Layout/Layout.module.css';
 
@@ -112,23 +114,49 @@ function AppContent() {
   );
 }
 
+// Auth-gated content wrapper
+function AuthenticatedApp() {
+  const { isAuthenticated, authRequired, loading } = useAuth();
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner} />
+      </div>
+    );
+  }
+
+  // Show login if auth is required and not authenticated
+  if (authRequired && !isAuthenticated) {
+    return <Login />;
+  }
+
+  // Show main app
+  return (
+    <BibleProvider>
+      <NotesProvider>
+        <TopicsProvider>
+          <InlineTagsProvider>
+            <SystematicProvider>
+              <SeriesProvider>
+                <AppContent />
+              </SeriesProvider>
+            </SystematicProvider>
+          </InlineTagsProvider>
+        </TopicsProvider>
+      </NotesProvider>
+    </BibleProvider>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <SettingsProvider>
-        <BibleProvider>
-          <NotesProvider>
-            <TopicsProvider>
-              <InlineTagsProvider>
-                <SystematicProvider>
-                  <SeriesProvider>
-                    <AppContent />
-                  </SeriesProvider>
-                </SystematicProvider>
-              </InlineTagsProvider>
-            </TopicsProvider>
-          </NotesProvider>
-        </BibleProvider>
+        <AuthProvider>
+          <AuthenticatedApp />
+        </AuthProvider>
       </SettingsProvider>
     </ThemeProvider>
   );

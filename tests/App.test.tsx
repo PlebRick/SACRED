@@ -51,6 +51,27 @@ vi.mock('../src/context/SystematicContext', () => ({
   SystematicProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="systematic-provider">{children}</div>,
 }));
 
+vi.mock('../src/context/SeriesContext', () => ({
+  SeriesProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="series-provider">{children}</div>,
+}));
+
+vi.mock('../src/context/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="auth-provider">{children}</div>,
+  useAuth: () => ({
+    isAuthenticated: true,
+    authRequired: false,
+    loading: false,
+    error: null,
+    login: vi.fn(),
+    logout: vi.fn(),
+  }),
+}));
+
+// Mock Login component
+vi.mock('../src/components/Auth/Login', () => ({
+  Login: () => <div data-testid="login-page">Login</div>,
+}));
+
 // Mock components
 vi.mock('../src/components/Layout/Header', () => ({
   Header: ({ onToggleSidebar, sidebarOpen }: any) => (
@@ -135,21 +156,23 @@ describe('App', () => {
       // Verify all providers are present
       expect(screen.getByTestId('theme-provider')).toBeInTheDocument();
       expect(screen.getByTestId('settings-provider')).toBeInTheDocument();
+      expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
       expect(screen.getByTestId('bible-provider')).toBeInTheDocument();
       expect(screen.getByTestId('notes-provider')).toBeInTheDocument();
       expect(screen.getByTestId('topics-provider')).toBeInTheDocument();
       expect(screen.getByTestId('inline-tags-provider')).toBeInTheDocument();
       expect(screen.getByTestId('systematic-provider')).toBeInTheDocument();
+      expect(screen.getByTestId('series-provider')).toBeInTheDocument();
     });
 
     it('nests providers correctly', () => {
       const { container } = render(<App />);
 
-      // Theme is outermost, Systematic is innermost
+      // Theme is outermost, Series is innermost
       const themeProvider = screen.getByTestId('theme-provider');
-      const systematicProvider = screen.getByTestId('systematic-provider');
+      const seriesProvider = screen.getByTestId('series-provider');
 
-      expect(themeProvider).toContainElement(systematicProvider);
+      expect(themeProvider).toContainElement(seriesProvider);
     });
   });
 

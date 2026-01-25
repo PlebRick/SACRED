@@ -360,6 +360,24 @@ db.exec(`
   )
 `);
 
+// ===========================================
+// AUTHENTICATION SESSIONS
+// ===========================================
+
+// Create auth sessions table for web hosting
+db.exec(`
+  CREATE TABLE IF NOT EXISTS auth_sessions (
+    id TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+  )
+`);
+
+// Index for session expiry cleanup
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at)
+`);
+
 // Migration: Add series_id to notes table if it doesn't exist
 const notesColumnsForSeries = db.prepare("PRAGMA table_info(notes)").all();
 const hasSeriesId = notesColumnsForSeries.some(col => col.name === 'series_id');

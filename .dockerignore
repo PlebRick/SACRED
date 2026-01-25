@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Environment files (use env vars instead)
+.env
+.env.*
+
+# Database (use volume mount)
+data/
+
+# Build outputs
+release/
+dist/
+
+# Development
+.DS_Store
+*.log
+npm-debug.log*
+
+# Test files
+tests/
+coverage/
+*.test.js
+*.test.cjs
+*.spec.js
+*.spec.cjs
+
+# Documentation
+*.md
+docs/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Electron (not needed for Docker)
+electron/
+build/
+
+# MCP server (not needed for Docker)
+mcp/
+
+# Temp files
+tmp/
+temp/
