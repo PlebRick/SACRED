@@ -368,4 +368,16 @@ if (!hasSeriesId) {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_notes_series ON notes(series_id)`);
 }
 
+// ===========================================
+// ILLUSTRATION DUPLICATE DETECTION
+// ===========================================
+
+// Migration: Add text_signature to inline_tags for duplicate detection
+const inlineTagsCols = db.prepare("PRAGMA table_info(inline_tags)").all();
+const hasTextSignature = inlineTagsCols.some(col => col.name === 'text_signature');
+if (!hasTextSignature) {
+  db.exec(`ALTER TABLE inline_tags ADD COLUMN text_signature TEXT`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_inline_tags_signature ON inline_tags(text_signature)`);
+}
+
 module.exports = db;
