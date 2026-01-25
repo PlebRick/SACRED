@@ -2,50 +2,63 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import React from 'react';
 
-// Mutable state object for SystematicContext mock
-const mockSelectEntry = vi.fn();
-const mockOpenChapter = vi.fn();
-
-const mockSystematicState = {
-  relatedDoctrines: [] as any[],
-  relatedDoctrinesLoading: false,
-  selectEntry: mockSelectEntry,
-  openChapter: mockOpenChapter,
-  // Include all other properties that the context provides
-  tree: [] as any[],
-  loading: false,
-  error: null as any,
-  selectedEntryId: null as string | null,
-  selectedEntry: null as any,
-  isPanelOpen: false,
-  tags: [] as any[],
-  searchResults: [] as any[],
-  searchQuery: '',
-  annotations: [] as any[],
-  annotationsLoading: false,
-  closePanel: vi.fn(),
-  togglePanel: vi.fn(),
-  search: vi.fn(),
-  clearSearch: vi.fn(),
-  getByTag: vi.fn(),
-  addAnnotation: vi.fn(),
-  deleteAnnotation: vi.fn(),
-  getReferencingNotes: vi.fn(),
-  navigateToLink: vi.fn(),
-  findChapterInTree: vi.fn(),
-};
-
-// Mock SystematicContext with mutable state
-vi.mock('../../../src/context/SystematicContext', () => ({
-  useSystematic: () => mockSystematicState,
-}));
-
-import { RelatedDoctrines } from '../../../src/components/Notes/RelatedDoctrines';
-
 describe('RelatedDoctrines', () => {
+  // Mock functions and state - defined fresh for each test suite
+  let mockSelectEntry: ReturnType<typeof vi.fn>;
+  let mockOpenChapter: ReturnType<typeof vi.fn>;
+  let mockSystematicState: Record<string, any>;
+  let RelatedDoctrines: React.ComponentType;
+
+  beforeAll(async () => {
+    // Reset module cache to ensure fresh mock
+    vi.resetModules();
+
+    // Create mock functions
+    mockSelectEntry = vi.fn();
+    mockOpenChapter = vi.fn();
+
+    // Create mutable state
+    mockSystematicState = {
+      relatedDoctrines: [],
+      relatedDoctrinesLoading: false,
+      selectEntry: mockSelectEntry,
+      openChapter: mockOpenChapter,
+      tree: [],
+      loading: false,
+      error: null,
+      selectedEntryId: null,
+      selectedEntry: null,
+      isPanelOpen: false,
+      tags: [],
+      searchResults: [],
+      searchQuery: '',
+      annotations: [],
+      annotationsLoading: false,
+      closePanel: vi.fn(),
+      togglePanel: vi.fn(),
+      search: vi.fn(),
+      clearSearch: vi.fn(),
+      getByTag: vi.fn(),
+      addAnnotation: vi.fn(),
+      deleteAnnotation: vi.fn(),
+      getReferencingNotes: vi.fn(),
+      navigateToLink: vi.fn(),
+      findChapterInTree: vi.fn(),
+    };
+
+    // Mock SystematicContext
+    vi.doMock('../../../src/context/SystematicContext', () => ({
+      useSystematic: () => mockSystematicState,
+    }));
+
+    // Dynamically import the component after setting up mock
+    const module = await import('../../../src/components/Notes/RelatedDoctrines');
+    RelatedDoctrines = module.RelatedDoctrines;
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset to default state - this ensures tests start with clean data
+    // Reset to default state
     mockSystematicState.relatedDoctrines = [];
     mockSystematicState.relatedDoctrinesLoading = false;
     mockSystematicState.selectEntry = mockSelectEntry;
@@ -57,6 +70,10 @@ describe('RelatedDoctrines', () => {
     // Clean up mock state after each test
     mockSystematicState.relatedDoctrines = [];
     mockSystematicState.relatedDoctrinesLoading = false;
+  });
+
+  afterAll(() => {
+    vi.doUnmock('../../../src/context/SystematicContext');
   });
 
   describe('loading state', () => {
