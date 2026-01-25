@@ -345,4 +345,27 @@ function seedDefaultSystematicTags() {
 
 seedDefaultSystematicTags();
 
+// ===========================================
+// SERMON SERIES
+// ===========================================
+
+// Create series table for grouping sermons
+db.exec(`
+  CREATE TABLE IF NOT EXISTS series (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )
+`);
+
+// Migration: Add series_id to notes table if it doesn't exist
+const notesColumnsForSeries = db.prepare("PRAGMA table_info(notes)").all();
+const hasSeriesId = notesColumnsForSeries.some(col => col.name === 'series_id');
+if (!hasSeriesId) {
+  db.exec(`ALTER TABLE notes ADD COLUMN series_id TEXT REFERENCES series(id) ON DELETE SET NULL`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notes_series ON notes(series_id)`);
+}
+
 module.exports = db;
