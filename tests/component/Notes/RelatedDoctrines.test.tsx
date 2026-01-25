@@ -2,46 +2,66 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import React from 'react';
 
-// Use globalThis to share state between factory and tests
+// Mutable state object for SystematicContext mock
 const mockSelectEntry = vi.fn();
 const mockOpenChapter = vi.fn();
 
-// Store mock state on globalThis so it's accessible from the factory
-(globalThis as any).__relatedDoctrinesMockState__ = {
+const mockSystematicState = {
   relatedDoctrines: [] as any[],
   relatedDoctrinesLoading: false,
   selectEntry: mockSelectEntry,
   openChapter: mockOpenChapter,
+  // Include all other properties that the context provides
+  tree: [] as any[],
+  loading: false,
+  error: null as any,
+  selectedEntryId: null as string | null,
+  selectedEntry: null as any,
+  isPanelOpen: false,
+  tags: [] as any[],
+  searchResults: [] as any[],
+  searchQuery: '',
+  annotations: [] as any[],
+  annotationsLoading: false,
+  closePanel: vi.fn(),
+  togglePanel: vi.fn(),
+  search: vi.fn(),
+  clearSearch: vi.fn(),
+  getByTag: vi.fn(),
+  addAnnotation: vi.fn(),
+  deleteAnnotation: vi.fn(),
+  getReferencingNotes: vi.fn(),
+  navigateToLink: vi.fn(),
+  findChapterInTree: vi.fn(),
 };
 
-// Mock the SystematicContext with a factory that returns the global state
+// Mock SystematicContext with mutable state
 vi.mock('../../../src/context/SystematicContext', () => ({
-  useSystematic: () => (globalThis as any).__relatedDoctrinesMockState__,
+  useSystematic: () => mockSystematicState,
 }));
 
 import { RelatedDoctrines } from '../../../src/components/Notes/RelatedDoctrines';
 
-// Helper to access mock state
-const getMockState = () => (globalThis as any).__relatedDoctrinesMockState__;
-
 describe('RelatedDoctrines', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset to default state
-    const state = getMockState();
-    state.relatedDoctrines = [];
-    state.relatedDoctrinesLoading = false;
-    state.selectEntry = mockSelectEntry;
-    state.openChapter = mockOpenChapter;
+    // Reset to default state - this ensures tests start with clean data
+    mockSystematicState.relatedDoctrines = [];
+    mockSystematicState.relatedDoctrinesLoading = false;
+    mockSystematicState.selectEntry = mockSelectEntry;
+    mockSystematicState.openChapter = mockOpenChapter;
   });
 
   afterEach(() => {
     cleanup();
+    // Clean up mock state after each test
+    mockSystematicState.relatedDoctrines = [];
+    mockSystematicState.relatedDoctrinesLoading = false;
   });
 
   describe('loading state', () => {
     it('shows loading message when loading', () => {
-      getMockState().relatedDoctrinesLoading = true;
+      mockSystematicState.relatedDoctrinesLoading = true;
 
       render(<RelatedDoctrines />);
 
@@ -51,8 +71,8 @@ describe('RelatedDoctrines', () => {
 
   describe('empty state', () => {
     it('returns null when no related doctrines', () => {
-      getMockState().relatedDoctrines = [];
-      getMockState().relatedDoctrinesLoading = false;
+      mockSystematicState.relatedDoctrines = [];
+      mockSystematicState.relatedDoctrinesLoading = false;
 
       const { container } = render(<RelatedDoctrines />);
 
@@ -67,8 +87,8 @@ describe('RelatedDoctrines', () => {
     ];
 
     beforeEach(() => {
-      getMockState().relatedDoctrines = mockDoctrines;
-      getMockState().relatedDoctrinesLoading = false;
+      mockSystematicState.relatedDoctrines = mockDoctrines;
+      mockSystematicState.relatedDoctrinesLoading = false;
     });
 
     it('shows header with count', () => {
@@ -107,8 +127,8 @@ describe('RelatedDoctrines', () => {
     ];
 
     beforeEach(() => {
-      getMockState().relatedDoctrines = mockDoctrines;
-      getMockState().relatedDoctrinesLoading = false;
+      mockSystematicState.relatedDoctrines = mockDoctrines;
+      mockSystematicState.relatedDoctrinesLoading = false;
     });
 
     it('collapses when header is clicked', () => {
@@ -148,7 +168,7 @@ describe('RelatedDoctrines', () => {
 
   describe('click interactions', () => {
     it('calls openChapter for chapter-type doctrines', () => {
-      getMockState().relatedDoctrines = [
+      mockSystematicState.relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
       ];
 
@@ -162,7 +182,7 @@ describe('RelatedDoctrines', () => {
     });
 
     it('calls selectEntry for non-chapter doctrines', () => {
-      getMockState().relatedDoctrines = [
+      mockSystematicState.relatedDoctrines = [
         { id: 'sec-32-a', chapterNumber: 32, title: 'Section A', entryType: 'section', sectionLetter: 'A' },
       ];
 
@@ -178,7 +198,7 @@ describe('RelatedDoctrines', () => {
 
   describe('context snippet', () => {
     it('displays context snippet when available', () => {
-      getMockState().relatedDoctrines = [
+      mockSystematicState.relatedDoctrines = [
         {
           id: 'ch-32',
           chapterNumber: 32,
@@ -194,7 +214,7 @@ describe('RelatedDoctrines', () => {
     });
 
     it('does not render snippet element when not available', () => {
-      getMockState().relatedDoctrines = [
+      mockSystematicState.relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
       ];
 
@@ -206,7 +226,7 @@ describe('RelatedDoctrines', () => {
 
   describe('grouping by chapter', () => {
     it('groups multiple entries from same chapter', () => {
-      getMockState().relatedDoctrines = [
+      mockSystematicState.relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
         { id: 'sec-32-a', chapterNumber: 32, title: 'Section A', entryType: 'section' },
       ];
@@ -219,7 +239,7 @@ describe('RelatedDoctrines', () => {
     });
 
     it('uses chapter-level doctrine title when available', () => {
-      getMockState().relatedDoctrines = [
+      mockSystematicState.relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
         { id: 'sec-32-a', chapterNumber: 32, title: 'God is Three Persons', entryType: 'section' },
       ];
