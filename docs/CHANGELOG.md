@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased] - feature/granular-search
+
+### Added
+- **Scroll-to-Match Navigation**: Search results now scroll to matched content
+  - Verse search (e.g., "Romans 3:21") scrolls to the verse with highlight animation
+  - Note search opens the note editor focused on the result
+  - Works with both WEB and ESV Bible translations
+
+- **Sermon Series Linking**: Group sermons into named series
+  - New `series` table in database
+  - SeriesSelector dropdown in NoteEditor (for sermon-type notes only)
+  - Full CRUD API at `/api/series`
+  - 5 new MCP tools: `list_series`, `get_series`, `create_series`, `add_sermon_to_series`, `remove_sermon_from_series`
+
+- **Illustration Duplicate Detection**: Detect reused illustrations across sermons
+  - MD5-based text signatures for illustration inline tags
+  - 2 new MCP tools: `check_illustration_duplicates`, `get_duplicate_illustrations`
+
+- **Token-Efficient MCP Tools**: Reduce token usage when full content isn't needed
+  - `get_note_metadata` - Get note without content field
+  - `list_notes_metadata` - List notes with filtering, without content
+
+### Technical
+- MCP tool count increased from 63 to 72
+- New `SeriesContext.jsx` for series state management
+- New `seriesService.js` for API calls
+- `highlightVerse` state in BibleContext for scroll-to-verse
+- `highlightQuery` state in NotesContext for scroll-to-note
+
+---
+
 ## [0.1.0] - 2026-01-24
 
 ### Added
