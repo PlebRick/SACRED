@@ -53,6 +53,57 @@ export const toApiFormat = (row: DbNote): ApiNote => ({
 });
 
 /**
+ * Note metadata format (without content - token-efficient)
+ */
+export interface DbNoteMetadata {
+  id: string;
+  book: string;
+  start_chapter: number;
+  start_verse: number | null;
+  end_chapter: number;
+  end_verse: number | null;
+  title: string;
+  type: string;
+  primary_topic_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * API note metadata format (without content)
+ */
+export interface ApiNoteMetadata {
+  id: string;
+  book: string;
+  startChapter: number;
+  startVerse: number | null;
+  endChapter: number;
+  endVerse: number | null;
+  title: string;
+  type: string;
+  primaryTopicId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Convert database row to metadata-only API format (excludes content for token efficiency)
+ */
+export const toMetadataFormat = (row: DbNoteMetadata): ApiNoteMetadata => ({
+  id: row.id,
+  book: row.book,
+  startChapter: row.start_chapter,
+  startVerse: row.start_verse,
+  endChapter: row.end_chapter,
+  endVerse: row.end_verse,
+  title: row.title,
+  type: row.type,
+  primaryTopicId: row.primary_topic_id,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+/**
  * Topic database row format (snake_case)
  */
 export interface DbTopic {
