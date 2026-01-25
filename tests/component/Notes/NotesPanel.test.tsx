@@ -117,12 +117,38 @@ vi.mock('../../../src/context/BibleContext', () => ({
   useBible: () => mockBibleContext,
 }));
 
-// Define mock function before vi.mock using vi.hoisted
-const mockUseSystematic = vi.hoisted(() => vi.fn());
+// Mutable state object for SystematicContext mock
+const mockSystematicState = {
+  tree: [] as any[],
+  loading: false,
+  error: null as any,
+  selectedEntryId: null as string | null,
+  selectedEntry: null as any,
+  isPanelOpen: false,
+  relatedDoctrines: [] as any[],
+  relatedDoctrinesLoading: false,
+  tags: [] as any[],
+  searchResults: [] as any[],
+  searchQuery: '',
+  annotations: [] as any[],
+  annotationsLoading: false,
+  selectEntry: vi.fn(),
+  openChapter: vi.fn(),
+  closePanel: vi.fn(),
+  togglePanel: vi.fn(),
+  search: vi.fn(),
+  clearSearch: vi.fn(),
+  getByTag: vi.fn(),
+  addAnnotation: vi.fn(),
+  deleteAnnotation: vi.fn(),
+  getReferencingNotes: vi.fn(),
+  navigateToLink: vi.fn(),
+  findChapterInTree: vi.fn(),
+};
 
-// Mock SystematicContext
+// Mock SystematicContext with mutable state
 vi.mock('../../../src/context/SystematicContext', () => ({
-  useSystematic: mockUseSystematic,
+  useSystematic: () => mockSystematicState,
 }));
 
 import NotesPanel from '../../../src/components/Notes/NotesPanel';
@@ -133,34 +159,20 @@ describe('NotesPanel', () => {
     mockNotesContext.editingNoteId = null;
     mockNotesContext.getNotesForChapter.mockReturnValue(mockNotes);
 
-    // Setup SystematicContext mock
-    mockUseSystematic.mockReturnValue({
-      tree: [],
-      loading: false,
-      error: null,
-      selectedEntryId: null,
-      selectedEntry: null,
-      isPanelOpen: false,
-      relatedDoctrines: [],
-      relatedDoctrinesLoading: false,
-      tags: [],
-      searchResults: [],
-      searchQuery: '',
-      annotations: [],
-      annotationsLoading: false,
-      selectEntry: vi.fn(),
-      openChapter: vi.fn(),
-      closePanel: vi.fn(),
-      togglePanel: vi.fn(),
-      search: vi.fn(),
-      clearSearch: vi.fn(),
-      getByTag: vi.fn(),
-      addAnnotation: vi.fn(),
-      deleteAnnotation: vi.fn(),
-      getReferencingNotes: vi.fn(),
-      navigateToLink: vi.fn(),
-      findChapterInTree: vi.fn(),
-    });
+    // Reset SystematicContext mock state
+    mockSystematicState.tree = [];
+    mockSystematicState.loading = false;
+    mockSystematicState.error = null;
+    mockSystematicState.selectedEntryId = null;
+    mockSystematicState.selectedEntry = null;
+    mockSystematicState.isPanelOpen = false;
+    mockSystematicState.relatedDoctrines = [];
+    mockSystematicState.relatedDoctrinesLoading = false;
+    mockSystematicState.tags = [];
+    mockSystematicState.searchResults = [];
+    mockSystematicState.searchQuery = '';
+    mockSystematicState.annotations = [];
+    mockSystematicState.annotationsLoading = false;
   });
 
   afterEach(() => {
