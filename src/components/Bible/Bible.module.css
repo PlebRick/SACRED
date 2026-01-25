@@ -76,6 +76,12 @@
   background-color: var(--accent-subtle);
 }
 
+/* Scroll-to highlight (temporary) */
+.verse.scrollHighlighted {
+  background-color: var(--note-highlight);
+  transition: background-color 0.3s ease;
+}
+
 /* Loading State */
 .loading {
   display: flex;
