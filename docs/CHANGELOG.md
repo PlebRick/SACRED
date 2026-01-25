@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-01-25
+
+### Added
+- **Editable Verse Ranges**: Click-to-edit verse references on existing notes
+  - Click the verse reference in NoteEditor to enter edit mode
+  - Validates input using `parseReference()` (same as note creation)
+  - Auto-navigates to new chapter/book when reference changes
+  - Enter to save, Escape to cancel
+
+---
+
 ## [0.2.0] - 2026-01-25
 
 ### Added
