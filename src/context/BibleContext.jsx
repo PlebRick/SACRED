@@ -12,7 +12,8 @@ const initialState = {
   loading: false,
   error: null,
   verses: [],
-  reference: ''
+  reference: '',
+  highlightVerse: null  // { verse: number } for scroll-to-verse
 };
 
 const loadSavedLocation = () => {
@@ -57,6 +58,16 @@ const reducer = (state, action) => {
         ...state,
         loading: false,
         error: action.error
+      };
+    case 'SET_HIGHLIGHT_VERSE':
+      return {
+        ...state,
+        highlightVerse: action.verse
+      };
+    case 'CLEAR_HIGHLIGHT_VERSE':
+      return {
+        ...state,
+        highlightVerse: null
       };
     default:
       return state;
@@ -127,6 +138,14 @@ export const BibleProvider = ({ children }) => {
     dispatch({ type: 'LOAD_ERROR', error });
   }, []);
 
+  const setHighlightVerse = useCallback((verse) => {
+    dispatch({ type: 'SET_HIGHLIGHT_VERSE', verse });
+  }, []);
+
+  const clearHighlightVerse = useCallback(() => {
+    dispatch({ type: 'CLEAR_HIGHLIGHT_VERSE' });
+  }, []);
+
   return (
     <BibleContext.Provider value={{
       ...state,
@@ -134,7 +153,9 @@ export const BibleProvider = ({ children }) => {
       goNext,
       goPrev,
       setVerses,
-      setError
+      setError,
+      setHighlightVerse,
+      clearHighlightVerse
     }}>
       {children}
     </BibleContext.Provider>
