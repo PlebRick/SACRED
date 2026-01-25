@@ -3,12 +3,13 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import React from 'react';
 import { RelatedDoctrines } from '../../../src/components/Notes/RelatedDoctrines';
 
+// Define mock function before vi.mock using vi.hoisted
+const mockUseSystematic = vi.hoisted(() => vi.fn());
+
 // Mock the SystematicContext
 vi.mock('../../../src/context/SystematicContext', () => ({
-  useSystematic: vi.fn(),
+  useSystematic: mockUseSystematic,
 }));
-
-import { useSystematic } from '../../../src/context/SystematicContext';
 
 describe('RelatedDoctrines', () => {
   const mockSelectEntry = vi.fn();
@@ -17,7 +18,7 @@ describe('RelatedDoctrines', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock implementation
-    (useSystematic as any).mockReturnValue({
+    mockUseSystematic.mockReturnValue({
       relatedDoctrines: [],
       relatedDoctrinesLoading: false,
       selectEntry: mockSelectEntry,
@@ -31,7 +32,7 @@ describe('RelatedDoctrines', () => {
 
   describe('loading state', () => {
     it('shows loading message when loading', () => {
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: [],
         relatedDoctrinesLoading: true,
         selectEntry: mockSelectEntry,
@@ -46,7 +47,7 @@ describe('RelatedDoctrines', () => {
 
   describe('empty state', () => {
     it('returns null when no related doctrines', () => {
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: [],
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -66,7 +67,7 @@ describe('RelatedDoctrines', () => {
     ];
 
     beforeEach(() => {
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -110,7 +111,7 @@ describe('RelatedDoctrines', () => {
     ];
 
     beforeEach(() => {
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -159,7 +160,7 @@ describe('RelatedDoctrines', () => {
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
       ];
 
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -180,7 +181,7 @@ describe('RelatedDoctrines', () => {
         { id: 'sec-32-a', chapterNumber: 32, title: 'Section A', entryType: 'section', sectionLetter: 'A' },
       ];
 
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -209,7 +210,7 @@ describe('RelatedDoctrines', () => {
         },
       ];
 
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -226,7 +227,7 @@ describe('RelatedDoctrines', () => {
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
       ];
 
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -246,7 +247,7 @@ describe('RelatedDoctrines', () => {
         { id: 'sec-32-a', chapterNumber: 32, title: 'Section A', entryType: 'section' },
       ];
 
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
@@ -266,7 +267,7 @@ describe('RelatedDoctrines', () => {
         { id: 'sec-32-a', chapterNumber: 32, title: 'God is Three Persons', entryType: 'section' },
       ];
 
-      (useSystematic as any).mockReturnValue({
+      mockUseSystematic.mockReturnValue({
         relatedDoctrines: mockDoctrines,
         relatedDoctrinesLoading: false,
         selectEntry: mockSelectEntry,
