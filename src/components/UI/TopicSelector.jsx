@@ -103,14 +103,38 @@ export const TopicSelector = ({
         {multiSelect ? (
           selectedTopics.length > 0 ? (
             <span className={styles.multiValue}>
-              {selectedTopics.map(t => t.name).join(', ')}
+              {selectedTopics.map(t => (
+                <span key={t.id} className={styles.tagChip}>
+                  {t.name}
+                  <button
+                    type="button"
+                    className={styles.removeChip}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMultiChange(selectedValues.filter(id => id !== t.id));
+                    }}
+                    title="Remove tag"
+                  >×</button>
+                </span>
+              ))}
             </span>
           ) : (
             <span className={styles.placeholder}>{placeholder}</span>
           )
         ) : (
           selectedTopic ? (
-            <span className={styles.value}>{selectedTopic.name}</span>
+            <span className={styles.value}>
+              {selectedTopic.name}
+              <button
+                type="button"
+                className={styles.inlineClearButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange?.(null);
+                }}
+                title="Clear topic"
+              >×</button>
+            </span>
           ) : (
             <span className={styles.placeholder}>{placeholder}</span>
           )

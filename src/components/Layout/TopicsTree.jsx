@@ -3,7 +3,9 @@ import { useTopics } from '../../context/TopicsContext';
 import { useInlineTags } from '../../context/InlineTagsContext';
 import { useBible } from '../../context/BibleContext';
 import { useNotes } from '../../context/NotesContext';
+import { useSeries } from '../../context/SeriesContext';
 import { topicsService } from '../../services/topicsService';
+import { seriesService } from '../../services/seriesService';
 import { formatVerseRange } from '../../utils/verseRange';
 import styles from './TopicsTree.module.css';
 
@@ -156,6 +158,14 @@ export const TopicsTree = () => {
   const [illustrationSearch, setIllustrationSearch] = useState('');
   const [loadingIllustrations, setLoadingIllustrations] = useState(false);
 
+  // Series section state
+  const [seriesExpanded, setSeriesExpanded] = useState(false);
+  const [selectedSeriesId, setSelectedSeriesId] = useState(null);
+  const [seriesSermons, setSeriesSermons] = useState([]);
+  const [loadingSermons, setLoadingSermons] = useState(false);
+  const [editingSeriesId, setEditingSeriesId] = useState(null);
+  const [editSeriesName, setEditSeriesName] = useState('');
+
   const { topics, loading, createTopic, updateTopic, deleteTopic, seedDefaultTopics, refreshTopics } = useTopics();
   const {
     tagCountsByType,
@@ -167,6 +177,7 @@ export const TopicsTree = () => {
   } = useInlineTags();
   const { navigate } = useBible();
   const { setSelectedNote, setEditingNote } = useNotes();
+  const { series: allSeries, deleteSeries, updateSeries, refreshSeries } = useSeries();
 
   const toggleExpand = (topicId) => {
     setExpandedTopics(prev => ({
@@ -338,6 +349,65 @@ export const TopicsTree = () => {
     setEditingNote(illustration.noteId);
   };
 
+  // Series handlers
+  const handleSelectSeries = async (seriesId) => {
+    setSelectedSeriesId(seriesId);
+    setSelectedTagType(null);
+    setSelectedTopicId(null);
+    setLoadingSermons(true);
+    try {
+      const seriesData = await seriesService.getById(seriesId);
+      setSeriesSermons(seriesData?.sermons || []);
+    } catch (error) {
+      console.error('Failed to load series sermons:', error);
+      setSeriesSermons([]);
+    }
+    setLoadingSermons(false);
+  };
+
+  const handleSermonClick = (sermon) => {
+    navigate(sermon.book, sermon.startChapter);
+    setSelectedNote(sermon.id);
+    setEditingNote(sermon.id);
+  };
+
+  const totalSermonCount = allSeries.reduce((sum, s) => sum + (s.sermonCount || 0), 0);
+
+  const handleDeleteSeries = async (series) => {
+    const sermonCount = series.sermonCount || 0;
+    const message = sermonCount > 0
+      ? `Delete "${series.name}"? This series has ${sermonCount} sermon(s). The sermons will not be deleted, but will no longer be assigned to this series.`
+      : `Delete "${series.name}"?`;
+
+    if (!confirm(message)) return;
+
+    try {
+      await deleteSeries(series.id);
+      if (selectedSeriesId === series.id) {
+        setSelectedSeriesId(null);
+        setSeriesSermons([]);
+      }
+    } catch (error) {
+      console.error('Failed to delete series:', error);
+    }
+  };
+
+  const handleEditSeries = (series) => {
+    setEditingSeriesId(series.id);
+    setEditSeriesName(series.name);
+  };
+
+  const handleSaveSeriesEdit = async () => {
+    if (!editingSeriesId || !editSeriesName.trim()) return;
+    try {
+      await updateSeries(editingSeriesId, { name: editSeriesName.trim() });
+      setEditingSeriesId(null);
+      setEditSeriesName('');
+    } catch (error) {
+      console.error('Failed to update series:', error);
+    }
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading topics...</div>;
   }
@@ -500,6 +570,75 @@ export const TopicsTree = () => {
 
           {tagsExpanded && (
             <div className={styles.tagTypeList}>
+              {/* Series section */}
+              <button
+                className={`${styles.tagTypeItem} ${seriesExpanded ? styles.selected : ''}`}
+                onClick={() => {
+                  setSeriesExpanded(!seriesExpanded);
+                  if (!seriesExpanded) {
+                    setSelectedSeriesId(null);
+                    setSeriesSermons([]);
+                  }
+                }}
+              >
+                <span className={styles.tagTypeIcon}>🎤</span>
+                <span className={styles.tagTypeName}>Series</span>
+                <span className={styles.tagTypeCount}>{allSeries.length}</span>
+              </button>
+
+              {seriesExpanded && (
+                <div className={styles.seriesList}>
+                  {allSeries.length === 0 ? (
+                    <div className={styles.noSeries}>No series yet</div>
+                  ) : (
+                    allSeries.map(s => (
+                      <div
+                        key={s.id}
+                        className={`${styles.seriesItemRow} ${selectedSeriesId === s.id ? styles.selected : ''}`}
+                      >
+                        <button
+                          className={styles.seriesItemButton}
+                          onClick={() => handleSelectSeries(s.id)}
+                        >
+                          <span className={styles.seriesName}>{s.name}</span>
+                          {s.sermonCount > 0 && (
+                            <span className={styles.seriesCount}>{s.sermonCount}</span>
+                          )}
+                        </button>
+                        <div className={styles.seriesActions}>
+                          <button
+                            className={styles.actionButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditSeries(s);
+                            }}
+                            title="Edit series"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button
+                            className={styles.actionButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSeries(s);
+                            }}
+                            title="Delete series"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
               {tagCountsByType.map((tagType) => (
                 <button
                   key={tagType.id}
@@ -514,6 +653,52 @@ export const TopicsTree = () => {
             </div>
           )}
         </div>
+
+        {/* Selected series sermons (empty state) */}
+        {selectedSeriesId && (
+          <div className={styles.notesPanel}>
+            <div className={styles.notesPanelHeader}>
+              <button
+                className={styles.backButton}
+                onClick={() => {
+                  setSelectedSeriesId(null);
+                  setSeriesSermons([]);
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <span className={styles.tagTypeHeader}>
+                🎤 {allSeries.find(s => s.id === selectedSeriesId)?.name || 'Series'}
+              </span>
+            </div>
+
+            {loadingSermons ? (
+              <div className={styles.loadingNotes}>Loading sermons...</div>
+            ) : seriesSermons.length === 0 ? (
+              <div className={styles.noNotes}>No sermons in this series</div>
+            ) : (
+              <div className={styles.notesList}>
+                {seriesSermons.map(sermon => (
+                  <button
+                    key={sermon.id}
+                    className={styles.noteItem}
+                    onClick={() => handleSermonClick(sermon)}
+                  >
+                    <span className={styles.noteReference}>
+                      {formatVerseRange(sermon)}
+                    </span>
+                    <span className={styles.noteTitle}>
+                      {sermon.title || 'Untitled'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Selected tag type results */}
         {selectedTagType && (
@@ -768,6 +953,75 @@ export const TopicsTree = () => {
 
         {tagsExpanded && (
           <div className={styles.tagTypeList}>
+            {/* Series section */}
+            <button
+              className={`${styles.tagTypeItem} ${seriesExpanded ? styles.selected : ''}`}
+              onClick={() => {
+                setSeriesExpanded(!seriesExpanded);
+                if (!seriesExpanded) {
+                  setSelectedSeriesId(null);
+                  setSeriesSermons([]);
+                }
+              }}
+            >
+              <span className={styles.tagTypeIcon}>🎤</span>
+              <span className={styles.tagTypeName}>Series</span>
+              <span className={styles.tagTypeCount}>{allSeries.length}</span>
+            </button>
+
+            {seriesExpanded && (
+              <div className={styles.seriesList}>
+                {allSeries.length === 0 ? (
+                  <div className={styles.noSeries}>No series yet</div>
+                ) : (
+                  allSeries.map(s => (
+                    <div
+                      key={s.id}
+                      className={`${styles.seriesItemRow} ${selectedSeriesId === s.id ? styles.selected : ''}`}
+                    >
+                      <button
+                        className={styles.seriesItemButton}
+                        onClick={() => handleSelectSeries(s.id)}
+                      >
+                        <span className={styles.seriesName}>{s.name}</span>
+                        {s.sermonCount > 0 && (
+                          <span className={styles.seriesCount}>{s.sermonCount}</span>
+                        )}
+                      </button>
+                      <div className={styles.seriesActions}>
+                        <button
+                          className={styles.actionButton}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditSeries(s);
+                          }}
+                          title="Edit series"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className={styles.actionButton}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSeries(s);
+                          }}
+                          title="Delete series"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
             {tagCountsByType.map((tagType) => (
               <button
                 key={tagType.id}
@@ -863,6 +1117,93 @@ export const TopicsTree = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Edit series modal */}
+      {editingSeriesId && (
+        <div className={styles.modalOverlay} onClick={() => setEditingSeriesId(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3>Edit Series</h3>
+            <input
+              type="text"
+              className={styles.modalInput}
+              value={editSeriesName}
+              onChange={(e) => setEditSeriesName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveSeriesEdit();
+                if (e.key === 'Escape') {
+                  setEditingSeriesId(null);
+                  setEditSeriesName('');
+                }
+              }}
+              autoFocus
+            />
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => {
+                  setEditingSeriesId(null);
+                  setEditSeriesName('');
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.submitButton}
+                onClick={handleSaveSeriesEdit}
+                disabled={!editSeriesName.trim()}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Selected series sermons */}
+      {selectedSeriesId && (
+        <div className={styles.notesPanel}>
+          <div className={styles.notesPanelHeader}>
+            <button
+              className={styles.backButton}
+              onClick={() => {
+                setSelectedSeriesId(null);
+                setSeriesSermons([]);
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back
+            </button>
+            <span className={styles.tagTypeHeader}>
+              🎤 {allSeries.find(s => s.id === selectedSeriesId)?.name || 'Series'}
+            </span>
+          </div>
+
+          {loadingSermons ? (
+            <div className={styles.loadingNotes}>Loading sermons...</div>
+          ) : seriesSermons.length === 0 ? (
+            <div className={styles.noNotes}>No sermons in this series</div>
+          ) : (
+            <div className={styles.notesList}>
+              {seriesSermons.map(sermon => (
+                <button
+                  key={sermon.id}
+                  className={styles.noteItem}
+                  onClick={() => handleSermonClick(sermon)}
+                >
+                  <span className={styles.noteReference}>
+                    {formatVerseRange(sermon)}
+                  </span>
+                  <span className={styles.noteTitle}>
+                    {sermon.title || 'Untitled'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -38,14 +38,58 @@
 }
 
 .value {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   color: var(--text-primary);
 }
 
 .multiValue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
   color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent-subtle);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.removeChip {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: 4px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.removeChip:hover {
+  color: var(--text-primary);
+}
+
+.inlineClearButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.inlineClearButton:hover {
+  color: var(--text-primary);
 }
 
 .placeholder {

@@ -80,6 +80,15 @@ export const SeriesSelector = ({
             {selectedSeries.sermonCount > 0 && (
               <span className={styles.count}>({selectedSeries.sermonCount})</span>
             )}
+            <button
+              type="button"
+              className={styles.inlineClearButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange?.(null);
+              }}
+              title="Remove from series"
+            >×</button>
           </span>
         ) : (
           <span className={styles.placeholder}>{placeholder}</span>

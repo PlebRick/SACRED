@@ -44,6 +44,20 @@
   color: var(--text-primary);
 }
 
+.inlineClearButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.inlineClearButton:hover {
+  color: var(--text-primary);
+}
+
 .count {
   font-size: 0.75rem;
   color: var(--text-secondary);
