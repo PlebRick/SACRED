@@ -17,7 +17,8 @@ export const ChapterView = ({ onVisibleVerseChange }) => {
 
   // Scroll to highlighted verse when set (also re-run when verses load)
   useEffect(() => {
-    if (!highlightVerse || verses.length === 0) return;
+    // Don't scroll while loading (prevents scrolling to wrong verse from previous chapter)
+    if (!highlightVerse || verses.length === 0 || loading) return;
 
     // Use requestAnimationFrame to ensure DOM refs are populated after render
     const rafId = requestAnimationFrame(() => {
@@ -34,7 +35,7 @@ export const ChapterView = ({ onVisibleVerseChange }) => {
     });
 
     return () => cancelAnimationFrame(rafId);
-  }, [highlightVerse, clearHighlightVerse, verses]);
+  }, [highlightVerse, clearHighlightVerse, verses, loading]);
 
   // Track visible verse using Intersection Observer
   useEffect(() => {
