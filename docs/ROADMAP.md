@@ -97,6 +97,8 @@
 
 ## Completed
 
+- **v0.2.2** - Comprehensive backup system (v4) with series, systematic annotations, and seriesId in notes
+- **v0.2.1** - Editable verse ranges (click-to-edit in NoteEditor)
 - **v0.2.0** - Scroll-to-match navigation, sermon series management, inline clear buttons, alphabetical topic sorting, illustration duplicate detection, token-efficient MCP tools
 - **v0.1.0** - Offline WEB Bible support, illustrations browser in sidebar
 - **v0.0.10** - ESV Bible translation support with translation selector in Settings
@@ -109,7 +111,7 @@
 
 ## Tests
 
-Current: 1171 tests | Run `npm run test:coverage` for latest metrics
+Current: 1174 tests | Run `npm run test:coverage` for latest metrics
 
 *Note: Coverage % decreased due to new topics system code. Key new files have excellent coverage.*
 

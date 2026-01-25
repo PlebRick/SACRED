@@ -249,10 +249,17 @@ Create a sermon note on Romans 8:28-30 with:
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `full_export` | Export all data as JSON | "Export my SACRED backup" |
+| `full_export` | Export all data as JSON (v4 format) | "Export my SACRED backup" |
 | `full_import` | Import backup (upsert) | "Import this backup data" |
 | `delete_all_notes` | Clear all notes (requires confirm) | "Delete all notes (confirm=true)" |
 | `get_last_modified` | Last modification time | "When was my last edit?" |
+
+**Backup v4 format includes:**
+- Notes (with `seriesId` for sermon-series relationships)
+- Topics (with `systematicTagId` for Grudem integration)
+- Inline tag types
+- Series definitions
+- Systematic theology annotations (user highlights)
 
 ### Study Session Tools
 
@@ -781,16 +788,17 @@ After creating a note, use `find_related_notes` to discover connections you migh
 
 | Category | Tools |
 |----------|-------|
-| Notes (read) | 6 |
+| Notes (read) | 8 |
 | Notes (write) | 4 |
 | Topics | 8 |
 | Inline Tags | 8 |
 | Systematic Theology | 15 |
 | Backup | 4 |
 | Study Sessions | 4 |
-| Sermon Preparation | 4 |
-| AI-Enhanced | 11 |
-| **Total** | **63** |
+| Sermon Series | 5 |
+| Sermon Preparation | 6 |
+| AI-Enhanced | 10 |
+| **Total** | **72** |
 
 ---
 
@@ -904,4 +912,4 @@ After creating a note, use `find_related_notes` to discover connections you migh
 
 ---
 
-*This guide is for SACRED MCP Server v1.1.0 (63 tools)*
+*This guide is for SACRED MCP Server v1.2.0 (72 tools)*
