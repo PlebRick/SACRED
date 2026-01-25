@@ -117,12 +117,13 @@ vi.mock('../../../src/context/BibleContext', () => ({
   useBible: () => mockBibleContext,
 }));
 
+// Define mock function before vi.mock using vi.hoisted
+const mockUseSystematic = vi.hoisted(() => vi.fn());
+
 // Mock SystematicContext
 vi.mock('../../../src/context/SystematicContext', () => ({
-  useSystematic: vi.fn(),
+  useSystematic: mockUseSystematic,
 }));
-
-import { useSystematic } from '../../../src/context/SystematicContext';
 
 import NotesPanel from '../../../src/components/Notes/NotesPanel';
 
@@ -133,7 +134,7 @@ describe('NotesPanel', () => {
     mockNotesContext.getNotesForChapter.mockReturnValue(mockNotes);
 
     // Setup SystematicContext mock
-    (useSystematic as any).mockReturnValue({
+    mockUseSystematic.mockReturnValue({
       tree: [],
       loading: false,
       error: null,
