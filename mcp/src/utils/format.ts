@@ -333,3 +333,36 @@ export const systematicTagToApiFormat = (row: DbSystematicTag): ApiSystematicTag
   createdAt: row.created_at,
   chapterCount: row.chapter_count,
 });
+
+/**
+ * Series database row format
+ */
+export interface DbSeries {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Series API format
+ */
+export interface ApiSeries {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Convert series database row to API format
+ */
+export const seriesToApiFormat = (row: DbSeries): ApiSeries => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});

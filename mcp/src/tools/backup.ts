@@ -9,6 +9,10 @@ import {
   topicToApiFormat,
   DbInlineTagType,
   inlineTagTypeToApiFormat,
+  DbSeries,
+  seriesToApiFormat,
+  DbSystematicAnnotation,
+  systematicAnnotationToApiFormat,
 } from '../utils/format.js';
 import { logger } from '../utils/logger.js';
 
@@ -27,31 +31,38 @@ export function registerBackupTools(server: McpServer): void {
   // full_export - Export everything as JSON
   server.tool(
     'full_export',
-    'Export all SACRED data (notes, topics, inline tag types) as JSON backup',
+    'Export all SACRED data (notes, topics, inline tag types, series, systematic annotations) as JSON backup',
     {},
     async () => {
       try {
-        const notes = db.prepare('SELECT * FROM notes ORDER BY created_at ASC').all() as DbNote[];
+        const notes = db.prepare('SELECT * FROM notes ORDER BY created_at ASC').all() as (DbNote & { series_id: string | null })[];
         const topics = db.prepare('SELECT * FROM topics ORDER BY created_at ASC').all() as DbTopic[];
         const inlineTagTypes = db.prepare('SELECT * FROM inline_tag_types ORDER BY sort_order ASC').all() as DbInlineTagType[];
+        const series = db.prepare('SELECT * FROM series ORDER BY created_at ASC').all() as DbSeries[];
+        const systematicAnnotations = db.prepare('SELECT * FROM systematic_annotations ORDER BY created_at ASC').all() as DbSystematicAnnotation[];
         const noteTags = db.prepare('SELECT * FROM note_tags').all() as { note_id: string; topic_id: string }[];
 
-        // Add tags to each note
+        // Add tags and seriesId to each note
         const notesWithTags = notes.map((note) => ({
           ...toApiFormat(note),
+          seriesId: note.series_id,
           tags: getNoteTags(note.id),
         }));
 
         const exportData = {
-          version: 3,
+          version: 4,
           exportedAt: new Date().toISOString(),
           notes: notesWithTags,
           topics: topics.map(topicToApiFormat),
           inlineTagTypes: inlineTagTypes.map(inlineTagTypeToApiFormat),
+          series: series.map(seriesToApiFormat),
+          systematicAnnotations: systematicAnnotations.map(systematicAnnotationToApiFormat),
           statistics: {
             notes: notes.length,
             topics: topics.length,
             inlineTagTypes: inlineTagTypes.length,
+            series: series.length,
+            systematicAnnotations: systematicAnnotations.length,
             noteTags: noteTags.length,
           },
         };
@@ -92,6 +103,7 @@ export function registerBackupTools(server: McpServer): void {
             content: z.string().optional(),
             type: z.enum(['note', 'commentary', 'sermon']).optional(),
             primaryTopicId: z.string().nullable().optional(),
+            seriesId: z.string().nullable().optional(),
             tags: z.array(z.string()).optional(),
             createdAt: z.string().optional(),
             updatedAt: z.string().optional(),
@@ -126,8 +138,37 @@ export function registerBackupTools(server: McpServer): void {
         )
         .optional()
         .describe('Array of inline tag types to import'),
+      series: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            description: z.string().nullable().optional(),
+            createdAt: z.string().optional(),
+            updatedAt: z.string().optional(),
+          })
+        )
+        .optional()
+        .describe('Array of sermon series to import'),
+      systematicAnnotations: z
+        .array(
+          z.object({
+            id: z.string(),
+            systematicId: z.string(),
+            annotationType: z.string(),
+            color: z.string().nullable().optional(),
+            content: z.string().nullable().optional(),
+            textSelection: z.string().nullable().optional(),
+            positionStart: z.number().nullable().optional(),
+            positionEnd: z.number().nullable().optional(),
+            createdAt: z.string().optional(),
+            updatedAt: z.string().optional(),
+          })
+        )
+        .optional()
+        .describe('Array of systematic theology annotations to import'),
     },
-    async ({ notes, topics, inlineTagTypes }) => {
+    async ({ notes, topics, inlineTagTypes, series, systematicAnnotations }) => {
       try {
         // Prepare statements
         const insertInlineTagTypeStmt = db.prepare(`
@@ -150,14 +191,35 @@ export function registerBackupTools(server: McpServer): void {
         `);
         const checkTopicStmt = db.prepare('SELECT id FROM topics WHERE id = ?');
 
+        const insertSeriesStmt = db.prepare(`
+          INSERT INTO series (id, name, description, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?)
+        `);
+        const updateSeriesStmt = db.prepare(`
+          UPDATE series SET name = ?, description = ?, updated_at = ?
+          WHERE id = ?
+        `);
+        const checkSeriesStmt = db.prepare('SELECT id FROM series WHERE id = ?');
+
+        const insertAnnotationStmt = db.prepare(`
+          INSERT INTO systematic_annotations (id, systematic_id, annotation_type, color, content, text_selection, position_start, position_end, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const updateAnnotationStmt = db.prepare(`
+          UPDATE systematic_annotations
+          SET annotation_type = ?, color = ?, content = ?, text_selection = ?, position_start = ?, position_end = ?, updated_at = ?
+          WHERE id = ?
+        `);
+        const checkAnnotationStmt = db.prepare('SELECT id FROM systematic_annotations WHERE id = ?');
+
         const insertNoteStmt = db.prepare(`
-          INSERT INTO notes (id, book, start_chapter, start_verse, end_chapter, end_verse, title, content, type, primary_topic_id, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO notes (id, book, start_chapter, start_verse, end_chapter, end_verse, title, content, type, primary_topic_id, series_id, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const updateNoteStmt = db.prepare(`
           UPDATE notes
           SET book = ?, start_chapter = ?, start_verse = ?, end_chapter = ?, end_verse = ?,
-              title = ?, content = ?, type = ?, primary_topic_id = ?, updated_at = ?
+              title = ?, content = ?, type = ?, primary_topic_id = ?, series_id = ?, updated_at = ?
           WHERE id = ?
         `);
         const checkNoteStmt = db.prepare('SELECT id FROM notes WHERE id = ?');
@@ -170,6 +232,10 @@ export function registerBackupTools(server: McpServer): void {
         let topicsUpdated = 0;
         let inlineTagTypesInserted = 0;
         let inlineTagTypesUpdated = 0;
+        let seriesInserted = 0;
+        let seriesUpdated = 0;
+        let annotationsInserted = 0;
+        let annotationsUpdated = 0;
         const errors: { id: string; type: string; error: string }[] = [];
 
         const importTransaction = db.transaction(() => {
@@ -234,6 +300,63 @@ export function registerBackupTools(server: McpServer): void {
             }
           }
 
+          // Import series (before notes due to FK dependency)
+          if (series && Array.isArray(series)) {
+            for (const s of series) {
+              try {
+                const existing = checkSeriesStmt.get(s.id);
+                if (existing) {
+                  updateSeriesStmt.run(s.name, s.description ?? '', s.updatedAt ?? now, s.id);
+                  seriesUpdated++;
+                } else {
+                  insertSeriesStmt.run(s.id, s.name, s.description ?? '', s.createdAt ?? now, s.updatedAt ?? now);
+                  seriesInserted++;
+                }
+              } catch (e) {
+                errors.push({ id: s.id, type: 'series', error: String(e) });
+              }
+            }
+          }
+
+          // Import systematic annotations (if provided)
+          if (systematicAnnotations && Array.isArray(systematicAnnotations)) {
+            for (const ann of systematicAnnotations) {
+              try {
+                const existing = checkAnnotationStmt.get(ann.id);
+                if (existing) {
+                  updateAnnotationStmt.run(
+                    ann.annotationType,
+                    ann.color ?? null,
+                    ann.content ?? null,
+                    ann.textSelection ?? null,
+                    ann.positionStart ?? null,
+                    ann.positionEnd ?? null,
+                    ann.updatedAt ?? now,
+                    ann.id
+                  );
+                  annotationsUpdated++;
+                } else {
+                  insertAnnotationStmt.run(
+                    ann.id,
+                    ann.systematicId,
+                    ann.annotationType,
+                    ann.color ?? null,
+                    ann.content ?? null,
+                    ann.textSelection ?? null,
+                    ann.positionStart ?? null,
+                    ann.positionEnd ?? null,
+                    ann.createdAt ?? now,
+                    ann.updatedAt ?? now
+                  );
+                  annotationsInserted++;
+                }
+              } catch (e) {
+                // Ignore annotation errors (systematic_id may not exist if ST data not imported)
+                errors.push({ id: ann.id, type: 'systematicAnnotation', error: String(e) });
+              }
+            }
+          }
+
           // Import notes
           for (const note of notes) {
             try {
@@ -251,6 +374,7 @@ export function registerBackupTools(server: McpServer): void {
                   note.content ?? '',
                   note.type ?? 'note',
                   note.primaryTopicId ?? null,
+                  note.seriesId ?? null,
                   note.updatedAt ?? now,
                   id
                 );
@@ -267,6 +391,7 @@ export function registerBackupTools(server: McpServer): void {
                   note.content ?? '',
                   note.type ?? 'note',
                   note.primaryTopicId ?? null,
+                  note.seriesId ?? null,
                   note.createdAt ?? now,
                   note.updatedAt ?? now
                 );
@@ -302,6 +427,8 @@ export function registerBackupTools(server: McpServer): void {
                   notes: { inserted: notesInserted, updated: notesUpdated, total: notesInserted + notesUpdated },
                   topics: { inserted: topicsInserted, updated: topicsUpdated, total: topicsInserted + topicsUpdated },
                   inlineTagTypes: { inserted: inlineTagTypesInserted, updated: inlineTagTypesUpdated, total: inlineTagTypesInserted + inlineTagTypesUpdated },
+                  series: { inserted: seriesInserted, updated: seriesUpdated, total: seriesInserted + seriesUpdated },
+                  systematicAnnotations: { inserted: annotationsInserted, updated: annotationsUpdated, total: annotationsInserted + annotationsUpdated },
                   errors: errors.length > 0 ? errors : undefined,
                 },
                 null,
