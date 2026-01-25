@@ -62,9 +62,7 @@ jobs:
       - name: Build Electron app
         run: |
           npm run build
-          npx electron-builder --mac --${{ matrix.arch }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npx electron-builder --mac --${{ matrix.arch }} --publish never
 
       - name: Rename DMG with architecture
         run: |
@@ -86,6 +84,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true')
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
