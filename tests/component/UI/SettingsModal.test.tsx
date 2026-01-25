@@ -26,6 +26,15 @@ vi.mock('../../../src/context/SettingsContext', () => ({
   }),
 }));
 
+const mockLogout = vi.fn();
+
+vi.mock('../../../src/context/AuthContext', () => ({
+  useAuth: () => ({
+    authRequired: false,
+    logout: mockLogout,
+  }),
+}));
+
 // Mock systematicService
 const mockImportData = vi.fn();
 const mockExportData = vi.fn();
