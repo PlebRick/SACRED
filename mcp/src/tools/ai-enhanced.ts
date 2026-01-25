@@ -1804,7 +1804,199 @@ export function registerAiEnhancedTools(server: McpServer): void {
     }
   );
 
+  // check_illustration_duplicates - Check if an illustration has been used before
+  server.tool(
+    'check_illustration_duplicates',
+    'Check if an illustration has been used before (exact match detection). Use this before adding a new illustration to avoid repetition.',
+    {
+      text: z.string().describe('Illustration text to check for duplicates'),
+    },
+    async ({ text }) => {
+      try {
+        // Generate signature for the input text
+        if (!text || text.length < 20) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: JSON.stringify(
+                  { matches: [], message: 'Text too short for duplicate matching (minimum 20 characters)' },
+                  null,
+                  2
+                ),
+              },
+            ],
+          };
+        }
+
+        const normalized = text
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        const crypto = await import('crypto');
+        const signature = crypto.createHash('md5').update(normalized).digest('hex').substring(0, 16);
+
+        const matches = db
+          .prepare(
+            `
+            SELECT it.*, n.title as note_title, n.book, n.start_chapter, n.start_verse, n.type
+            FROM inline_tags it
+            JOIN notes n ON it.note_id = n.id
+            WHERE it.text_signature = ? AND it.tag_type = 'illustration'
+          `
+          )
+          .all(signature) as (DbInlineTag & { note_title: string; book: string; start_chapter: number; start_verse: number | null; type: string })[];
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(
+                {
+                  inputText: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+                  signature,
+                  duplicatesFound: matches.length > 0,
+                  matches: matches.map((m) => ({
+                    id: m.id,
+                    noteId: m.note_id,
+                    noteTitle: m.note_title,
+                    noteType: m.type,
+                    passage: `${m.book} ${m.start_chapter}${m.start_verse ? ':' + m.start_verse : ''}`,
+                    textPreview: m.text_content.substring(0, 150) + (m.text_content.length > 150 ? '...' : ''),
+                  })),
+                  count: matches.length,
+                  message: matches.length > 0
+                    ? `Found ${matches.length} matching illustration(s). Consider using different wording or referencing the existing illustration.`
+                    : 'No duplicates found. This illustration appears to be unique.',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        logger.error('Error checking illustration duplicates:', error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${error}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // get_duplicate_illustrations - Find all duplicated illustrations across sermons
+  server.tool(
+    'get_duplicate_illustrations',
+    'Find illustrations that appear in multiple sermons. Useful for auditing illustration reuse.',
+    {
+      limit: z.number().optional().describe('Maximum number of duplicate groups to return (default: 20)'),
+    },
+    async ({ limit = 20 }) => {
+      try {
+        const duplicates = db
+          .prepare(
+            `
+            SELECT
+              text_signature,
+              MIN(text_content) as sample_text,
+              COUNT(*) as usage_count,
+              GROUP_CONCAT(note_id) as note_ids
+            FROM inline_tags
+            WHERE tag_type = 'illustration' AND text_signature IS NOT NULL
+            GROUP BY text_signature
+            HAVING COUNT(*) > 1
+            ORDER BY usage_count DESC
+            LIMIT ?
+          `
+          )
+          .all(limit) as { text_signature: string; sample_text: string; usage_count: number; note_ids: string }[];
+
+        // Get note details for each duplicate group
+        const enrichedDuplicates = duplicates.map((d) => {
+          const noteIds = d.note_ids.split(',');
+          const noteDetails = db
+            .prepare(
+              `SELECT id, title, book, start_chapter, start_verse, type, updated_at
+               FROM notes WHERE id IN (${noteIds.map(() => '?').join(',')})`
+            )
+            .all(...noteIds) as {
+            id: string;
+            title: string;
+            book: string;
+            start_chapter: number;
+            start_verse: number | null;
+            type: string;
+            updated_at: string;
+          }[];
+
+          return {
+            signature: d.text_signature,
+            textPreview: d.sample_text.substring(0, 200) + (d.sample_text.length > 200 ? '...' : ''),
+            usageCount: d.usage_count,
+            usedIn: noteDetails.map((n) => ({
+              noteId: n.id,
+              title: n.title,
+              type: n.type,
+              passage: `${n.book} ${n.start_chapter}${n.start_verse ? ':' + n.start_verse : ''}`,
+              date: n.updated_at,
+            })),
+          };
+        });
+
+        // Get total stats
+        const { total } = db
+          .prepare("SELECT COUNT(DISTINCT text_signature) as total FROM inline_tags WHERE tag_type = 'illustration' AND text_signature IS NOT NULL")
+          .get() as { total: number };
+
+        const { duplicateCount } = db
+          .prepare(
+            `SELECT COUNT(*) as duplicateCount FROM (
+              SELECT text_signature FROM inline_tags
+              WHERE tag_type = 'illustration' AND text_signature IS NOT NULL
+              GROUP BY text_signature
+              HAVING COUNT(*) > 1
+            )`
+          )
+          .get() as { duplicateCount: number };
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(
+                {
+                  duplicates: enrichedDuplicates,
+                  statistics: {
+                    totalUniqueIllustrations: total,
+                    duplicatedIllustrations: duplicateCount,
+                    duplicateRate: total > 0 ? ((duplicateCount / total) * 100).toFixed(1) + '%' : '0%',
+                  },
+                  count: enrichedDuplicates.length,
+                  message:
+                    duplicateCount > 0
+                      ? `Found ${duplicateCount} illustrations used multiple times. Consider varying your illustrations for freshness.`
+                      : 'No duplicate illustrations found. Good variety!',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        logger.error('Error getting duplicate illustrations:', error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${error}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
   logger.info(
-    'Registered AI-enhanced tools: parse_verse_reference, sermon_prep_bundle, doctrine_study_bundle, suggest_topics_for_passage, extract_illustrations, extract_applications, find_related_notes, summarize_topic_notes, create_enriched_note, auto_tag_note, insert_doctrine_links, get_similar_sermons, compile_illustrations_for_topic, generate_sermon_structure'
+    'Registered AI-enhanced tools: parse_verse_reference, sermon_prep_bundle, doctrine_study_bundle, suggest_topics_for_passage, extract_illustrations, extract_applications, find_related_notes, summarize_topic_notes, create_enriched_note, auto_tag_note, insert_doctrine_links, get_similar_sermons, compile_illustrations_for_topic, generate_sermon_structure, check_illustration_duplicates, get_duplicate_illustrations'
   );
 }
