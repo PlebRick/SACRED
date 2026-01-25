@@ -12,6 +12,7 @@ A personal Bible study app with rich text notes, commentary, and sermon manageme
 - **Browse by Tag** — View all tagged content across notes from the sidebar
 - **Dark/Light Theme** — Respects system preference with highlight visibility toggle
 - **Mac App** — Native desktop app with local database
+- **Web Hosting** — Deploy with Docker to Railway, Render, or self-host
 - **Export/Import** — Backup and restore notes, topics, and tag types as JSON
 - **Self-Hosted** — Your data stays on your machine
 - **Claude Integration** — MCP server for AI-assisted Bible study
@@ -39,6 +40,44 @@ The app will be created at `release/SACRED-*.dmg`. Database is stored at:
 ```
 ~/Library/Application Support/sacred/sacred.db
 ```
+
+## Web Hosting (Docker)
+
+Deploy SACRED as a web app on Railway, Render, or any Docker host.
+
+### Quick Deploy to Railway
+
+1. Fork this repo (or use a private copy with your data)
+2. Connect Railway to your GitHub repo
+3. Add environment variables:
+   - `AUTH_PASSWORD` — Required, your login password
+   - `ESV_API_KEY` — Optional, for ESV translation
+4. Add a volume mounted at `/app/data`
+5. Railway auto-deploys on push
+
+### Local Docker
+
+```bash
+# Build image
+npm run docker:build
+
+# Run container
+docker run -p 3000:3000 \
+  -e AUTH_PASSWORD=your-password \
+  -v sacred-data:/app/data \
+  sacred
+```
+
+Visit http://localhost:3000 and log in with your password.
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `AUTH_PASSWORD` | Yes | Password for web access |
+| `ESV_API_KEY` | No | ESV Bible API key ([get one](https://api.esv.org/)) |
+| `PORT` | No | Server port (default: 3000) |
+| `DB_PATH` | No | Database path (default: /app/data/sacred.db) |
 
 ## Claude Integration (MCP)
 
@@ -85,6 +124,7 @@ See [mcp/README.md](mcp/README.md) for detailed setup, available tools, and exam
 ### Database Path
 
 - **Mac App**: `~/Library/Application Support/sacred/sacred.db`
+- **Docker**: `/app/data/sacred.db` (mount a volume here)
 - **Development**: `./data/sacred.db`
 
 ## Tech Stack
