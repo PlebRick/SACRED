@@ -328,15 +328,16 @@ describe('TopicsTree', () => {
     it('saves edited topic on submit', async () => {
       render(<TopicsTree />);
 
+      // With alphabetical sorting, Christology (topic-4) comes first
       const editButtons = screen.getAllByTitle('Edit');
       fireEvent.click(editButtons[0]);
 
-      const input = screen.getByDisplayValue('Soteriology');
-      fireEvent.change(input, { target: { value: 'Salvation' } });
+      const input = screen.getByDisplayValue('Christology');
+      fireEvent.change(input, { target: { value: 'Christ Studies' } });
       fireEvent.click(screen.getByText('Save'));
 
       await waitFor(() => {
-        expect(mockUpdateTopic).toHaveBeenCalledWith('topic-1', { name: 'Salvation' });
+        expect(mockUpdateTopic).toHaveBeenCalledWith('topic-4', { name: 'Christ Studies' });
       });
     });
 
@@ -356,11 +357,12 @@ describe('TopicsTree', () => {
 
       render(<TopicsTree />);
 
+      // With alphabetical sorting, Christology (topic-4) comes first
       const deleteButtons = screen.getAllByTitle('Delete');
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(mockDeleteTopic).toHaveBeenCalledWith('topic-1');
+        expect(mockDeleteTopic).toHaveBeenCalledWith('topic-4');
       });
     });
 
@@ -376,6 +378,7 @@ describe('TopicsTree', () => {
     it('creates child topic', async () => {
       render(<TopicsTree />);
 
+      // With alphabetical sorting, Christology (topic-4) comes first
       const addButtons = screen.getAllByTitle('Add sub-topic');
       fireEvent.click(addButtons[0]);
 
@@ -386,7 +389,7 @@ describe('TopicsTree', () => {
       await waitFor(() => {
         expect(mockCreateTopic).toHaveBeenCalledWith({
           name: 'New Child',
-          parentId: 'topic-1',
+          parentId: 'topic-4',
         });
       });
     });
@@ -582,10 +585,11 @@ describe('TopicsTree', () => {
     it('saves edit on Enter key', async () => {
       render(<TopicsTree />);
 
+      // With alphabetical sorting, Christology (topic-4) comes first
       const editButtons = screen.getAllByTitle('Edit');
       fireEvent.click(editButtons[0]);
 
-      const input = screen.getByDisplayValue('Soteriology');
+      const input = screen.getByDisplayValue('Christology');
       fireEvent.change(input, { target: { value: 'Changed' } });
       fireEvent.keyDown(input, { key: 'Enter' });
 

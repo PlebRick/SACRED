@@ -9,6 +9,10 @@ import { seriesService } from '../../services/seriesService';
 import { formatVerseRange } from '../../utils/verseRange';
 import styles from './TopicsTree.module.css';
 
+// Sort topics alphabetically by name
+const sortTopics = (topics) =>
+  [...topics].sort((a, b) => a.name.localeCompare(b.name));
+
 // Recursive topic node component
 const TopicNode = ({
   topic,
@@ -116,7 +120,7 @@ const TopicNode = ({
 
       {hasChildren && isExpanded && (
         <div className={styles.children}>
-          {topic.children.map(child => (
+          {sortTopics(topic.children).map(child => (
             <TopicNode
               key={child.id}
               topic={child}
@@ -784,7 +788,7 @@ export const TopicsTree = () => {
     <div className={styles.container}>
       {/* Topic tree */}
       <div className={styles.treeContainer}>
-        {topics.map(topic => (
+        {sortTopics(topics).map(topic => (
           <TopicNode
             key={topic.id}
             topic={topic}
