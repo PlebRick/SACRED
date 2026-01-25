@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased] - feature/granular-search
+## [0.2.0] - 2026-01-25
 
 ### Added
 - **Scroll-to-Match Navigation**: Search results now scroll to matched content
@@ -12,11 +12,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Note search opens the note editor focused on the result
   - Works with both WEB and ESV Bible translations
 
-- **Sermon Series Linking**: Group sermons into named series
+- **Sermon Series Management**: Full support for grouping sermons into series
   - New `series` table in database
   - SeriesSelector dropdown in NoteEditor (for sermon-type notes only)
   - Full CRUD API at `/api/series`
   - 5 new MCP tools: `list_series`, `get_series`, `create_series`, `add_sermon_to_series`, `remove_sermon_from_series`
+  - Series browser in Topics sidebar under "Browse by Tag"
+  - Edit and delete series directly from sidebar
+  - View all sermons in a series with one click
+
+- **Inline Clear Buttons**: Remove assignments without opening dropdowns
+  - TopicSelector (single-select): × button to clear primary topic
+  - TopicSelector (multi-select): Removable tag chips with × buttons
+  - SeriesSelector: × button to remove note from series
+
+- **Alphabetical Topic Sorting**: Topics now sorted A-Z in sidebar tree
+  - Both top-level topics and children sorted automatically
+  - Uses locale-aware sorting for proper internationalization
 
 - **Illustration Duplicate Detection**: Detect reused illustrations across sermons
   - MD5-based text signatures for illustration inline tags
@@ -32,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - New `seriesService.js` for API calls
 - `highlightVerse` state in BibleContext for scroll-to-verse
 - `highlightQuery` state in NotesContext for scroll-to-note
+- GitHub Actions workflow for CI builds (avoids local native module conflicts)
 
 ---
 
