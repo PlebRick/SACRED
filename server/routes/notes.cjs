@@ -17,6 +17,7 @@ const toApiFormat = (row) => ({
   content: row.content,
   type: row.type,
   primaryTopicId: row.primary_topic_id,
+  seriesId: row.series_id,
   createdAt: row.created_at,
   updatedAt: row.updated_at
 });

@@ -6,6 +6,7 @@ import { NotesProvider, useNotes } from './context/NotesContext';
 import { TopicsProvider } from './context/TopicsContext';
 import { InlineTagsProvider } from './context/InlineTagsContext';
 import { SystematicProvider } from './context/SystematicContext';
+import { SeriesProvider } from './context/SeriesContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { BibleReader } from './components/Bible/BibleReader';
@@ -120,7 +121,9 @@ function App() {
             <TopicsProvider>
               <InlineTagsProvider>
                 <SystematicProvider>
-                  <AppContent />
+                  <SeriesProvider>
+                    <AppContent />
+                  </SeriesProvider>
                 </SystematicProvider>
               </InlineTagsProvider>
             </TopicsProvider>
