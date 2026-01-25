@@ -20,9 +20,19 @@ vi.mock('../../../src/context/NotesContext', () => ({
   useNotes: vi.fn(),
 }));
 
+vi.mock('../../../src/context/SeriesContext', () => ({
+  useSeries: vi.fn(),
+}));
+
 vi.mock('../../../src/services/topicsService', () => ({
   topicsService: {
     getNotes: vi.fn(),
+  },
+}));
+
+vi.mock('../../../src/services/seriesService', () => ({
+  seriesService: {
+    getById: vi.fn(),
   },
 }));
 
@@ -30,7 +40,9 @@ import { useTopics } from '../../../src/context/TopicsContext';
 import { useInlineTags } from '../../../src/context/InlineTagsContext';
 import { useBible } from '../../../src/context/BibleContext';
 import { useNotes } from '../../../src/context/NotesContext';
+import { useSeries } from '../../../src/context/SeriesContext';
 import { topicsService } from '../../../src/services/topicsService';
+import { seriesService } from '../../../src/services/seriesService';
 
 const mockTopics = [
   {
@@ -95,7 +107,12 @@ describe('TopicsTree', () => {
       setSelectedNote: mockSetSelectedNote,
       setEditingNote: mockSetEditingNote,
     });
+    (useSeries as any).mockReturnValue({
+      series: [],
+      loading: false,
+    });
     (topicsService.getNotes as any).mockResolvedValue([]);
+    (seriesService.getById as any).mockResolvedValue({ sermons: [] });
     mockLoadTagInstances.mockResolvedValue([]);
   });
 
