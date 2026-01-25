@@ -47,10 +47,25 @@
   - Local-first loading with API fallback
   - ESV remains online-only (copyright)
 
-- [ ] **AI integration API**
-  - Endpoint for Claude Cowork / external tools
-  - Structured access to notes and verse context
-  - Query interface for study assistance
+- [x] **AI integration API** ✓ v0.1.0
+  - 72 MCP tools for Claude integration
+  - Token-efficient metadata-only tools
+  - Sermon preparation bundle tools
+  - Study session tracking
+
+- [x] **Scroll-to-Match Navigation** ✓ (feature/granular-search)
+  - Scroll to verse when navigating from search
+  - Temporary highlight animation on matched verse
+  - Focus editor when opening note from search
+
+- [x] **Sermon Series Linking** ✓ (feature/granular-search)
+  - Group sermons into named series
+  - Series selector dropdown in NoteEditor for sermon type
+  - Full CRUD API and MCP tools
+
+- [x] **Illustration Duplicate Detection** ✓ (feature/granular-search)
+  - MD5-based text signatures for illustration matching
+  - MCP tools to check for and find duplicates
 
 - [ ] **UI refresh and improvements**
   - Improved mobile experience
@@ -82,7 +97,7 @@
 
 ## Tests
 
-Current: 563 tests | Run `npm run test:coverage` for latest metrics
+Current: 1171 tests | Run `npm run test:coverage` for latest metrics
 
 *Note: Coverage % decreased due to new topics system code. Key new files have excellent coverage.*
 

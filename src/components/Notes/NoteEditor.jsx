@@ -9,11 +9,14 @@ import { SystematicLinkTooltip } from './SystematicLinkTooltip';
 import { formatVerseRange } from '../../utils/verseRange';
 import { parseReference } from '../../utils/parseReference';
 import { TopicSelector } from '../UI/TopicSelector';
+import { SeriesSelector } from '../UI/SeriesSelector';
 import { NoteTypeIndicator } from '../UI/NoteTypeIndicator';
 import { useTopics } from '../../context/TopicsContext';
 import { useInlineTags } from '../../context/InlineTagsContext';
 import { useSystematic } from '../../context/SystematicContext';
 import { useBible } from '../../context/BibleContext';
+import { useNotes } from '../../context/NotesContext';
+import { useSeries } from '../../context/SeriesContext';
 import styles from './Notes.module.css';
 
 const InlineTagDropdown = ({ editor, tagTypes, onAddTagType }) => {
@@ -283,6 +286,7 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [title, setTitle] = useState(note.title || '');
   const [primaryTopicId, setPrimaryTopicId] = useState(note.primaryTopicId || null);
   const [tags, setTags] = useState(note.tags?.map(t => t.id) || []);
+  const [seriesId, setSeriesId] = useState(note.seriesId || null);
   const [isSaving, setIsSaving] = useState(false);
   const [showTopics, setShowTopics] = useState(false);
   const [showAddTagType, setShowAddTagType] = useState(false);
@@ -293,6 +297,8 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const { tagTypes, createTagType, refreshCounts } = useInlineTags();
   const { navigateToLink } = useSystematic();
   const { navigate } = useBible();
+  const { highlightQuery, clearHighlightQuery } = useNotes();
+  const { addSermonToSeries, removeSermonFromSeries, getSeriesById } = useSeries();
 
   // Handle cross-ref tag clicks - navigate to Bible passage
   const handleCrossRefClick = useCallback((text) => {
@@ -335,12 +341,40 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
     return () => window.removeEventListener('openDoctrineModal', handleOpenDoctrine);
   }, []);
 
+  // Focus editor when opened from search (scroll-to-match)
+  useEffect(() => {
+    if (highlightQuery && editor) {
+      // Focus to start of editor when coming from search
+      editor.commands.focus('start');
+      clearHighlightQuery();
+    }
+  }, [highlightQuery, editor, clearHighlightQuery]);
+
   // Handle inserting doctrine link
   const handleInsertDoctrine = useCallback((reference, title) => {
     if (editor) {
       editor.chain().focus().insertSystematicLink(reference, reference).run();
     }
   }, [editor]);
+
+  // Handle series change for sermons
+  const handleSeriesChange = useCallback(async (newSeriesId) => {
+    if (note.type !== 'sermon') return;
+
+    try {
+      // Remove from old series if exists
+      if (seriesId && seriesId !== newSeriesId) {
+        await removeSermonFromSeries(seriesId, note.id);
+      }
+      // Add to new series if selected
+      if (newSeriesId && newSeriesId !== seriesId) {
+        await addSermonToSeries(newSeriesId, note.id);
+      }
+      setSeriesId(newSeriesId);
+    } catch (err) {
+      console.error('Failed to update series:', err);
+    }
+  }, [note.type, note.id, seriesId, addSermonToSeries, removeSermonFromSeries]);
 
   // Debounced save
   const saveNote = useCallback(async () => {
@@ -410,6 +444,18 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Note title..."
       />
+
+      {/* Series selector for sermons */}
+      {note.type === 'sermon' && (
+        <div className={styles.editorSeries}>
+          <SeriesSelector
+            label="Sermon Series"
+            value={seriesId}
+            onChange={handleSeriesChange}
+            placeholder="Select or create series..."
+          />
+        </div>
+      )}
 
       {/* Topics section */}
       <div className={styles.editorTopics}>

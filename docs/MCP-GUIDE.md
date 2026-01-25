@@ -164,10 +164,14 @@ Use 3-letter codes for Bible books:
 |------|---------|---------|
 | `list_notes` | Get all notes with pagination | "Show me my recent notes" |
 | `get_note` | Get single note by ID | "Get note abc-123" |
+| `get_note_metadata` | Get note without content (token-efficient) | "Check if note exists" |
+| `list_notes_metadata` | List notes without content (token-efficient) | "List sermon titles in Romans" |
 | `get_chapter_notes` | Get notes for a Bible chapter | "Show notes for Romans 3" |
 | `search_notes` | Full-text search | "Search notes for 'justification'" |
 | `get_notes_summary` | Statistics about notes | "How many notes do I have?" |
 | `get_books_with_notes` | Books with note counts | "Which books have notes?" |
+
+**Token-efficient pattern:** Use `list_notes_metadata` to browse notes without fetching full HTML content, then use `get_note` only when you need the actual content.
 
 #### Creating & Editing Notes
 
@@ -276,6 +280,8 @@ Specialized tools for sermon writing and research:
 | `get_similar_sermons` | Find past sermons | "Find sermons similar to Romans 8" |
 | `compile_illustrations_for_topic` | Gather illustrations | "Find illustrations about grace" |
 | `sermon_prep_bundle` | All resources for a passage | "Get sermon prep bundle for Ephesians 2:1-10" |
+| `check_illustration_duplicates` | Check if illustration was used before | "Have I used this illustration?" |
+| `get_duplicate_illustrations` | Find all duplicated illustrations | "Which illustrations have I reused?" |
 
 **`generate_sermon_structure` parameters:**
 - `book` - 3-letter Bible book code (required)
@@ -297,6 +303,25 @@ Specialized tools for sermon writing and research:
 - `topic` - Keyword to search in illustration text
 - `doctrineChapter` - Find illustrations from passages citing this doctrine
 - `limit` - Max results (default: 30)
+
+### Sermon Series Tools
+
+Organize sermons into named series:
+
+| Tool | Purpose | Example |
+|------|---------|---------|
+| `list_series` | List all series with sermon counts | "What sermon series do I have?" |
+| `get_series` | Get series with its sermons | "Show the Romans series" |
+| `create_series` | Create new series | "Create a series called 'Life of David'" |
+| `add_sermon_to_series` | Link sermon to series | "Add this sermon to the Romans series" |
+| `remove_sermon_from_series` | Unlink sermon from series | "Remove sermon from series" |
+
+**Creating and populating a series:**
+```
+1. create_series(name="Romans: Life in the Spirit", description="Series through Romans 5-8")
+2. add_sermon_to_series(seriesId="<returned-id>", noteId="<sermon-note-id>")
+3. list_series() to verify
+```
 
 ### AI-Enhanced Composite Tools
 
