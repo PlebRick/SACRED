@@ -88,6 +88,8 @@ CREATE TABLE notes (
   title TEXT DEFAULT '',
   content TEXT DEFAULT '',       -- HTML from Tiptap
   type TEXT DEFAULT 'note',      -- 'note', 'commentary', 'sermon'
+  primary_topic_id TEXT,         -- FK to topics table
+  series_id TEXT,                -- FK to series table (for sermons)
   created_at TEXT NOT NULL,      -- ISO timestamp
   updated_at TEXT NOT NULL
 );
