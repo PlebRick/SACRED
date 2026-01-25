@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-01-25
+
+### Added
+- **Docker Deployment**: Deploy SACRED as a web app on Railway, Render, or any Docker host
+  - Multi-stage Dockerfile optimized for production (node:20-slim)
+  - Bundled systematic theology and WEB Bible data
+  - Volume mount support for persistent SQLite database
+  - Environment variable configuration (`AUTH_PASSWORD`, `ESV_API_KEY`)
+
+- **Session-Based Authentication**: Password protection for hosted deployments
+  - Login page with password authentication
+  - 30-day session cookies (HttpOnly, Secure in production)
+  - Logout button in Settings → Account section
+  - Auth middleware protects all API routes
+
+- **Data Loader**: Auto-import bundled data on first startup
+  - Loads systematic theology JSON if database is empty
+  - Supports multiple file paths (Docker, Electron, development)
+
+### Technical
+- New files: `Dockerfile`, `.dockerignore`, `server/middleware/auth.cjs`, `server/routes/auth.cjs`, `server/utils/dataLoader.cjs`
+- New React components: `Login.jsx`, `AuthContext.jsx`, `authService.js`
+- Docker scripts in package.json: `docker:build`, `docker:run`
+
+---
+
 ## [0.2.3] - 2026-01-25
 
 ### Fixed
