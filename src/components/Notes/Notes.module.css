@@ -227,6 +227,49 @@
   color: var(--accent);
 }
 
+.editorReference.editable {
+  cursor: pointer;
+  padding: 0.125rem 0.375rem;
+  margin: -0.125rem -0.375rem;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.editorReference.editable:hover {
+  background: var(--bg-tertiary);
+}
+
+.referenceEditWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.referenceInput {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.125rem 0.375rem;
+  outline: none;
+  min-width: 150px;
+}
+
+.referenceInput.inputError {
+  border-color: #ef4444;
+}
+
+.referenceError {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
 .editorActions {
   display: flex;
   align-items: center;

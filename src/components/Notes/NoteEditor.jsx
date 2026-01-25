@@ -291,6 +291,9 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [showTopics, setShowTopics] = useState(false);
   const [showAddTagType, setShowAddTagType] = useState(false);
   const [showDoctrineModal, setShowDoctrineModal] = useState(false);
+  const [isEditingReference, setIsEditingReference] = useState(false);
+  const [referenceInput, setReferenceInput] = useState('');
+  const [referenceError, setReferenceError] = useState('');
   const editorContentRef = useRef(null);
 
   const { getTopicById, refreshTopics } = useTopics();
@@ -399,6 +402,71 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
     }
   }, [editor, note.id, title, primaryTopicId, tags, onUpdate, refreshTopics, refreshCounts]);
 
+  // Verse reference editing handlers
+  const handleReferenceClick = () => {
+    setReferenceInput(formatVerseRange(note));
+    setIsEditingReference(true);
+    setReferenceError('');
+  };
+
+  const handleReferenceKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleReferenceSave();
+    } else if (e.key === 'Escape') {
+      setIsEditingReference(false);
+      setReferenceError('');
+    }
+  };
+
+  const handleReferenceSave = async () => {
+    const parsed = parseReference(referenceInput);
+
+    if (!parsed) {
+      setReferenceError('Invalid reference');
+      return;
+    }
+
+    if (parsed.isWholeChapter) {
+      setReferenceError('Please specify verses');
+      return;
+    }
+
+    // Check if actually changed
+    const changed = parsed.bookId !== note.book ||
+      parsed.startChapter !== note.startChapter ||
+      parsed.startVerse !== note.startVerse ||
+      parsed.endChapter !== note.endChapter ||
+      parsed.endVerse !== note.endVerse;
+
+    if (!changed) {
+      setIsEditingReference(false);
+      return;
+    }
+
+    // Save the verse range update
+    setIsSaving(true);
+    try {
+      await onUpdate(note.id, {
+        book: parsed.bookId,
+        startChapter: parsed.startChapter,
+        startVerse: parsed.startVerse,
+        endChapter: parsed.endChapter,
+        endVerse: parsed.endVerse,
+      });
+      setIsEditingReference(false);
+
+      // Navigate to new location if chapter/book changed
+      if (parsed.bookId !== note.book || parsed.startChapter !== note.startChapter) {
+        navigate(parsed.bookId, parsed.startChapter);
+      }
+    } catch (err) {
+      setReferenceError('Failed to save');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Auto-save on changes
   useEffect(() => {
     const hasContentChanges = editor && (title !== note.title || editor.getHTML() !== note.content);
@@ -423,7 +491,28 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
     <div className={styles.editor}>
       <div className={styles.editorHeader}>
         <div className={styles.editorHeaderLeft}>
-          <span className={styles.editorReference}>{formatVerseRange(note)}</span>
+          {isEditingReference ? (
+            <div className={styles.referenceEditWrapper}>
+              <input
+                type="text"
+                className={`${styles.referenceInput} ${referenceError ? styles.inputError : ''}`}
+                value={referenceInput}
+                onChange={(e) => { setReferenceInput(e.target.value); setReferenceError(''); }}
+                onKeyDown={handleReferenceKeyDown}
+                onBlur={handleReferenceSave}
+                autoFocus
+              />
+              {referenceError && <span className={styles.referenceError}>{referenceError}</span>}
+            </div>
+          ) : (
+            <span
+              className={`${styles.editorReference} ${styles.editable}`}
+              onClick={handleReferenceClick}
+              title="Click to edit verse range"
+            >
+              {formatVerseRange(note)}
+            </span>
+          )}
           <NoteTypeIndicator type={note.type} showLabel size="md" />
         </div>
         <div className={styles.editorActions}>
