@@ -85,6 +85,13 @@
 
 ## Packaging & Distribution
 
+- [x] **Web Hosting (Docker)** ✓ v0.3.0
+  - Multi-stage Dockerfile for Railway/Render deployment
+  - Session-based password authentication
+  - Persistent SQLite via volume mount
+  - Bundled systematic theology and WEB Bible data
+  - Environment variable configuration
+
 - [ ] **StartOS `.s9pk` package**
   - Self-hosted deployment option
   - Automatic backups
@@ -97,6 +104,7 @@
 
 ## Completed
 
+- **v0.3.0** - Docker deployment with session-based authentication for web hosting
 - **v0.2.2** - Comprehensive backup system (v4) with series, systematic annotations, and seriesId in notes
 - **v0.2.1** - Editable verse ranges (click-to-edit in NoteEditor)
 - **v0.2.0** - Scroll-to-match navigation, sermon series management, inline clear buttons, alphabetical topic sorting, illustration duplicate detection, token-efficient MCP tools
