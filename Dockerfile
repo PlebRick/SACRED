@@ -43,8 +43,8 @@ RUN apt-get update && apt-get install -y \
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Install production dependencies only (skip postinstall which requires electron-builder)
+RUN npm ci --omit=dev --ignore-scripts
 
 # Rebuild better-sqlite3 for this environment
 RUN npm rebuild better-sqlite3
