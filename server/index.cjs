@@ -8,6 +8,7 @@ const inlineTagsRoutes = require('./routes/inlineTags.cjs');
 const systematicRoutes = require('./routes/systematic.cjs');
 const sessionsRoutes = require('./routes/sessions.cjs');
 const bibleRoutes = require('./routes/bible.cjs');
+const seriesRoutes = require('./routes/series.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.use('/api/inline-tags', inlineTagsRoutes);
 app.use('/api/systematic', systematicRoutes);
 app.use('/api/sessions', sessionsRoutes);
 app.use('/api/bible', bibleRoutes);
+app.use('/api/series', seriesRoutes);
 
 // Serve static frontend in production
 if (process.env.NODE_ENV === 'production') {
