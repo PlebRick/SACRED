@@ -396,7 +396,7 @@ Link formats:
 
 ## MCP Tools for Claude
 
-SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
+SACRED provides 72 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
 
 ### When to Use MCP Tools
 
@@ -412,6 +412,10 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 | "When did I last look at Romans 3?" | `get_last_studied` |
 | "What sermons have I done on faith?" | `get_similar_sermons` |
 | "Find illustrations about grace" | `compile_illustrations_for_topic` |
+| "Have I used this illustration before?" | `check_illustration_duplicates` |
+| "Which illustrations have I reused?" | `get_duplicate_illustrations` |
+| "Create a sermon series" | `create_series`, `add_sermon_to_series` |
+| "What series do I have?" | `list_series`, `get_series` |
 
 ### Tool Categories
 
@@ -457,6 +461,15 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 - `get_similar_sermons` - Find past sermons by book, chapter, topic, or keyword
 - `compile_illustrations_for_topic` - Gather illustrations by topic keyword or doctrine chapter
 - `generate_sermon_structure` - Generate a structured sermon outline scaffold with resources
+- `check_illustration_duplicates` - Check if an illustration has been used before
+- `get_duplicate_illustrations` - Find illustrations that appear in multiple sermons
+
+**Sermon Series:**
+- `list_series` - List all sermon series with sermon counts
+- `get_series` - Get a series with its sermons
+- `create_series` - Create a new sermon series
+- `add_sermon_to_series` - Link a sermon note to a series
+- `remove_sermon_from_series` - Unlink a sermon from a series
 
 ### Best Practices
 
