@@ -1,9 +1,21 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const cheerio = require('cheerio');
 const db = require('../db.cjs');
 
 const router = express.Router();
+
+// Generate text signature for duplicate detection
+const generateSignature = (text) => {
+  if (!text || text.length < 20) return null;  // Skip short text
+  const normalized = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return crypto.createHash('md5').update(normalized).digest('hex').substring(0, 16);
+};
 
 // Convert database row (snake_case) to API format (camelCase)
 const toApiFormat = (row) => ({
@@ -73,8 +85,8 @@ const syncInlineTags = (noteId, htmlContent) => {
 
   const now = new Date().toISOString();
   const insertStmt = db.prepare(`
-    INSERT INTO inline_tags (id, note_id, tag_type, text_content, html_fragment, position_start, position_end, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO inline_tags (id, note_id, tag_type, text_content, html_fragment, position_start, position_end, text_signature, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   let position = 0;
@@ -84,6 +96,7 @@ const syncInlineTags = (noteId, htmlContent) => {
     const textContent = $span.text() || '';
     const htmlFragment = $.html($span);
     const id = uuidv4();
+    const signature = generateSignature(textContent);
 
     insertStmt.run(
       id,
@@ -93,6 +106,7 @@ const syncInlineTags = (noteId, htmlContent) => {
       htmlFragment,
       position,
       position + textContent.length,
+      signature,
       now
     );
 
