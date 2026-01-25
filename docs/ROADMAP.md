@@ -53,19 +53,30 @@
   - Sermon preparation bundle tools
   - Study session tracking
 
-- [x] **Scroll-to-Match Navigation** ✓ (feature/granular-search)
+- [x] **Scroll-to-Match Navigation** ✓ v0.2.0
   - Scroll to verse when navigating from search
   - Temporary highlight animation on matched verse
   - Focus editor when opening note from search
 
-- [x] **Sermon Series Linking** ✓ (feature/granular-search)
+- [x] **Sermon Series Management** ✓ v0.2.0
   - Group sermons into named series
   - Series selector dropdown in NoteEditor for sermon type
-  - Full CRUD API and MCP tools
+  - Series browser in Topics sidebar under Browse by Tag
+  - Edit and delete series directly from sidebar
+  - Full CRUD API and 5 MCP tools
 
-- [x] **Illustration Duplicate Detection** ✓ (feature/granular-search)
+- [x] **Illustration Duplicate Detection** ✓ v0.2.0
   - MD5-based text signatures for illustration matching
   - MCP tools to check for and find duplicates
+
+- [x] **Inline Clear Buttons** ✓ v0.2.0
+  - Remove primary topic with × button
+  - Remove secondary tags with removable tag chips
+  - Remove series assignment with × button
+
+- [x] **Alphabetical Topic Sorting** ✓ v0.2.0
+  - Topics sorted A-Z in sidebar tree
+  - Locale-aware sorting for internationalization
 
 - [ ] **UI refresh and improvements**
   - Improved mobile experience
@@ -86,6 +97,7 @@
 
 ## Completed
 
+- **v0.2.0** - Scroll-to-match navigation, sermon series management, inline clear buttons, alphabetical topic sorting, illustration duplicate detection, token-efficient MCP tools
 - **v0.1.0** - Offline WEB Bible support, illustrations browser in sidebar
 - **v0.0.10** - ESV Bible translation support with translation selector in Settings
 - **v0.0.8** - Note type indicators in right panel, systematic theology backup, resizable sidebar
