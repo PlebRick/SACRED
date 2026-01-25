@@ -418,6 +418,8 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 **Notes - Reading:**
 - `list_notes` - Get all notes (paginated)
 - `get_note` - Get single note by ID
+- `get_note_metadata` - Get note metadata without content (token-efficient)
+- `list_notes_metadata` - List notes without content, with filtering (token-efficient)
 - `get_chapter_notes` - Notes overlapping a Bible chapter
 - `get_notes_summary` - Statistics (counts by book, type)
 - `search_notes` - Full-text search
@@ -463,6 +465,23 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 3. **Reference syntax**: Use `[[ST:Ch32]]` format when linking notes to doctrines
 4. **Book codes**: Use 3-letter codes: `GEN`, `EXO`, `ROM`, `JHN`, `REV`, etc.
 5. **HTML content**: Note content is HTML from Tiptap editor - preserve formatting
+
+### Token-Efficient Tool Usage
+
+Use metadata-only tools to minimize token consumption when full content isn't needed:
+
+| Need | Tool | Token Cost |
+|------|------|------------|
+| Browse notes | `list_notes_metadata` | Low |
+| Check note exists | `get_note_metadata` | Low |
+| Read full content | `get_note` | High |
+
+**Pattern:** Use metadata tools first to identify relevant notes, then fetch full content only when needed.
+
+```
+1. list_notes_metadata(book="ROM", type="sermon") - get list of sermons in Romans (no content)
+2. get_note(id) - fetch specific sermon content when user wants details
+```
 
 ### Example Workflows
 
