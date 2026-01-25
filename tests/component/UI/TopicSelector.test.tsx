@@ -75,7 +75,7 @@ describe('TopicSelector', () => {
     it('opens dropdown on trigger click', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.getByPlaceholderText('Search topics...')).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('TopicSelector', () => {
     it('closes dropdown on second click', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(trigger);
 
@@ -94,7 +94,7 @@ describe('TopicSelector', () => {
     it('shows all topics in dropdown', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.getByText('Soteriology')).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('TopicSelector', () => {
     it('shows topic path for nested topics', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.getByText('Soteriology / Justification')).toBeInTheDocument();
@@ -116,7 +116,7 @@ describe('TopicSelector', () => {
     it('filters topics based on search', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       const searchInput = screen.getByPlaceholderText('Search topics...');
       fireEvent.change(searchInput, { target: { value: 'justi' } });
@@ -128,7 +128,7 @@ describe('TopicSelector', () => {
     it('shows empty message when no topics match', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       const searchInput = screen.getByPlaceholderText('Search topics...');
       fireEvent.change(searchInput, { target: { value: 'xyz' } });
@@ -139,7 +139,7 @@ describe('TopicSelector', () => {
     it('clears search on selection', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       const searchInput = screen.getByPlaceholderText('Search topics...');
       fireEvent.change(searchInput, { target: { value: 'sote' } });
@@ -156,7 +156,7 @@ describe('TopicSelector', () => {
     it('calls onChange when topic is selected', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Soteriology'));
 
@@ -166,7 +166,7 @@ describe('TopicSelector', () => {
     it('closes dropdown after selection', () => {
       render(<TopicSelector onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Soteriology'));
 
@@ -176,7 +176,7 @@ describe('TopicSelector', () => {
     it('shows checkmark for selected option', () => {
       render(<TopicSelector value="topic-1" onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Soteriology').closest('button')!;
+      const trigger = screen.getByText('Soteriology').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       // Find the option with 'selected' class
@@ -204,7 +204,7 @@ describe('TopicSelector', () => {
     it('shows clear selection in dropdown when value is selected', () => {
       render(<TopicSelector value="topic-1" onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Soteriology').closest('button')!;
+      const trigger = screen.getByText('Soteriology').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.getByText('Clear selection')).toBeInTheDocument();
@@ -213,7 +213,7 @@ describe('TopicSelector', () => {
     it('clears selection when dropdown clear button is clicked', () => {
       render(<TopicSelector value="topic-1" onChange={mockOnChange} />);
 
-      const trigger = screen.getByText('Soteriology').closest('button')!;
+      const trigger = screen.getByText('Soteriology').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Clear selection'));
 
@@ -276,7 +276,7 @@ describe('TopicSelector', () => {
       );
 
       // Open dropdown by clicking the trigger area (chevron)
-      const trigger = screen.getByText('Soteriology').closest('button')!;
+      const trigger = screen.getByText('Soteriology').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Christology'));
 
@@ -292,7 +292,7 @@ describe('TopicSelector', () => {
         />
       );
 
-      const trigger = screen.getByText('Soteriology').closest('button')!;
+      const trigger = screen.getByText('Soteriology').closest('[role="button"]')!;
       fireEvent.click(trigger);
       // Click on Soteriology option in dropdown to deselect
       const options = screen.getAllByText('Soteriology');
@@ -311,7 +311,7 @@ describe('TopicSelector', () => {
         />
       );
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Soteriology'));
 
@@ -328,7 +328,7 @@ describe('TopicSelector', () => {
         />
       );
 
-      const trigger = screen.getByText('Soteriology').closest('button')!;
+      const trigger = screen.getByText('Soteriology').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.queryByText('Clear selection')).not.toBeInTheDocument();
@@ -339,7 +339,7 @@ describe('TopicSelector', () => {
     it('shows create section when allowCreate is true', () => {
       render(<TopicSelector onChange={mockOnChange} allowCreate />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.getByText('Create new topic')).toBeInTheDocument();
@@ -348,7 +348,7 @@ describe('TopicSelector', () => {
     it('hides create section when allowCreate is false', () => {
       render(<TopicSelector onChange={mockOnChange} allowCreate={false} />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
 
       expect(screen.queryByText('Create new topic')).not.toBeInTheDocument();
@@ -357,7 +357,7 @@ describe('TopicSelector', () => {
     it('shows create form when create button is clicked', () => {
       render(<TopicSelector onChange={mockOnChange} allowCreate />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Create new topic'));
 
@@ -369,7 +369,7 @@ describe('TopicSelector', () => {
 
       render(<TopicSelector onChange={mockOnChange} allowCreate />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Create new topic'));
 
@@ -391,7 +391,7 @@ describe('TopicSelector', () => {
 
       render(<TopicSelector onChange={mockOnChange} allowCreate />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Create new topic'));
 
@@ -407,7 +407,7 @@ describe('TopicSelector', () => {
     it('cancels create on Escape key', () => {
       render(<TopicSelector onChange={mockOnChange} allowCreate />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Create new topic'));
 
@@ -422,7 +422,7 @@ describe('TopicSelector', () => {
     it('disables Add button when name is empty', () => {
       render(<TopicSelector onChange={mockOnChange} allowCreate />);
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       fireEvent.click(screen.getByText('Create new topic'));
 
@@ -440,7 +440,7 @@ describe('TopicSelector', () => {
         </div>
       );
 
-      const trigger = screen.getByText('Select topic...').closest('button')!;
+      const trigger = screen.getByText('Select topic...').closest('[role="button"]')!;
       fireEvent.click(trigger);
       expect(screen.getByPlaceholderText('Search topics...')).toBeInTheDocument();
 

@@ -90,13 +90,20 @@ export const TopicSelector = ({
     <div className={styles.container} ref={containerRef}>
       {label && <label className={styles.label}>{label}</label>}
 
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         className={styles.trigger}
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) {
             setTimeout(() => inputRef.current?.focus(), 50);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(!isOpen);
           }
         }}
       >
@@ -150,7 +157,7 @@ export const TopicSelector = ({
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
-      </button>
+      </div>
 
       {isOpen && (
         <div className={styles.dropdown}>
