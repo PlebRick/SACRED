@@ -10,6 +10,7 @@ import { registerInlineTagTools } from './tools/inline-tags.js';
 import { registerBackupTools } from './tools/backup.js';
 import { registerAiEnhancedTools } from './tools/ai-enhanced.js';
 import { registerSessionTools } from './tools/sessions.js';
+import { registerSeriesTools } from './tools/series.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
@@ -28,6 +29,7 @@ registerInlineTagTools(server);
 registerBackupTools(server);
 registerAiEnhancedTools(server);
 registerSessionTools(server);
+registerSeriesTools(server);
 
 // Register resources
 registerResources(server);

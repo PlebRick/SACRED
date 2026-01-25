@@ -396,7 +396,7 @@ Link formats:
 
 ## MCP Tools for Claude
 
-SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
+SACRED provides 72 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
 
 ### When to Use MCP Tools
 
@@ -412,12 +412,18 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 | "When did I last look at Romans 3?" | `get_last_studied` |
 | "What sermons have I done on faith?" | `get_similar_sermons` |
 | "Find illustrations about grace" | `compile_illustrations_for_topic` |
+| "Have I used this illustration before?" | `check_illustration_duplicates` |
+| "Which illustrations have I reused?" | `get_duplicate_illustrations` |
+| "Create a sermon series" | `create_series`, `add_sermon_to_series` |
+| "What series do I have?" | `list_series`, `get_series` |
 
 ### Tool Categories
 
 **Notes - Reading:**
 - `list_notes` - Get all notes (paginated)
 - `get_note` - Get single note by ID
+- `get_note_metadata` - Get note metadata without content (token-efficient)
+- `list_notes_metadata` - List notes without content, with filtering (token-efficient)
 - `get_chapter_notes` - Notes overlapping a Bible chapter
 - `get_notes_summary` - Statistics (counts by book, type)
 - `search_notes` - Full-text search
@@ -455,6 +461,15 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 - `get_similar_sermons` - Find past sermons by book, chapter, topic, or keyword
 - `compile_illustrations_for_topic` - Gather illustrations by topic keyword or doctrine chapter
 - `generate_sermon_structure` - Generate a structured sermon outline scaffold with resources
+- `check_illustration_duplicates` - Check if an illustration has been used before
+- `get_duplicate_illustrations` - Find illustrations that appear in multiple sermons
+
+**Sermon Series:**
+- `list_series` - List all sermon series with sermon counts
+- `get_series` - Get a series with its sermons
+- `create_series` - Create a new sermon series
+- `add_sermon_to_series` - Link a sermon note to a series
+- `remove_sermon_from_series` - Unlink a sermon from a series
 
 ### Best Practices
 
@@ -463,6 +478,23 @@ SACRED provides 63 MCP tools for Bible study assistance. **Always prefer MCP too
 3. **Reference syntax**: Use `[[ST:Ch32]]` format when linking notes to doctrines
 4. **Book codes**: Use 3-letter codes: `GEN`, `EXO`, `ROM`, `JHN`, `REV`, etc.
 5. **HTML content**: Note content is HTML from Tiptap editor - preserve formatting
+
+### Token-Efficient Tool Usage
+
+Use metadata-only tools to minimize token consumption when full content isn't needed:
+
+| Need | Tool | Token Cost |
+|------|------|------------|
+| Browse notes | `list_notes_metadata` | Low |
+| Check note exists | `get_note_metadata` | Low |
+| Read full content | `get_note` | High |
+
+**Pattern:** Use metadata tools first to identify relevant notes, then fetch full content only when needed.
+
+```
+1. list_notes_metadata(book="ROM", type="sermon") - get list of sermons in Romans (no content)
+2. get_note(id) - fetch specific sermon content when user wants details
+```
 
 ### Example Workflows
 

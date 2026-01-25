@@ -7,13 +7,35 @@ import { getBookById } from '../../utils/bibleBooks';
 import styles from './Bible.module.css';
 
 export const ChapterView = ({ onVisibleVerseChange }) => {
-  const { bookId, chapter, verses, reference, loading, error, goNext, goPrev } = useBible();
+  const { bookId, chapter, verses, reference, loading, error, goNext, goPrev, highlightVerse, clearHighlightVerse } = useBible();
   const { getNotesForChapter, setSelectedNote, setEditingNote } = useNotes();
   const versesContainerRef = useRef(null);
   const verseRefs = useRef({});
 
   const notesForChapter = getNotesForChapter(bookId, chapter);
   const book = getBookById(bookId);
+
+  // Scroll to highlighted verse when set (also re-run when verses load)
+  useEffect(() => {
+    // Don't scroll while loading (prevents scrolling to wrong verse from previous chapter)
+    if (!highlightVerse || verses.length === 0 || loading) return;
+
+    // Use requestAnimationFrame to ensure DOM refs are populated after render
+    const rafId = requestAnimationFrame(() => {
+      const el = verseRefs.current[highlightVerse];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add(styles.scrollHighlighted);
+
+        setTimeout(() => {
+          el.classList.remove(styles.scrollHighlighted);
+          clearHighlightVerse();
+        }, 2000);
+      }
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [highlightVerse, clearHighlightVerse, verses, loading]);
 
   // Track visible verse using Intersection Observer
   useEffect(() => {

@@ -170,6 +170,43 @@ vi.mock('../../../src/context/BibleContext', () => ({
   }),
 }));
 
+// Mock NotesContext
+vi.mock('../../../src/context/NotesContext', () => ({
+  useNotes: () => ({
+    notes: [],
+    loading: false,
+    error: null,
+    selectedNoteId: null,
+    editingNoteId: null,
+    highlightQuery: null,
+    setSelectedNote: vi.fn(),
+    setEditingNote: vi.fn(),
+    clearHighlightQuery: vi.fn(),
+    createNote: vi.fn(),
+    updateNote: vi.fn(),
+    deleteNote: vi.fn(),
+    refreshNotes: vi.fn(),
+  }),
+}));
+
+// Mock SeriesContext
+vi.mock('../../../src/context/SeriesContext', () => ({
+  useSeries: () => ({
+    series: [],
+    loading: false,
+    error: null,
+    selectedSeriesId: null,
+    createSeries: vi.fn(),
+    updateSeries: vi.fn(),
+    deleteSeries: vi.fn(),
+    addSermonToSeries: vi.fn(),
+    removeSermonFromSeries: vi.fn(),
+    setSelectedSeries: vi.fn(),
+    refreshSeries: vi.fn(),
+    getSeriesById: vi.fn().mockReturnValue(null),
+  }),
+}));
+
 // Mock parseReference utility
 vi.mock('../../../src/utils/parseReference', () => ({
   parseReference: vi.fn().mockReturnValue({
