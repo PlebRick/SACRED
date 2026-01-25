@@ -29,7 +29,7 @@ jobs:
             runner: macos-14  # M1 runner for native ARM build
           - os: macos-latest
             arch: x64
-            runner: macos-13  # Intel runner for native x64 build
+            runner: macos-15-intel  # Intel runner for native x64 build
 
     runs-on: ${{ matrix.runner }}
 
