@@ -13,7 +13,7 @@ let webBibleLoadAttempted = false;
 
 /**
  * Load local WEB Bible data from bundled file
- * Checks both Electron packaged location and dev location
+ * Checks Docker, Electron, and dev locations
  */
 function loadLocalWebBible() {
   if (webBibleLoadAttempted) {
@@ -23,6 +23,9 @@ function loadLocalWebBible() {
 
   // Possible file locations
   const possiblePaths = [];
+
+  // Docker container location
+  possiblePaths.push('/app/myfiles/web-bible-complete.json');
 
   // Electron packaged app location
   if (process.resourcesPath) {
