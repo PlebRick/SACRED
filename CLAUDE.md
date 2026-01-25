@@ -4,6 +4,52 @@
 
 SACRED is a personal Bible study app with rich text notes, commentary, and sermon management. Notes are attached to verse ranges and stored locally in SQLite.
 
+## ⚠️ Dual Repository Setup (IMPORTANT)
+
+This project uses **two GitHub repositories** that must be kept in sync:
+
+| Repository | Visibility | Contents | Purpose |
+|------------|------------|----------|---------|
+| `SACRED` | **Public** | Code only | Open source project |
+| `SACRED-PRIVATE` | **Private** | Code + `myfiles/` | Personal deployment on Railway |
+
+### What's Private (in `myfiles/`)
+
+- `grudem-sys-theo-parsed/` — Systematic theology JSON (copyrighted content)
+- `web-bible-complete.json` — Offline WEB Bible
+- `sacred-backup/` — Personal note backups
+- Personal notes, sermons, and study data
+
+### Git Remotes
+
+```bash
+origin  → github.com/PlebRick/SACRED (public)
+private → github.com/PlebRick/SACRED-PRIVATE (private)
+```
+
+### Workflow Rules
+
+1. **All code changes go to both repos** — After committing, push to both:
+   ```bash
+   git push origin main && git push private main
+   ```
+
+2. **NEVER commit `myfiles/` to public repo** — It's in `.gitignore` for `origin`
+
+3. **Private repo has `myfiles/` tracked** — It was force-added with `git add -f myfiles/`
+
+4. **Railway deploys from private repo** — It needs `myfiles/` for bundled data
+
+### Before Pushing
+
+Always verify you're not accidentally including private data in the public repo:
+```bash
+# Check what would be pushed to public
+git diff origin/main --stat
+```
+
+If you see `myfiles/` in the diff for a push to `origin`, STOP and fix it.
+
 ## Quick Start Commands
 
 ```bash
