@@ -14,6 +14,7 @@ import { useTopics } from '../../context/TopicsContext';
 import { useInlineTags } from '../../context/InlineTagsContext';
 import { useSystematic } from '../../context/SystematicContext';
 import { useBible } from '../../context/BibleContext';
+import { useNotes } from '../../context/NotesContext';
 import styles from './Notes.module.css';
 
 const InlineTagDropdown = ({ editor, tagTypes, onAddTagType }) => {
@@ -293,6 +294,7 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const { tagTypes, createTagType, refreshCounts } = useInlineTags();
   const { navigateToLink } = useSystematic();
   const { navigate } = useBible();
+  const { highlightQuery, clearHighlightQuery } = useNotes();
 
   // Handle cross-ref tag clicks - navigate to Bible passage
   const handleCrossRefClick = useCallback((text) => {
@@ -334,6 +336,15 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
     window.addEventListener('openDoctrineModal', handleOpenDoctrine);
     return () => window.removeEventListener('openDoctrineModal', handleOpenDoctrine);
   }, []);
+
+  // Focus editor when opened from search (scroll-to-match)
+  useEffect(() => {
+    if (highlightQuery && editor) {
+      // Focus to start of editor when coming from search
+      editor.commands.focus('start');
+      clearHighlightQuery();
+    }
+  }, [highlightQuery, editor, clearHighlightQuery]);
 
   // Handle inserting doctrine link
   const handleInsertDoctrine = useCallback((reference, title) => {

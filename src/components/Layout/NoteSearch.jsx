@@ -6,7 +6,7 @@ import { getBookById } from '../../utils/bibleBooks';
 import styles from './NoteSearch.module.css';
 
 export const NoteSearch = ({ onClose }) => {
-  const { setEditingNote, setSelectedNote } = useNotes();
+  const { setEditingNote, setSelectedNote, setHighlightQuery } = useNotes();
   const { navigate } = useBible();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -85,6 +85,8 @@ export const NoteSearch = ({ onClose }) => {
     // Select and open the note for editing
     setSelectedNote(note.id);
     setEditingNote(note.id);
+    // Pass search query for scroll-to-match
+    setHighlightQuery(query);
     onClose?.();
   };
 
