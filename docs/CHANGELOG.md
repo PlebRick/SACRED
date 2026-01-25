@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.2] - 2026-01-25
+
+### Added
+- **Comprehensive Backup System (v4)**: Full export/import of all user data
+  - Series definitions now included in backups
+  - Systematic theology annotations (highlights/notes) now backed up
+  - Notes include `seriesId` for sermon-series relationships
+  - Topics include `systematicTagId` for Grudem integration
+  - Backward compatible with v3 backups
+  - MCP tools `full_export` and `full_import` updated accordingly
+
+---
+
 ## [0.2.1] - 2026-01-25
 
 ### Added
