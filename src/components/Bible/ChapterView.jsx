@@ -15,21 +15,26 @@ export const ChapterView = ({ onVisibleVerseChange }) => {
   const notesForChapter = getNotesForChapter(bookId, chapter);
   const book = getBookById(bookId);
 
-  // Scroll to highlighted verse when set
+  // Scroll to highlighted verse when set (also re-run when verses load)
   useEffect(() => {
-    if (highlightVerse && verseRefs.current[highlightVerse]) {
+    if (!highlightVerse || verses.length === 0) return;
+
+    // Use requestAnimationFrame to ensure DOM refs are populated after render
+    const rafId = requestAnimationFrame(() => {
       const el = verseRefs.current[highlightVerse];
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add(styles.scrollHighlighted);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add(styles.scrollHighlighted);
 
-      const timer = setTimeout(() => {
-        el.classList.remove(styles.scrollHighlighted);
-        clearHighlightVerse();
-      }, 2000);
+        setTimeout(() => {
+          el.classList.remove(styles.scrollHighlighted);
+          clearHighlightVerse();
+        }, 2000);
+      }
+    });
 
-      return () => clearTimeout(timer);
-    }
-  }, [highlightVerse, clearHighlightVerse]);
+    return () => cancelAnimationFrame(rafId);
+  }, [highlightVerse, clearHighlightVerse, verses]);
 
   // Track visible verse using Intersection Observer
   useEffect(() => {
