@@ -2,32 +2,37 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import React from 'react';
 
-// Mutable state object that the mock will return
+// Use globalThis to share state between factory and tests
 const mockSelectEntry = vi.fn();
 const mockOpenChapter = vi.fn();
 
-const mockState = {
+// Store mock state on globalThis so it's accessible from the factory
+(globalThis as any).__relatedDoctrinesMockState__ = {
   relatedDoctrines: [] as any[],
   relatedDoctrinesLoading: false,
   selectEntry: mockSelectEntry,
   openChapter: mockOpenChapter,
 };
 
-// Mock the SystematicContext with a factory that returns the mutable state
+// Mock the SystematicContext with a factory that returns the global state
 vi.mock('../../../src/context/SystematicContext', () => ({
-  useSystematic: () => mockState,
+  useSystematic: () => (globalThis as any).__relatedDoctrinesMockState__,
 }));
 
 import { RelatedDoctrines } from '../../../src/components/Notes/RelatedDoctrines';
+
+// Helper to access mock state
+const getMockState = () => (globalThis as any).__relatedDoctrinesMockState__;
 
 describe('RelatedDoctrines', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset to default state
-    mockState.relatedDoctrines = [];
-    mockState.relatedDoctrinesLoading = false;
-    mockState.selectEntry = mockSelectEntry;
-    mockState.openChapter = mockOpenChapter;
+    const state = getMockState();
+    state.relatedDoctrines = [];
+    state.relatedDoctrinesLoading = false;
+    state.selectEntry = mockSelectEntry;
+    state.openChapter = mockOpenChapter;
   });
 
   afterEach(() => {
@@ -36,7 +41,7 @@ describe('RelatedDoctrines', () => {
 
   describe('loading state', () => {
     it('shows loading message when loading', () => {
-      mockState.relatedDoctrinesLoading = true;
+      getMockState().relatedDoctrinesLoading = true;
 
       render(<RelatedDoctrines />);
 
@@ -46,8 +51,8 @@ describe('RelatedDoctrines', () => {
 
   describe('empty state', () => {
     it('returns null when no related doctrines', () => {
-      mockState.relatedDoctrines = [];
-      mockState.relatedDoctrinesLoading = false;
+      getMockState().relatedDoctrines = [];
+      getMockState().relatedDoctrinesLoading = false;
 
       const { container } = render(<RelatedDoctrines />);
 
@@ -62,8 +67,8 @@ describe('RelatedDoctrines', () => {
     ];
 
     beforeEach(() => {
-      mockState.relatedDoctrines = mockDoctrines;
-      mockState.relatedDoctrinesLoading = false;
+      getMockState().relatedDoctrines = mockDoctrines;
+      getMockState().relatedDoctrinesLoading = false;
     });
 
     it('shows header with count', () => {
@@ -102,8 +107,8 @@ describe('RelatedDoctrines', () => {
     ];
 
     beforeEach(() => {
-      mockState.relatedDoctrines = mockDoctrines;
-      mockState.relatedDoctrinesLoading = false;
+      getMockState().relatedDoctrines = mockDoctrines;
+      getMockState().relatedDoctrinesLoading = false;
     });
 
     it('collapses when header is clicked', () => {
@@ -143,7 +148,7 @@ describe('RelatedDoctrines', () => {
 
   describe('click interactions', () => {
     it('calls openChapter for chapter-type doctrines', () => {
-      mockState.relatedDoctrines = [
+      getMockState().relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
       ];
 
@@ -157,7 +162,7 @@ describe('RelatedDoctrines', () => {
     });
 
     it('calls selectEntry for non-chapter doctrines', () => {
-      mockState.relatedDoctrines = [
+      getMockState().relatedDoctrines = [
         { id: 'sec-32-a', chapterNumber: 32, title: 'Section A', entryType: 'section', sectionLetter: 'A' },
       ];
 
@@ -173,7 +178,7 @@ describe('RelatedDoctrines', () => {
 
   describe('context snippet', () => {
     it('displays context snippet when available', () => {
-      mockState.relatedDoctrines = [
+      getMockState().relatedDoctrines = [
         {
           id: 'ch-32',
           chapterNumber: 32,
@@ -189,7 +194,7 @@ describe('RelatedDoctrines', () => {
     });
 
     it('does not render snippet element when not available', () => {
-      mockState.relatedDoctrines = [
+      getMockState().relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
       ];
 
@@ -201,7 +206,7 @@ describe('RelatedDoctrines', () => {
 
   describe('grouping by chapter', () => {
     it('groups multiple entries from same chapter', () => {
-      mockState.relatedDoctrines = [
+      getMockState().relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
         { id: 'sec-32-a', chapterNumber: 32, title: 'Section A', entryType: 'section' },
       ];
@@ -214,7 +219,7 @@ describe('RelatedDoctrines', () => {
     });
 
     it('uses chapter-level doctrine title when available', () => {
-      mockState.relatedDoctrines = [
+      getMockState().relatedDoctrines = [
         { id: 'ch-32', chapterNumber: 32, title: 'The Trinity', entryType: 'chapter' },
         { id: 'sec-32-a', chapterNumber: 32, title: 'God is Three Persons', entryType: 'section' },
       ];
