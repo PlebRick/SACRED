@@ -12,7 +12,8 @@ const initialState = {
   editingNoteId: null,
   selectedNoteId: null,
   hasExternalChanges: false,
-  lastKnownModified: null
+  lastKnownModified: null,
+  highlightQuery: null  // Search term for scroll-to-match
 };
 
 const reducer = (state, action) => {
@@ -49,6 +50,10 @@ const reducer = (state, action) => {
       return { ...state, hasExternalChanges: false };
     case 'SET_LAST_MODIFIED':
       return { ...state, lastKnownModified: action.lastModified };
+    case 'SET_HIGHLIGHT_QUERY':
+      return { ...state, highlightQuery: action.query };
+    case 'CLEAR_HIGHLIGHT_QUERY':
+      return { ...state, highlightQuery: null };
     default:
       return state;
   }
@@ -181,6 +186,14 @@ export const NotesProvider = ({ children }) => {
     dispatch({ type: 'CLEAR_EXTERNAL_CHANGES' });
   }, []);
 
+  const setHighlightQuery = useCallback((query) => {
+    dispatch({ type: 'SET_HIGHLIGHT_QUERY', query });
+  }, []);
+
+  const clearHighlightQuery = useCallback(() => {
+    dispatch({ type: 'CLEAR_HIGHLIGHT_QUERY' });
+  }, []);
+
   const getNotesForChapter = useCallback((bookId, chapter) => {
     return state.notes
       .filter(note =>
@@ -202,6 +215,8 @@ export const NotesProvider = ({ children }) => {
       setSelectedNote,
       refreshNotes,
       dismissExternalChanges,
+      setHighlightQuery,
+      clearHighlightQuery,
       getNotesForChapter
     }}>
       {children}
