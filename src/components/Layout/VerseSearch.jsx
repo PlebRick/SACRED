@@ -4,7 +4,7 @@ import { useBible } from '../../context/BibleContext';
 import styles from './Layout.module.css';
 
 export const VerseSearch = () => {
-  const { navigate } = useBible();
+  const { navigate, setHighlightVerse } = useBible();
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -24,6 +24,13 @@ export const VerseSearch = () => {
 
     // Navigate to the parsed reference
     navigate(parsed.bookId, parsed.startChapter);
+
+    // If a specific verse was requested, scroll to it after navigation
+    if (parsed.startVerse) {
+      // Delay to allow chapter to load before scrolling
+      setTimeout(() => setHighlightVerse(parsed.startVerse), 100);
+    }
+
     setQuery('');
     setError('');
     inputRef.current?.blur();
