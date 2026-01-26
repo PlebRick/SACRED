@@ -1,4 +1,5 @@
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 const db = require('../db.cjs');
 const { syncInlineTags } = require('./notes.cjs');
 
@@ -327,8 +328,10 @@ router.post('/import', (req, res) => {
 
       // Import notes
       for (const note of notes) {
+        // Generate UUID if not provided (declare outside try for error reporting)
+        const noteId = note.id || uuidv4();
         try {
-          const existing = checkStmt.get(note.id);
+          const existing = checkStmt.get(noteId);
 
           if (existing) {
             // Update existing note
@@ -344,13 +347,13 @@ router.post('/import', (req, res) => {
               note.primaryTopicId || null,
               note.seriesId || null,
               note.updatedAt || now,
-              note.id
+              noteId
             );
             updated++;
           } else {
             // Insert new note
             insertStmt.run(
-              note.id,
+              noteId,
               note.book,
               note.startChapter,
               note.startVerse || null,
@@ -369,10 +372,10 @@ router.post('/import', (req, res) => {
 
           // Handle tags if present
           if (note.tags && Array.isArray(note.tags)) {
-            deleteTagsStmt.run(note.id);
+            deleteTagsStmt.run(noteId);
             for (const tagId of note.tags) {
               try {
-                insertTagStmt.run(note.id, tagId);
+                insertTagStmt.run(noteId, tagId);
               } catch (tagError) {
                 // Ignore tag errors (e.g., topic doesn't exist)
               }
@@ -381,10 +384,10 @@ router.post('/import', (req, res) => {
 
           // Sync inline tags from note content
           if (note.content) {
-            syncInlineTags(note.id, note.content);
+            syncInlineTags(noteId, note.content);
           }
         } catch (noteError) {
-          errors.push({ id: note.id, type: 'note', error: noteError.message });
+          errors.push({ id: noteId, type: 'note', error: noteError.message });
         }
       }
     });
@@ -444,6 +447,20 @@ router.get('/lastModified', (req, res) => {
   } catch (error) {
     console.error('Error getting last modified:', error);
     res.status(500).json({ error: 'Failed to get last modified' });
+  }
+});
+
+// DELETE /api/notes/cleanup-null - Delete notes with null IDs (repair endpoint)
+router.delete('/cleanup-null', (req, res) => {
+  try {
+    const result = db.prepare('DELETE FROM notes WHERE id IS NULL').run();
+    res.json({
+      success: true,
+      deleted: result.changes
+    });
+  } catch (error) {
+    console.error('Error cleaning up null notes:', error);
+    res.status(500).json({ error: 'Failed to cleanup null notes' });
   }
 });
 
