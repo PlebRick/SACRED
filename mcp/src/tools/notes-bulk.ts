@@ -25,7 +25,7 @@ export function registerBulkTools(server: McpServer): void {
             `
             SELECT notes.*, rank
             FROM notes_fts
-            JOIN notes ON notes_fts.id = notes.id
+            JOIN notes ON notes.rowid = notes_fts.rowid
             WHERE notes_fts MATCH ?
             ORDER BY rank
             LIMIT ?

@@ -27,7 +27,6 @@ if (!tableCheck) {
 try {
   db.exec(`
     CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
-      id,
       title,
       content,
       content=notes,
@@ -43,20 +42,20 @@ try {
   if (!triggerCheck) {
     db.exec(`
       CREATE TRIGGER notes_ai AFTER INSERT ON notes BEGIN
-        INSERT INTO notes_fts(rowid, id, title, content)
-        VALUES (NEW.rowid, NEW.id, NEW.title, NEW.content);
+        INSERT INTO notes_fts(rowid, title, content)
+        VALUES (NEW.rowid, NEW.title, NEW.content);
       END;
 
       CREATE TRIGGER notes_ad AFTER DELETE ON notes BEGIN
-        INSERT INTO notes_fts(notes_fts, rowid, id, title, content)
-        VALUES ('delete', OLD.rowid, OLD.id, OLD.title, OLD.content);
+        INSERT INTO notes_fts(notes_fts, rowid, title, content)
+        VALUES ('delete', OLD.rowid, OLD.title, OLD.content);
       END;
 
       CREATE TRIGGER notes_au AFTER UPDATE ON notes BEGIN
-        INSERT INTO notes_fts(notes_fts, rowid, id, title, content)
-        VALUES ('delete', OLD.rowid, OLD.id, OLD.title, OLD.content);
-        INSERT INTO notes_fts(rowid, id, title, content)
-        VALUES (NEW.rowid, NEW.id, NEW.title, NEW.content);
+        INSERT INTO notes_fts(notes_fts, rowid, title, content)
+        VALUES ('delete', OLD.rowid, OLD.title, OLD.content);
+        INSERT INTO notes_fts(rowid, title, content)
+        VALUES (NEW.rowid, NEW.title, NEW.content);
       END;
     `);
 

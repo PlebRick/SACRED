@@ -1396,7 +1396,7 @@ export function registerAiEnhancedTools(server: McpServer): void {
             const ftsSermons = db
               .prepare(`
                 SELECT n.* FROM notes n
-                JOIN notes_fts fts ON n.id = fts.id
+                JOIN notes_fts fts ON n.rowid = fts.rowid
                 WHERE notes_fts MATCH ? AND n.type = 'sermon'
                 ORDER BY rank
                 LIMIT ?
