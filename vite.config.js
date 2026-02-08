@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 3000,
     strictPort: true,
+    allowedHosts: ['sacred.btctx.us'],
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

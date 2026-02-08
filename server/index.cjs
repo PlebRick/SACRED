@@ -62,6 +62,9 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
   console.log(`Sacred server running on port ${PORT}`);
   if (process.env.AUTH_PASSWORD) {
-    console.log('Authentication enabled');
+    console.log('Authentication enabled (password)');
+  }
+  if (process.env.SACRED_API_KEY) {
+    console.log('Authentication enabled (API key)');
   }
 });
