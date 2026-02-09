@@ -3,7 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { registerQueryTools } from './tools/notes-query.js';
 import { registerCrudTools } from './tools/notes-crud.js';
 import { registerBulkTools } from './tools/notes-bulk.js';
@@ -17,25 +17,26 @@ import { registerSeriesTools } from './tools/series.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
-const server = new McpServer({
-  name: 'sacred-bible-notes',
-  version: '1.0.0',
-});
+function createMcpServer(): McpServer {
+  const server = new McpServer({
+    name: 'sacred-bible-notes',
+    version: '1.0.0',
+  });
 
-// Register tools
-registerQueryTools(server);
-registerCrudTools(server);
-registerBulkTools(server);
-registerSystematicTools(server);
-registerTopicTools(server);
-registerInlineTagTools(server);
-registerBackupTools(server);
-registerAiEnhancedTools(server);
-registerSessionTools(server);
-registerSeriesTools(server);
+  registerQueryTools(server);
+  registerCrudTools(server);
+  registerBulkTools(server);
+  registerSystematicTools(server);
+  registerTopicTools(server);
+  registerInlineTagTools(server);
+  registerBackupTools(server);
+  registerAiEnhancedTools(server);
+  registerSessionTools(server);
+  registerSeriesTools(server);
+  registerResources(server);
 
-// Register resources
-registerResources(server);
+  return server;
+}
 
 // --- Transport selection ---
 
@@ -43,19 +44,37 @@ const mode = process.env.MCP_TRANSPORT || (process.argv.includes('--http') ? 'ht
 
 async function startStdio() {
   logger.info('Starting SACRED MCP server (stdio)...');
+  const server = createMcpServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
   logger.info('SACRED MCP server connected and ready (stdio)');
 }
 
-function checkApiKey(req: IncomingMessage): boolean {
+function extractApiKey(req: IncomingMessage): string | undefined {
+  // 1. X-API-Key header (curl, Claude Code --header)
+  const xApiKey = req.headers['x-api-key'];
+  if (typeof xApiKey === 'string') return xApiKey;
+
+  // 2. Authorization: Bearer <key> (Claude.ai OAuth, Anthropic API authorization_token)
+  const auth = req.headers['authorization'];
+  if (typeof auth === 'string' && auth.startsWith('Bearer ')) return auth.slice(7);
+
+  // 3. URL query param ?key=<key> (Claude.ai connector URL embed)
+  const url = new URL(req.url || '/', `http://${req.headers.host}`);
+  const queryKey = url.searchParams.get('key');
+  if (queryKey) return queryKey;
+
+  return undefined;
+}
+
+function checkAuth(req: IncomingMessage): boolean {
   const expectedKey = process.env.MCP_API_KEY;
   if (!expectedKey) {
     logger.error('MCP_API_KEY not set — refusing all requests');
     return false;
   }
-  const provided = req.headers['x-api-key'];
-  if (typeof provided !== 'string') return false;
+  const provided = extractApiKey(req);
+  if (!provided) return false;
 
   const a = Buffer.from(provided);
   const b = Buffer.from(expectedKey);
@@ -71,12 +90,6 @@ async function startHttp() {
     process.exit(1);
   }
 
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: () => randomUUID(),
-  });
-
-  await server.connect(transport);
-
   const ALLOWED_ORIGIN = 'https://claude.ai';
 
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
@@ -84,9 +97,8 @@ async function startHttp() {
     if (req.method === 'OPTIONS') {
       res.writeHead(204, {
         'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, X-API-Key, Mcp-Session-Id',
-        'Access-Control-Expose-Headers': 'Mcp-Session-Id',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
         'Access-Control-Max-Age': '86400',
       });
       res.end();
@@ -95,37 +107,50 @@ async function startHttp() {
 
     // CORS headers on all responses
     res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
-    res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
 
-    // Auth check
-    if (!checkApiKey(req)) {
+    // Request logging for diagnostics
+    logger.info(`${req.method} ${req.url} [${req.headers['accept'] || 'no-accept'}] [auth: ${req.headers['authorization'] ? 'Bearer' : req.headers['x-api-key'] ? 'X-API-Key' : 'query/none'}]`);
+
+    // Auth check (X-API-Key header, Authorization: Bearer, or ?key= query param)
+    if (!checkAuth(req)) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Invalid or missing X-API-Key' }));
+      res.end(JSON.stringify({ error: 'Invalid or missing API key' }));
       return;
     }
 
-    // Parse JSON body for POST
-    if (req.method === 'POST') {
-      let body = '';
-      for await (const chunk of req) {
-        body += chunk;
-      }
-      try {
-        const parsed = JSON.parse(body);
-        await transport.handleRequest(req, res, parsed);
-      } catch {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid JSON body' }));
-      }
+    // Stateless mode: only POST is supported
+    if (req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Method not allowed (stateless mode — POST only)' }));
       return;
     }
 
-    // GET (SSE stream) and DELETE (session close) — no body needed
-    await transport.handleRequest(req, res);
+    // Create fresh server + transport per request
+    const server = createMcpServer();
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    await server.connect(transport);
+
+    let body = '';
+    for await (const chunk of req) {
+      body += chunk;
+    }
+    try {
+      const parsed = JSON.parse(body);
+      await transport.handleRequest(req, res, parsed);
+    } catch {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+    }
+
+    // Clean up after response completes
+    res.on('close', () => {
+      transport.close();
+      server.close();
+    });
   });
 
   httpServer.listen(port, () => {
-    logger.info(`SACRED MCP server listening on http://0.0.0.0:${port} (HTTP/streamable)`);
+    logger.info(`SACRED MCP server listening on http://0.0.0.0:${port} (HTTP/stateless)`);
   });
 }
 
