@@ -33,7 +33,7 @@
     { "id": "OBA", "name": "Obadiah", "chapters": 1 },
     { "id": "JON", "name": "Jonah", "chapters": 4 },
     { "id": "MIC", "name": "Micah", "chapters": 7 },
-    { "id": "NAM", "name": "Nahum", "chapters": 3 },
+    { "id": "NAH", "name": "Nahum", "chapters": 3 },
     { "id": "HAB", "name": "Habakkuk", "chapters": 3 },
     { "id": "ZEP", "name": "Zephaniah", "chapters": 3 },
     { "id": "HAG", "name": "Haggai", "chapters": 2 },

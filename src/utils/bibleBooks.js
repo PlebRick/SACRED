@@ -71,7 +71,7 @@ export const abbreviations = {
   // Micah
   'mic': 'MIC', 'micah': 'MIC',
   // Nahum
-  'nam': 'NAM', 'nah': 'NAM', 'nahum': 'NAM',
+  'nah': 'NAH', 'nahum': 'NAH', 'nam': 'NAH',
   // Habakkuk
   'hab': 'HAB', 'habakkuk': 'HAB',
   // Zephaniah

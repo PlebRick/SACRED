@@ -71,7 +71,7 @@ const logosBookMap = {
   'Ob': 'OBA', 'Obad': 'OBA', 'Obadiah': 'OBA',
   'Jon': 'JON', 'Jonah': 'JON',
   'Mic': 'MIC', 'Micah': 'MIC',
-  'Na': 'NAM', 'Nah': 'NAM', 'Nahum': 'NAM',
+  'Na': 'NAH', 'Nah': 'NAH', 'Nahum': 'NAH',
   'Hab': 'HAB', 'Habakkuk': 'HAB',
   'Zep': 'ZEP', 'Zeph': 'ZEP', 'Zephaniah': 'ZEP',
   'Hag': 'HAG', 'Haggai': 'HAG',

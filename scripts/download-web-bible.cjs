@@ -51,7 +51,7 @@ const books = [
   { id: 'OBA', apiName: 'obadiah', chapters: 1 },
   { id: 'JON', apiName: 'jonah', chapters: 4 },
   { id: 'MIC', apiName: 'micah', chapters: 7 },
-  { id: 'NAM', apiName: 'nahum', chapters: 3 },
+  { id: 'NAH', apiName: 'nahum', chapters: 3 },
   { id: 'HAB', apiName: 'habakkuk', chapters: 3 },
   { id: 'ZEP', apiName: 'zephaniah', chapters: 3 },
   { id: 'HAG', apiName: 'haggai', chapters: 2 },

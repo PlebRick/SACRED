@@ -43,7 +43,7 @@ const BOOK_CODES: Record<string, string> = {
   obadiah: 'OBA', obad: 'OBA', oba: 'OBA',
   jonah: 'JON', jon: 'JON',
   micah: 'MIC', mic: 'MIC',
-  nahum: 'NAM', nah: 'NAM', nam: 'NAM',
+  nahum: 'NAH', nah: 'NAH', nam: 'NAH',
   habakkuk: 'HAB', hab: 'HAB',
   zephaniah: 'ZEP', zeph: 'ZEP', zep: 'ZEP',
   haggai: 'HAG', hag: 'HAG',

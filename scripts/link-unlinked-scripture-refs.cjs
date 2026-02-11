@@ -68,7 +68,7 @@ const bookNameToCode = {
   'obadiah': 'OBA', 'obad': 'OBA', 'oba': 'OBA', 'ob': 'OBA',
   'jonah': 'JON', 'jon': 'JON',
   'micah': 'MIC', 'mic': 'MIC', 'mi': 'MIC',
-  'nahum': 'NAM', 'nah': 'NAM', 'nam': 'NAM', 'na': 'NAM',
+  'nahum': 'NAH', 'nah': 'NAH', 'nam': 'NAH', 'na': 'NAH',
   'habakkuk': 'HAB', 'hab': 'HAB',
   'zephaniah': 'ZEP', 'zeph': 'ZEP', 'zep': 'ZEP',
   'haggai': 'HAG', 'hag': 'HAG',
