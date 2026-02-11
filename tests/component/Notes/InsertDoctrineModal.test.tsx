@@ -249,7 +249,7 @@ describe('InsertDoctrineModal', () => {
       const doctrineButton = screen.getAllByRole('button').find(b => b.textContent?.includes('The Trinity'));
       fireEvent.click(doctrineButton!);
 
-      expect(mockOnInsert).toHaveBeenCalledWith('[[ST:Ch32]]', 'The Trinity');
+      expect(mockOnInsert).toHaveBeenCalledWith('Ch32', 'The Trinity');
       expect(mockOnClose).toHaveBeenCalled();
     });
 
@@ -281,7 +281,7 @@ describe('InsertDoctrineModal', () => {
       const sectionButton = screen.getByText('God is Three Persons').closest('button');
       fireEvent.click(sectionButton!);
 
-      expect(mockOnInsert).toHaveBeenCalledWith('[[ST:Ch32:A]]', 'God is Three Persons');
+      expect(mockOnInsert).toHaveBeenCalledWith('Ch32:A', 'God is Three Persons');
     });
 
     it('builds correct link for subsection', async () => {
@@ -313,7 +313,7 @@ describe('InsertDoctrineModal', () => {
       const subsectionButton = screen.getByText('Biblical Evidence').closest('button');
       fireEvent.click(subsectionButton!);
 
-      expect(mockOnInsert).toHaveBeenCalledWith('[[ST:Ch32:A.1]]', 'Biblical Evidence');
+      expect(mockOnInsert).toHaveBeenCalledWith('Ch32:A.1', 'Biblical Evidence');
     });
   });
 
@@ -338,7 +338,7 @@ describe('InsertDoctrineModal', () => {
       fireEvent.keyDown(input, { key: 'Enter' });
 
       // Should select first item (related doctrine - The Trinity)
-      expect(mockOnInsert).toHaveBeenCalledWith('[[ST:Ch32]]', 'The Trinity');
+      expect(mockOnInsert).toHaveBeenCalledWith('Ch32', 'The Trinity');
     });
 
     it('navigates down with ArrowDown', () => {
@@ -353,7 +353,7 @@ describe('InsertDoctrineModal', () => {
       fireEvent.keyDown(input, { key: 'Enter' });
 
       // Should select second item (first chapter - The Character of God)
-      expect(mockOnInsert).toHaveBeenCalledWith('[[ST:Ch31]]', 'The Character of God');
+      expect(mockOnInsert).toHaveBeenCalledWith('Ch31', 'The Character of God');
     });
 
     it('navigates up with ArrowUp', () => {
@@ -369,7 +369,7 @@ describe('InsertDoctrineModal', () => {
       fireEvent.keyDown(input, { key: 'Enter' });
 
       // Should select first item again
-      expect(mockOnInsert).toHaveBeenCalledWith('[[ST:Ch32]]', 'The Trinity');
+      expect(mockOnInsert).toHaveBeenCalledWith('Ch32', 'The Trinity');
     });
   });
 

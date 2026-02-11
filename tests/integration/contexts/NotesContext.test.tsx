@@ -96,7 +96,6 @@ function TestConsumer() {
 describe('NotesContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetAllMocks();
 
     // Default mock implementations
     (notesService.getAll as ReturnType<typeof vi.fn>).mockResolvedValue([mockNote]);
