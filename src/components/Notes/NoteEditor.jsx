@@ -323,7 +323,7 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
       SystematicLinkMark.configure({
         onLinkClick: (reference) => {
           // Navigate to the doctrine when clicked
-          navigateToLink(`[[ST:${reference}]]`);
+          navigateToLink(reference);
         },
       }),
     ],

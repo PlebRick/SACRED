@@ -122,7 +122,7 @@ function TestConsumer() {
       </button>
       <button
         data-testid="navigate-to-link"
-        onClick={() => context.navigateToLink('[[ST:Ch32]]')}
+        onClick={() => context.navigateToLink('Ch32')}
       >
         Navigate to Link
       </button>

@@ -300,8 +300,8 @@ export const SystematicProvider = ({ children }) => {
 
   // Parse ST link reference and navigate
   const navigateToLink = useCallback(async (linkRef) => {
-    // Parse link format: [[ST:Ch32]], [[ST:Ch32:A]], [[ST:Ch32:B.1]]
-    const match = linkRef.match(/\[\[ST:Ch(\d+)(?::([A-Z])(?:\.(\d+))?)?\]\]/i);
+    // Parse link format: bare "Ch32", "Ch32:A", "Ch32:B.1" or bracketed "[[ST:Ch32]]"
+    const match = linkRef.match(/(?:\[\[ST:)?Ch(\d+)(?::([A-Z])(?:\.(\d+))?)?\]?\]?/i);
     if (!match) return false;
 
     const [, chapterNum, sectionLetter, subsectionNum] = match;
