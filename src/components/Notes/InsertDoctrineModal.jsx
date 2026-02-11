@@ -82,17 +82,17 @@ export const InsertDoctrineModal = ({ isOpen, onClose, onInsert }) => {
     return suggestions;
   };
 
-  // Build link reference from entry
+  // Build bare link reference from entry (e.g., "Ch33", "Ch33:A", "Ch33:A.1")
   const buildLinkRef = (entry) => {
     if (!entry.chapterNumber) return null;
 
     if (entry.subsectionNumber) {
-      return `[[ST:Ch${entry.chapterNumber}:${entry.sectionLetter}.${entry.subsectionNumber}]]`;
+      return `Ch${entry.chapterNumber}:${entry.sectionLetter}.${entry.subsectionNumber}`;
     }
     if (entry.sectionLetter) {
-      return `[[ST:Ch${entry.chapterNumber}:${entry.sectionLetter}]]`;
+      return `Ch${entry.chapterNumber}:${entry.sectionLetter}`;
     }
-    return `[[ST:Ch${entry.chapterNumber}]]`;
+    return `Ch${entry.chapterNumber}`;
   };
 
   const handleSelect = (entry) => {

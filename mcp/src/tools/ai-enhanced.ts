@@ -1263,15 +1263,18 @@ export function registerAiEnhancedTools(server: McpServer): void {
           existingLinks.push(match[0]);
         }
 
-        // Generate suggested links block
-        const newLinks = doctrines
-          .map((d) => `[[ST:Ch${d.chapter_number}]]`)
+        // Generate suggested links block (dedupe by chapter number)
+        const newLinks = [...new Set(doctrines.map((d) => `[[ST:Ch${d.chapter_number}]]`))]
           .filter((link) => !existingLinks.includes(link));
 
         let updatedContent = note.content;
         if (apply && newLinks.length > 0) {
-          // Add links at the end of content
-          const linksBlock = `<p><strong>Related Doctrines:</strong> ${newLinks.join(' ')}</p>`;
+          // Add links at the end of content with proper span markup
+          const linkSpans = newLinks.map((link) => {
+            const ref = link.replace(/^\[\[ST:/, '').replace(/\]\]$/, '');
+            return `<span class="systematic-link" data-st-ref="${ref}" data-st-display="${link}">${link}</span>`;
+          });
+          const linksBlock = `<p><strong>Related Doctrines:</strong> ${linkSpans.join(' | ')}</p>`;
           updatedContent = (note.content || '') + linksBlock;
 
           db.prepare('UPDATE notes SET content = ?, updated_at = ? WHERE id = ?').run(

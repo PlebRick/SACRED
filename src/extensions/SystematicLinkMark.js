@@ -101,8 +101,8 @@ export const SystematicLinkMark = Mark.create({
         find: ST_LINK_INPUT_REGEX,
         type: this.type,
         getAttributes: (match) => {
-          const reference = `[[ST:${match[1]}]]`;
-          return { reference, display: reference };
+          const reference = match[1]; // bare "Ch33" format
+          return { reference, display: `[[ST:${match[1]}]]` };
         },
       }),
     ];
@@ -115,8 +115,8 @@ export const SystematicLinkMark = Mark.create({
         find: ST_LINK_PASTE_REGEX,
         type: this.type,
         getAttributes: (match) => {
-          const reference = `[[ST:${match[1]}]]`;
-          return { reference, display: reference };
+          const reference = match[1]; // bare "Ch33" format
+          return { reference, display: `[[ST:${match[1]}]]` };
         },
       }),
     ];

@@ -356,7 +356,8 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   // Handle inserting doctrine link
   const handleInsertDoctrine = useCallback((reference, title) => {
     if (editor) {
-      editor.chain().focus().insertSystematicLink(reference, reference).run();
+      const display = `[[ST:${reference}]]`;
+      editor.chain().focus().insertSystematicLink(reference, display).run();
     }
   }, [editor]);
 
