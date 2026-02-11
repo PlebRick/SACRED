@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import { toApiFormat, DbNote, topicToApiFormat, DbTopic } from '../utils/format.js';
 import { logger } from '../utils/logger.js';
+import { syncInlineTags } from '../utils/sync-inline-tags.js';
 
 /**
  * Get tags for a note
@@ -73,6 +74,9 @@ export function registerCrudTools(server: McpServer): void {
         if (tags && tags.length > 0) {
           setNoteTags(id, tags);
         }
+
+        // Sync inline tags from HTML content
+        syncInlineTags(id, content);
 
         const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as DbNote;
 
@@ -181,6 +185,9 @@ export function registerCrudTools(server: McpServer): void {
         if (tags !== undefined) {
           setNoteTags(id, tags);
         }
+
+        // Sync inline tags from HTML content
+        syncInlineTags(id, updatedContent);
 
         const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as DbNote;
 

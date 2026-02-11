@@ -15,6 +15,7 @@ import {
   systematicAnnotationToApiFormat,
 } from '../utils/format.js';
 import { logger } from '../utils/logger.js';
+import { syncInlineTags } from '../utils/sync-inline-tags.js';
 
 /**
  * Get tags for a note
@@ -397,6 +398,9 @@ export function registerBackupTools(server: McpServer): void {
                 );
                 notesInserted++;
               }
+
+              // Sync inline tags from HTML content
+              syncInlineTags(id, note.content ?? '');
 
               // Handle tags
               if (note.tags && Array.isArray(note.tags)) {

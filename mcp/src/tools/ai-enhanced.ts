@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import { DbNote, toApiFormat, DbTopic, topicToApiFormat, DbInlineTag, inlineTagToApiFormat } from '../utils/format.js';
 import { logger } from '../utils/logger.js';
+import { syncInlineTags } from '../utils/sync-inline-tags.js';
 
 /**
  * Bible book name to 3-letter code mapping
@@ -1028,6 +1029,9 @@ export function registerAiEnhancedTools(server: McpServer): void {
         `
         ).run(id, bookUpper, startChapter, startVerse ?? null, endChapter, endVerse ?? null, title, content, type, now, now);
 
+        // Sync inline tags from HTML content
+        syncInlineTags(id, content);
+
         // Find relevant doctrines
         const doctrines = db
           .prepare(
@@ -1275,6 +1279,9 @@ export function registerAiEnhancedTools(server: McpServer): void {
             new Date().toISOString(),
             noteId
           );
+
+          // Sync inline tags from updated content
+          syncInlineTags(noteId, updatedContent);
         }
 
         return {

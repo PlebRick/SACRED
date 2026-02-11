@@ -149,8 +149,8 @@ async function startHttp() {
     });
   });
 
-  httpServer.listen(port, () => {
-    logger.info(`SACRED MCP server listening on http://0.0.0.0:${port} (HTTP/stateless)`);
+  httpServer.listen(port, '127.0.0.1', () => {
+    logger.info(`SACRED MCP server listening on http://127.0.0.1:${port} (HTTP/stateless)`);
   });
 }
 

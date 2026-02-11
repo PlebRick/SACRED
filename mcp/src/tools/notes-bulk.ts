@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import { toApiFormat, DbNote, ApiNote } from '../utils/format.js';
 import { logger } from '../utils/logger.js';
+import { syncInlineTags } from '../utils/sync-inline-tags.js';
 
 /**
  * Register bulk operation tools for notes
@@ -175,6 +176,9 @@ export function registerBulkTools(server: McpServer): void {
                 );
                 inserted++;
               }
+
+              // Sync inline tags from HTML content
+              syncInlineTags(id, note.content ?? '');
             } catch (noteError) {
               errors.push({ id: note.id || 'unknown', error: String(noteError) });
             }
