@@ -3,12 +3,13 @@ import { z } from 'zod';
 import { logger } from '../utils/logger.js';
 
 const SACRED_API = process.env.SACRED_API_URL || 'http://localhost:3000';
+const SACRED_API_KEY = process.env.SACRED_API_KEY || '';
 
 async function apiCall(path: string, method: string = 'GET', body?: unknown): Promise<unknown> {
-  const opts: RequestInit = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-  };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (SACRED_API_KEY) headers['x-api-key'] = SACRED_API_KEY;
+
+  const opts: RequestInit = { method, headers };
   if (body) opts.body = JSON.stringify(body);
 
   const res = await fetch(`${SACRED_API}${path}`, opts);
