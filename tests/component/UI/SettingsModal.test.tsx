@@ -50,6 +50,13 @@ vi.mock('../../../src/services/systematicService', () => ({
   },
 }));
 
+// Mock taggingService
+vi.mock('../../../src/services/taggingService', () => ({
+  taggingService: {
+    getQueue: vi.fn().mockResolvedValue({ queue: [], stats: { totalNotes: 10, untaggedNotes: 3, progress: 70 } }),
+  },
+}));
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

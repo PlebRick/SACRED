@@ -387,6 +387,33 @@ if (!hasSeriesId) {
 }
 
 // ===========================================
+// AI-POWERED TAGGING SUGGESTIONS
+// ===========================================
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tagging_suggestions (
+    id TEXT PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+    suggestion_type TEXT NOT NULL,
+    topic_id TEXT REFERENCES topics(id) ON DELETE CASCADE,
+    tag_type TEXT,
+    text_content TEXT,
+    html_context TEXT,
+    char_offset_start INTEGER,
+    char_offset_end INTEGER,
+    confidence REAL NOT NULL,
+    signals TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    reviewed_at TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_tagging_note ON tagging_suggestions(note_id);
+  CREATE INDEX IF NOT EXISTS idx_tagging_status ON tagging_suggestions(status);
+  CREATE INDEX IF NOT EXISTS idx_tagging_confidence ON tagging_suggestions(confidence);
+`);
+
+// ===========================================
 // ILLUSTRATION DUPLICATE DETECTION
 // ===========================================
 

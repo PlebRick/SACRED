@@ -1,0 +1,640 @@
+{
+  "_version": 1,
+  "_description": "Rules for AI-powered tagging engine. TopicIds reference the SACRED topics table.",
+
+  "topicKeywords": {
+    "940f9ea5-a56f-4eb2-9391-e78a76344b97": {
+      "name": "Word of God",
+      "keywords": ["scripture", "bible", "word of god", "inspired", "inerrant", "infallible", "authority", "canon", "revelation", "sufficiency"],
+      "phrases": ["word of god", "holy scripture", "divine revelation", "biblical authority", "sola scriptura"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "f02b0452-cbda-47d0-b789-e36380dcff24": {
+      "name": "God",
+      "keywords": ["god", "divine", "creator", "almighty", "sovereign", "deity", "lord", "yahweh", "jehovah"],
+      "phrases": ["nature of god", "character of god", "knowledge of god"],
+      "negativeKeywords": ["son of god", "spirit of god", "word of god", "people of god", "kingdom of god"],
+      "weight": 0.8
+    },
+    "aeaa52b8-a4c2-4a0a-b4d5-54ff8f5c9a71": {
+      "name": "Trinity",
+      "keywords": ["trinity", "triune", "godhead", "three persons"],
+      "phrases": ["three in one", "triune god", "trinitarian"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "6f42192e-7fd8-415f-9697-c0c9f4b5282a": {
+      "name": "Attributes of God",
+      "keywords": ["omniscient", "omnipotent", "omnipresent", "immutable", "eternal", "infinite", "transcendent", "immanent", "holy", "righteous", "just", "merciful", "gracious", "faithful"],
+      "phrases": ["attributes of god", "character of god", "perfections of god", "nature of god", "self-existent"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "40a27986-1340-4eb4-b1e8-81eb77127258": {
+      "name": "Love of God",
+      "keywords": ["love", "beloved", "lovingkindness", "steadfast love", "agape", "chesed"],
+      "phrases": ["love of god", "god's love", "divine love", "god so loved"],
+      "negativeKeywords": ["love one another", "love your neighbor", "brotherly love"],
+      "weight": 1.0
+    },
+    "0ce743da-1f17-42dc-a7cb-f47fc1d3ff2a": {
+      "name": "Wrath of God",
+      "keywords": ["wrath", "anger", "fury", "indignation", "vengeance"],
+      "phrases": ["wrath of god", "divine wrath", "god's anger", "day of wrath"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "65d17c90-d695-4b97-b4ba-b455067ad129": {
+      "name": "Providence",
+      "keywords": ["providence", "sovereignty", "sovereign", "decree", "predestination", "foreordain", "plan"],
+      "phrases": ["divine providence", "god's plan", "sovereign will", "all things work together"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "18ec0f30-a68a-497a-b53a-67f9061f0d11": {
+      "name": "Man",
+      "keywords": ["humanity", "mankind", "human", "anthropology"],
+      "phrases": ["doctrine of man", "nature of man", "human condition"],
+      "negativeKeywords": [],
+      "weight": 0.7
+    },
+    "288a6bcf-7731-4c3e-b1a2-24e3443939c9": {
+      "name": "Image of God",
+      "keywords": ["image", "likeness", "imago dei"],
+      "phrases": ["image of god", "imago dei", "created in his image", "made in the image"],
+      "negativeKeywords": ["graven image"],
+      "weight": 1.2
+    },
+    "377865cf-c3c0-4c10-97b8-0d87709417aa": {
+      "name": "Fall & Original Sin",
+      "keywords": ["fall", "original sin", "adam", "eden", "curse", "corruption", "depravity"],
+      "phrases": ["the fall", "original sin", "fall of man", "garden of eden", "total depravity", "fallen nature"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "7c2ef3f3-a694-4059-ac98-a93baad0b08c": {
+      "name": "Depravity",
+      "keywords": ["depravity", "depraved", "corrupt", "corruption", "wickedness", "sinfulness"],
+      "phrases": ["total depravity", "human depravity", "radical corruption", "sinful nature"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "1c87c485-0170-4d58-8ae3-111091f07175": {
+      "name": "Christ",
+      "keywords": ["christ", "jesus", "messiah", "savior", "redeemer", "mediator", "lord jesus"],
+      "phrases": ["person of christ", "work of christ", "lord jesus christ", "son of god"],
+      "negativeKeywords": ["body of christ"],
+      "weight": 0.8
+    },
+    "69266ace-187b-46ef-805d-be7e285d65d5": {
+      "name": "Incarnation",
+      "keywords": ["incarnation", "incarnate", "virgin birth", "born of", "took on flesh", "hypostatic"],
+      "phrases": ["word became flesh", "hypostatic union", "two natures", "divine and human"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "17d1f7b1-c68b-41f3-a262-a9eeb6771247": {
+      "name": "Atonement",
+      "keywords": ["atonement", "propitiation", "expiation", "sacrifice", "substitution", "ransom", "blood"],
+      "phrases": ["substitutionary atonement", "penal substitution", "blood of christ", "died for our sins", "sacrificial death", "once for all"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "a9c2bc11-374a-41d0-aac5-ddc60a8bbf63": {
+      "name": "Gospel",
+      "keywords": ["gospel", "good news", "kerygma", "proclamation"],
+      "phrases": ["the gospel", "good news", "gospel of christ", "gospel message"],
+      "negativeKeywords": ["gospel of matthew", "gospel of mark", "gospel of luke", "gospel of john"],
+      "weight": 1.0
+    },
+    "6a80a3df-2eb4-4e47-936a-589bd1990f00": {
+      "name": "Resurrection of Christ",
+      "keywords": ["resurrection", "risen", "raised", "empty tomb"],
+      "phrases": ["resurrection of christ", "he is risen", "raised from the dead", "rose again"],
+      "negativeKeywords": ["general resurrection", "resurrection of the dead", "resurrection of believers"],
+      "weight": 1.0
+    },
+    "a0896303-8c1b-4359-be23-413bbc3e0074": {
+      "name": "Holy Spirit",
+      "keywords": ["spirit", "pneumatology", "paraclete", "comforter", "helper"],
+      "phrases": ["holy spirit", "spirit of god", "spirit of truth", "the comforter", "the helper"],
+      "negativeKeywords": ["human spirit", "evil spirit", "unclean spirit"],
+      "weight": 1.0
+    },
+    "a0d1d205-57e4-41e1-8daa-ee38f965ec5b": {
+      "name": "Filling of the Spirit",
+      "keywords": ["filled", "filling", "empowered"],
+      "phrases": ["filled with the spirit", "filling of the spirit", "empowered by the spirit"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "8ddf6065-f694-4026-b859-65c760b86f54": {
+      "name": "Fruit of the Spirit",
+      "keywords": ["fruit"],
+      "phrases": ["fruit of the spirit", "spiritual fruit"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "85bcbfef-4dc3-48b0-bca3-3877d8e34ec4": {
+      "name": "Angels & Demons",
+      "keywords": ["angel", "demon", "satan", "devil", "cherubim", "seraphim", "spiritual warfare"],
+      "phrases": ["fallen angels", "spiritual warfare", "angelic beings"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "b36efb34-8b18-4599-bdeb-786a413b4376": {
+      "name": "Salvation",
+      "keywords": ["salvation", "saved", "redeem", "redemption", "deliverance", "rescue"],
+      "phrases": ["plan of salvation", "way of salvation", "saving grace", "work of salvation"],
+      "negativeKeywords": [],
+      "weight": 0.9
+    },
+    "f94876bd-374d-46d5-963e-c4b8441cf4b5": {
+      "name": "Election",
+      "keywords": ["election", "elect", "chosen", "predestination", "predestined", "foreknowledge"],
+      "phrases": ["doctrine of election", "unconditional election", "chosen before", "predestined"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "3df5fa95-4305-4bab-96be-a8de6482f01c": {
+      "name": "Calling",
+      "keywords": ["calling", "called", "effectual call", "vocation"],
+      "phrases": ["effectual calling", "called by god", "irresistible grace", "inward call"],
+      "negativeKeywords": ["calling to ministry"],
+      "weight": 1.0
+    },
+    "f2cd5e7c-8e19-4ee0-a6e4-5b7d1921326a": {
+      "name": "Regeneration",
+      "keywords": ["regeneration", "regenerated", "born again", "new birth", "new life"],
+      "phrases": ["born again", "new birth", "new creation", "spiritual rebirth"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "fd82b77a-f700-4276-b968-88240768a2ed": {
+      "name": "Conversion",
+      "keywords": ["conversion", "repentance", "repent", "believe", "turn"],
+      "phrases": ["repentance and faith", "turn from sin", "saving faith"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "2699715c-0351-4ef5-ba4f-9069d66047ee": {
+      "name": "Justification",
+      "keywords": ["justification", "justified", "justify", "imputation", "imputed", "reckoned", "credited", "righteous"],
+      "phrases": ["justification by faith", "imputed righteousness", "declared righteous", "forensic declaration", "not guilty"],
+      "negativeKeywords": ["self-righteous"],
+      "weight": 1.0
+    },
+    "a1bc983e-a1d9-47d8-b3d8-e61703106239": {
+      "name": "Adoption",
+      "keywords": ["adoption", "adopted", "children of god", "sons of god", "heirs"],
+      "phrases": ["adoption as sons", "children of god", "co-heirs with christ", "spirit of adoption"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "323eca93-b7f2-4000-85f9-89379d5f4804": {
+      "name": "Sanctification",
+      "keywords": ["sanctification", "sanctified", "sanctify", "holiness", "holy", "godliness", "godly", "growth", "maturity", "conforming"],
+      "phrases": ["progressive sanctification", "grow in grace", "conformed to the image", "put off the old", "put on the new", "walk in holiness"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "47ea24b0-a8b3-4533-84dd-d32a86b25387": {
+      "name": "Perseverance",
+      "keywords": ["perseverance", "persevere", "endure", "endurance", "assurance", "security", "kept"],
+      "phrases": ["perseverance of the saints", "once saved always saved", "eternal security", "kept by god"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "3ce6125e-86b2-4f72-afd3-c80c0b72a771": {
+      "name": "Glorification",
+      "keywords": ["glorification", "glorified", "glorify", "glory"],
+      "phrases": ["final glorification", "glorified body", "eternal glory"],
+      "negativeKeywords": ["glorify god"],
+      "weight": 1.0
+    },
+    "03e7ac8d-0b6d-4dbe-8ce7-4dd07f1fae39": {
+      "name": "Union with Christ",
+      "keywords": ["union"],
+      "phrases": ["union with christ", "in christ", "abide in", "united with"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "417bba4c-2863-4d5b-83e5-dfe9687ef6f4": {
+      "name": "Church",
+      "keywords": ["church", "ecclesiology", "congregation", "assembly", "body of christ", "bride"],
+      "phrases": ["body of christ", "bride of christ", "local church", "church universal"],
+      "negativeKeywords": [],
+      "weight": 0.9
+    },
+    "bfe6d093-7773-43a6-a142-da4a255ae5b6": {
+      "name": "Baptism",
+      "keywords": ["baptism", "baptize", "baptized"],
+      "phrases": ["water baptism", "believer's baptism", "baptized into"],
+      "negativeKeywords": ["baptism of the spirit", "baptism of the holy spirit"],
+      "weight": 1.0
+    },
+    "5a87c675-b77a-49c5-9b47-7d720362211e": {
+      "name": "Communion",
+      "keywords": ["communion", "eucharist", "supper"],
+      "phrases": ["lord's supper", "communion table", "this is my body", "do this in remembrance"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "ce98c254-0812-49cd-99ee-2ee7e6bd9cc5": {
+      "name": "Future",
+      "keywords": ["eschatology", "end times", "last days", "apocalyptic", "millennium", "tribulation", "rapture"],
+      "phrases": ["end times", "last days", "second coming", "day of the lord"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "80551515-e4c6-4dcc-8b48-77bfe17bc9d2": {
+      "name": "Return of Christ",
+      "keywords": ["return", "coming", "parousia", "advent"],
+      "phrases": ["return of christ", "second coming", "christ will return", "coming of the lord"],
+      "negativeKeywords": ["first coming"],
+      "weight": 1.0
+    },
+    "652b5cf2-02f9-4cbf-9726-dfe2b17d9168": {
+      "name": "Judgment",
+      "keywords": ["judgment", "judge", "tribunal", "condemnation", "condemned"],
+      "phrases": ["final judgment", "great white throne", "judgment seat", "day of judgment"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "deac92ca-d5f2-4668-b409-eaca569a118f": {
+      "name": "Heaven",
+      "keywords": ["heaven", "heavenly", "paradise", "eternal life"],
+      "phrases": ["kingdom of heaven", "eternal life", "heavenly reward"],
+      "negativeKeywords": ["heavenly father"],
+      "weight": 1.0
+    },
+    "ea2e51ac-d36e-41b3-b4b4-a3b5ea2e5342": {
+      "name": "Hell",
+      "keywords": ["hell", "gehenna", "hades", "lake of fire", "damnation", "perdition"],
+      "phrases": ["lake of fire", "eternal punishment", "eternal separation"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "72b97f9c-9d73-4461-b1f1-6503b528eced": {
+      "name": "Spiritual Life",
+      "keywords": ["spiritual", "devotion", "piety", "godliness"],
+      "phrases": ["spiritual life", "walk with god", "daily devotion"],
+      "negativeKeywords": ["spiritual warfare", "spiritual gifts"],
+      "weight": 0.7
+    },
+    "a2929e10-ba6d-450e-81c5-82348b23dec2": {
+      "name": "Prayer",
+      "keywords": ["prayer", "pray", "praying", "intercession", "petition", "supplication"],
+      "phrases": ["in prayer", "prayer life", "power of prayer", "praying for"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "485d9292-36d3-485e-8158-a56135b95d81": {
+      "name": "Faith",
+      "keywords": ["faith", "believe", "trust", "confidence"],
+      "phrases": ["saving faith", "walk by faith", "justification by faith", "living faith"],
+      "negativeKeywords": [],
+      "weight": 0.9
+    },
+    "ffa4823f-c7fe-4739-855e-713bc638bd9f": {
+      "name": "Obedience",
+      "keywords": ["obedience", "obey", "obedient", "commandment", "command"],
+      "phrases": ["obedience to god", "obey his commands", "walk in obedience"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "e235b939-6a70-4256-a483-76b8f8b859d1": {
+      "name": "Evangelism",
+      "keywords": ["evangelism", "evangelize", "witness", "testimony", "preach", "proclaim", "share the gospel"],
+      "phrases": ["share the gospel", "great commission", "preaching the gospel", "bear witness"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "22f600d0-e65b-4529-91d0-f89cdd200cbc": {
+      "name": "Discipleship",
+      "keywords": ["discipleship", "disciple", "follow", "follower", "mentor"],
+      "phrases": ["making disciples", "follow jesus", "follow christ", "take up your cross"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "f196192f-b75b-4173-a7b2-0f4877fe721b": {
+      "name": "Leadership",
+      "keywords": ["leadership", "leader", "elder", "pastor", "shepherd", "overseer"],
+      "phrases": ["church leadership", "servant leadership", "pastoral leadership"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "a2aab930-9e4f-498f-8036-3c50ad832683": {
+      "name": "Spiritual Gifts",
+      "keywords": ["gifts", "gifted", "charisma", "charismata"],
+      "phrases": ["spiritual gifts", "gifts of the spirit", "gift of prophecy", "gift of tongues"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "33a6e5c4-9552-4d3f-9511-c8745979484c": {
+      "name": "Suffering & Trials",
+      "keywords": ["suffering", "trial", "tribulation", "affliction", "persecution", "hardship"],
+      "phrases": ["suffering for christ", "through trials", "count it all joy"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "4e3e9e8b-29c1-4ef2-a235-ef89812b11ef": {
+      "name": "Temptation & Sin",
+      "keywords": ["temptation", "tempt", "sin", "sinful", "transgression", "iniquity", "trespass"],
+      "phrases": ["flee from sin", "resist temptation", "wages of sin"],
+      "negativeKeywords": ["original sin"],
+      "weight": 0.9
+    },
+    "7b35f4b1-ce85-42cf-acee-bc3493a7366b": {
+      "name": "Sin",
+      "keywords": ["sin", "sinful", "sinner", "transgress", "wickedness", "unrighteousness"],
+      "phrases": ["nature of sin", "power of sin", "consequences of sin", "sin and death"],
+      "negativeKeywords": ["original sin"],
+      "weight": 0.8
+    },
+    "4a8b4e69-2b91-4462-b87b-53ce43a34e97": {
+      "name": "Hypocrisy",
+      "keywords": ["hypocrisy", "hypocrite", "pretense", "pharisee", "whitewashed"],
+      "phrases": ["religious hypocrisy", "whitewashed tombs"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "1538976c-992b-4f6f-af46-766f21ad6920": {
+      "name": "Apologetics",
+      "keywords": ["apologetics", "defense", "evidence", "proof", "argument", "reason"],
+      "phrases": ["defense of the faith", "reason for the hope", "evidence for god"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "81c441fa-1a96-4b9f-9e9f-150159cfa55b": {
+      "name": "Moral Accountability",
+      "keywords": ["accountability", "responsible", "responsibility", "conscience", "moral"],
+      "phrases": ["moral accountability", "moral responsibility", "before god"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "7bc6614e-fb32-40f6-b09f-f131e2d2beb0": {
+      "name": "Worship",
+      "keywords": ["worship", "praise", "adore", "adoration", "exalt", "magnify"],
+      "phrases": ["worship god", "praise the lord", "worship in spirit"],
+      "negativeKeywords": ["idol worship"],
+      "weight": 1.0
+    },
+    "a2716589-2151-4b69-826f-9aac23b69b43": {
+      "name": "Missions",
+      "keywords": ["missions", "missionary", "nations", "unreached"],
+      "phrases": ["great commission", "all nations", "go and make disciples"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "2fcc3c3c-b082-4659-a5be-085a9c4b388d": {
+      "name": "Community & Fellowship",
+      "keywords": ["community", "fellowship", "koinonia", "together", "one another"],
+      "phrases": ["body of christ", "one another", "fellowship of believers", "bear one another"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "eaaf369b-04ab-4133-83ca-833137a7b38a": {
+      "name": "Self Righteousness",
+      "keywords": ["self-righteous", "self-righteousness", "legalism", "legalist", "works-righteousness"],
+      "phrases": ["self-righteous", "works of the law", "righteousness of their own"],
+      "negativeKeywords": [],
+      "weight": 1.2
+    },
+    "233dea72-3e59-48ff-a926-581162aecdcd": {
+      "name": "Sacrifice",
+      "keywords": ["sacrifice", "offering", "altar", "self-denial"],
+      "phrases": ["living sacrifice", "sacrificial love", "sacrifice of praise"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    },
+    "3624deb1-f20a-43b7-bef6-1b1dde54cc80": {
+      "name": "Joy",
+      "keywords": ["joy", "joyful", "rejoice", "gladness", "delight"],
+      "phrases": ["joy of the lord", "joy in suffering", "rejoice always"],
+      "negativeKeywords": [],
+      "weight": 1.0
+    }
+  },
+
+  "doctrineToTopic": {
+    "1": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "2": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "3": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "4": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "5": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "6": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "7": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "8": "940f9ea5-a56f-4eb2-9391-e78a76344b97",
+    "9": "28097996-a058-4b57-a353-b4960c60e29a",
+    "10": "28097996-a058-4b57-a353-b4960c60e29a",
+    "11": "6f42192e-7fd8-415f-9697-c0c9f4b5282a",
+    "12": "6f42192e-7fd8-415f-9697-c0c9f4b5282a",
+    "13": "6f42192e-7fd8-415f-9697-c0c9f4b5282a",
+    "14": "65d17c90-d695-4b97-b4ba-b455067ad129",
+    "15": "65d17c90-d695-4b97-b4ba-b455067ad129",
+    "16": "1ba44f11-3d0b-4474-99f8-82a4c5cfdc06",
+    "17": "e4400ffc-acc4-482b-a1cd-79f5786819cc",
+    "18": "63e15614-aea9-40e1-8070-5b53e4b960f9",
+    "19": "f47a369f-6108-4088-a93d-600808b4203a",
+    "20": "288a6bcf-7731-4c3e-b1a2-24e3443939c9",
+    "21": "288a6bcf-7731-4c3e-b1a2-24e3443939c9",
+    "22": "377865cf-c3c0-4c10-97b8-0d87709417aa",
+    "23": "377865cf-c3c0-4c10-97b8-0d87709417aa",
+    "24": "7b35f4b1-ce85-42cf-acee-bc3493a7366b",
+    "25": "1c87c485-0170-4d58-8ae3-111091f07175",
+    "26": "69266ace-187b-46ef-805d-be7e285d65d5",
+    "27": "17d1f7b1-c68b-41f3-a262-a9eeb6771247",
+    "28": "17d1f7b1-c68b-41f3-a262-a9eeb6771247",
+    "29": "6a80a3df-2eb4-4e47-936a-589bd1990f00",
+    "30": "c25207ef-8aa9-4369-9a9d-ca14bded2436",
+    "31": "a0896303-8c1b-4359-be23-413bbc3e0074",
+    "32": "a0896303-8c1b-4359-be23-413bbc3e0074",
+    "33": "f94876bd-374d-46d5-963e-c4b8441cf4b5",
+    "34": "3df5fa95-4305-4bab-96be-a8de6482f01c",
+    "35": "f2cd5e7c-8e19-4ee0-a6e4-5b7d1921326a",
+    "36": "2699715c-0351-4ef5-ba4f-9069d66047ee",
+    "37": "323eca93-b7f2-4000-85f9-89379d5f4804",
+    "38": "c616cfc2-830f-4d10-b397-01aa90c8400d",
+    "39": "47ea24b0-a8b3-4533-84dd-d32a86b25387",
+    "40": "a1bc983e-a1d9-47d8-b3d8-e61703106239",
+    "41": "323eca93-b7f2-4000-85f9-89379d5f4804",
+    "42": "3ce6125e-86b2-4f72-afd3-c80c0b72a771",
+    "43": "03e7ac8d-0b6d-4dbe-8ce7-4dd07f1fae39",
+    "44": "7a3afeb8-41c7-4a9b-b211-d612a46e1b55",
+    "45": "2a521639-17cd-4021-8c19-0c2afabeee32",
+    "46": "417bba4c-2863-4d5b-83e5-dfe9687ef6f4",
+    "47": "98b8f791-5e5f-451e-b400-3f4278387e33",
+    "48": "bfe6d093-7773-43a6-a142-da4a255ae5b6",
+    "49": "5a87c675-b77a-49c5-9b47-7d720362211e",
+    "50": "7bc6614e-fb32-40f6-b09f-f131e2d2beb0",
+    "51": "a2aab930-9e4f-498f-8036-3c50ad832683",
+    "52": "a2aab930-9e4f-498f-8036-3c50ad832683",
+    "53": "a2aab930-9e4f-498f-8036-3c50ad832683",
+    "54": "80551515-e4c6-4dcc-8b48-77bfe17bc9d2",
+    "55": "652b5cf2-02f9-4cbf-9726-dfe2b17d9168",
+    "56": "deac92ca-d5f2-4668-b409-eaca569a118f",
+    "57": "ea2e51ac-d36e-41b3-b4b4-a3b5ea2e5342"
+  },
+
+  "passageHeuristics": [
+    { "book": "GEN", "startChapter": 1, "endChapter": 2, "topicIds": ["288a6bcf-7731-4c3e-b1a2-24e3443939c9", "65d17c90-d695-4b97-b4ba-b455067ad129"], "weight": 0.6 },
+    { "book": "GEN", "startChapter": 3, "endChapter": 3, "topicIds": ["377865cf-c3c0-4c10-97b8-0d87709417aa", "4e3e9e8b-29c1-4ef2-a235-ef89812b11ef"], "weight": 0.7 },
+    { "book": "GEN", "startChapter": 12, "endChapter": 22, "topicIds": ["485d9292-36d3-485e-8158-a56135b95d81"], "weight": 0.4 },
+    { "book": "EXO", "startChapter": 1, "endChapter": 15, "topicIds": ["b36efb34-8b18-4599-bdeb-786a413b4376", "65d17c90-d695-4b97-b4ba-b455067ad129"], "weight": 0.4 },
+    { "book": "EXO", "startChapter": 20, "endChapter": 20, "topicIds": ["ffa4823f-c7fe-4739-855e-713bc638bd9f", "81c441fa-1a96-4b9f-9e9f-150159cfa55b"], "weight": 0.5 },
+    { "book": "LEV", "startChapter": 1, "endChapter": 7, "topicIds": ["17d1f7b1-c68b-41f3-a262-a9eeb6771247", "233dea72-3e59-48ff-a926-581162aecdcd"], "weight": 0.5 },
+    { "book": "PSA", "startChapter": 1, "endChapter": 150, "topicIds": ["7bc6614e-fb32-40f6-b09f-f131e2d2beb0", "a2929e10-ba6d-450e-81c5-82348b23dec2"], "weight": 0.3 },
+    { "book": "PRO", "startChapter": 1, "endChapter": 31, "topicIds": ["72b97f9c-9d73-4461-b1f1-6503b528eced"], "weight": 0.3 },
+    { "book": "ISA", "startChapter": 40, "endChapter": 55, "topicIds": ["b36efb34-8b18-4599-bdeb-786a413b4376", "1c87c485-0170-4d58-8ae3-111091f07175"], "weight": 0.4 },
+    { "book": "ISA", "startChapter": 53, "endChapter": 53, "topicIds": ["17d1f7b1-c68b-41f3-a262-a9eeb6771247", "233dea72-3e59-48ff-a926-581162aecdcd"], "weight": 0.7 },
+    { "book": "JHN", "startChapter": 1, "endChapter": 1, "topicIds": ["69266ace-187b-46ef-805d-be7e285d65d5", "1c87c485-0170-4d58-8ae3-111091f07175"], "weight": 0.6 },
+    { "book": "JHN", "startChapter": 3, "endChapter": 3, "topicIds": ["f2cd5e7c-8e19-4ee0-a6e4-5b7d1921326a", "b36efb34-8b18-4599-bdeb-786a413b4376"], "weight": 0.5 },
+    { "book": "JHN", "startChapter": 14, "endChapter": 16, "topicIds": ["a0896303-8c1b-4359-be23-413bbc3e0074"], "weight": 0.6 },
+    { "book": "ACT", "startChapter": 2, "endChapter": 2, "topicIds": ["a0896303-8c1b-4359-be23-413bbc3e0074", "417bba4c-2863-4d5b-83e5-dfe9687ef6f4"], "weight": 0.6 },
+    { "book": "ACT", "startChapter": 1, "endChapter": 28, "topicIds": ["e235b939-6a70-4256-a483-76b8f8b859d1", "a2716589-2151-4b69-826f-9aac23b69b43"], "weight": 0.3 },
+    { "book": "ROM", "startChapter": 1, "endChapter": 3, "topicIds": ["7b35f4b1-ce85-42cf-acee-bc3493a7366b", "652b5cf2-02f9-4cbf-9726-dfe2b17d9168", "0ce743da-1f17-42dc-a7cb-f47fc1d3ff2a"], "weight": 0.5 },
+    { "book": "ROM", "startChapter": 3, "endChapter": 5, "topicIds": ["2699715c-0351-4ef5-ba4f-9069d66047ee", "485d9292-36d3-485e-8158-a56135b95d81"], "weight": 0.7 },
+    { "book": "ROM", "startChapter": 6, "endChapter": 8, "topicIds": ["323eca93-b7f2-4000-85f9-89379d5f4804", "a0896303-8c1b-4359-be23-413bbc3e0074"], "weight": 0.6 },
+    { "book": "ROM", "startChapter": 8, "endChapter": 8, "topicIds": ["47ea24b0-a8b3-4533-84dd-d32a86b25387", "a0896303-8c1b-4359-be23-413bbc3e0074", "3ce6125e-86b2-4f72-afd3-c80c0b72a771"], "weight": 0.6 },
+    { "book": "ROM", "startChapter": 9, "endChapter": 11, "topicIds": ["f94876bd-374d-46d5-963e-c4b8441cf4b5", "65d17c90-d695-4b97-b4ba-b455067ad129"], "weight": 0.7 },
+    { "book": "ROM", "startChapter": 12, "endChapter": 15, "topicIds": ["72b97f9c-9d73-4461-b1f1-6503b528eced", "2fcc3c3c-b082-4659-a5be-085a9c4b388d"], "weight": 0.4 },
+    { "book": "1CO", "startChapter": 12, "endChapter": 14, "topicIds": ["a2aab930-9e4f-498f-8036-3c50ad832683", "417bba4c-2863-4d5b-83e5-dfe9687ef6f4"], "weight": 0.6 },
+    { "book": "1CO", "startChapter": 15, "endChapter": 15, "topicIds": ["6a80a3df-2eb4-4e47-936a-589bd1990f00", "ce98c254-0812-49cd-99ee-2ee7e6bd9cc5"], "weight": 0.7 },
+    { "book": "2CO", "startChapter": 5, "endChapter": 5, "topicIds": ["2699715c-0351-4ef5-ba4f-9069d66047ee", "f2cd5e7c-8e19-4ee0-a6e4-5b7d1921326a"], "weight": 0.5 },
+    { "book": "GAL", "startChapter": 2, "endChapter": 3, "topicIds": ["2699715c-0351-4ef5-ba4f-9069d66047ee", "485d9292-36d3-485e-8158-a56135b95d81"], "weight": 0.6 },
+    { "book": "GAL", "startChapter": 5, "endChapter": 5, "topicIds": ["8ddf6065-f694-4026-b859-65c760b86f54", "a0896303-8c1b-4359-be23-413bbc3e0074"], "weight": 0.5 },
+    { "book": "EPH", "startChapter": 1, "endChapter": 1, "topicIds": ["f94876bd-374d-46d5-963e-c4b8441cf4b5", "a1bc983e-a1d9-47d8-b3d8-e61703106239"], "weight": 0.6 },
+    { "book": "EPH", "startChapter": 2, "endChapter": 2, "topicIds": ["b36efb34-8b18-4599-bdeb-786a413b4376", "f2cd5e7c-8e19-4ee0-a6e4-5b7d1921326a"], "weight": 0.6 },
+    { "book": "EPH", "startChapter": 4, "endChapter": 6, "topicIds": ["323eca93-b7f2-4000-85f9-89379d5f4804", "417bba4c-2863-4d5b-83e5-dfe9687ef6f4"], "weight": 0.4 },
+    { "book": "EPH", "startChapter": 6, "endChapter": 6, "topicIds": ["f47a369f-6108-4088-a93d-600808b4203a"], "weight": 0.4 },
+    { "book": "PHP", "startChapter": 1, "endChapter": 4, "topicIds": ["3624deb1-f20a-43b7-bef6-1b1dde54cc80", "323eca93-b7f2-4000-85f9-89379d5f4804"], "weight": 0.3 },
+    { "book": "COL", "startChapter": 1, "endChapter": 1, "topicIds": ["1c87c485-0170-4d58-8ae3-111091f07175", "65d17c90-d695-4b97-b4ba-b455067ad129"], "weight": 0.5 },
+    { "book": "1TH", "startChapter": 4, "endChapter": 5, "topicIds": ["80551515-e4c6-4dcc-8b48-77bfe17bc9d2", "ce98c254-0812-49cd-99ee-2ee7e6bd9cc5"], "weight": 0.6 },
+    { "book": "2TI", "startChapter": 3, "endChapter": 4, "topicIds": ["940f9ea5-a56f-4eb2-9391-e78a76344b97", "47ea24b0-a8b3-4533-84dd-d32a86b25387"], "weight": 0.5 },
+    { "book": "TIT", "startChapter": 1, "endChapter": 3, "topicIds": ["f196192f-b75b-4173-a7b2-0f4877fe721b", "323eca93-b7f2-4000-85f9-89379d5f4804"], "weight": 0.4 },
+    { "book": "HEB", "startChapter": 1, "endChapter": 2, "topicIds": ["1c87c485-0170-4d58-8ae3-111091f07175"], "weight": 0.5 },
+    { "book": "HEB", "startChapter": 7, "endChapter": 10, "topicIds": ["17d1f7b1-c68b-41f3-a262-a9eeb6771247", "233dea72-3e59-48ff-a926-581162aecdcd"], "weight": 0.6 },
+    { "book": "HEB", "startChapter": 11, "endChapter": 11, "topicIds": ["485d9292-36d3-485e-8158-a56135b95d81"], "weight": 0.7 },
+    { "book": "HEB", "startChapter": 12, "endChapter": 12, "topicIds": ["323eca93-b7f2-4000-85f9-89379d5f4804", "47ea24b0-a8b3-4533-84dd-d32a86b25387"], "weight": 0.5 },
+    { "book": "JAS", "startChapter": 1, "endChapter": 5, "topicIds": ["72b97f9c-9d73-4461-b1f1-6503b528eced", "485d9292-36d3-485e-8158-a56135b95d81"], "weight": 0.4 },
+    { "book": "1PE", "startChapter": 1, "endChapter": 5, "topicIds": ["33a6e5c4-9552-4d3f-9511-c8745979484c", "47ea24b0-a8b3-4533-84dd-d32a86b25387"], "weight": 0.4 },
+    { "book": "1JN", "startChapter": 1, "endChapter": 5, "topicIds": ["40a27986-1340-4eb4-b1e8-81eb77127258", "323eca93-b7f2-4000-85f9-89379d5f4804"], "weight": 0.4 },
+    { "book": "REV", "startChapter": 1, "endChapter": 22, "topicIds": ["ce98c254-0812-49cd-99ee-2ee7e6bd9cc5", "652b5cf2-02f9-4cbf-9726-dfe2b17d9168"], "weight": 0.4 },
+    { "book": "REV", "startChapter": 20, "endChapter": 22, "topicIds": ["652b5cf2-02f9-4cbf-9726-dfe2b17d9168", "deac92ca-d5f2-4668-b409-eaca569a118f", "22aeb404-b76a-4721-a4ce-c1af6326ea2b"], "weight": 0.6 }
+  ],
+
+  "inlineTagPatterns": {
+    "illustration": {
+      "startMarkers": [
+        "for example", "for instance", "consider the", "imagine", "picture this",
+        "think of", "it's like", "it is like", "just as", "much like",
+        "in the same way", "suppose", "illustration:", "illust:", "like a"
+      ],
+      "narrativePatterns": [
+        "I (once|remember|recall|knew|heard|read|saw|met)",
+        "there (was|were|once) (a|an)",
+        "a (man|woman|boy|girl|farmer|teacher|pastor|father|mother|king|soldier|child) (who|once|named)",
+        "the story (of|is told|goes)",
+        "(one|a) (day|time|morning|evening|year)"
+      ],
+      "endMarkers": ["in the same way", "so too", "likewise", "similarly", "this is how", "this illustrates"],
+      "minLength": 30
+    },
+    "application": {
+      "startMarkers": [
+        "we must", "we should", "we need to", "we ought to", "we are called to",
+        "let us", "therefore", "how then should we", "what does this mean for us",
+        "this means that we", "the implication is", "apply this", "application:",
+        "practically speaking", "in practice", "as believers we"
+      ],
+      "imperativePatterns": [
+        "(do not|don't|never|always|stop|start|begin|continue|remember|consider|examine|ask yourself)",
+        "(pray|seek|serve|love|forgive|trust|obey|submit|give|share|follow) (god|christ|the lord|him|one another|others)"
+      ],
+      "minLength": 20
+    },
+    "quote": {
+      "attributionPatterns": [
+        "(as )?\\w+[\\w\\s.]* (said|wrote|observed|noted|declared|stated|argued|put it|remarked|commented|explained)",
+        "according to \\w+",
+        "in the words of \\w+",
+        "—\\s*\\w+[\\w\\s,.]+"
+      ],
+      "quoteMarkers": ["\"[^\"]{15,}\"", "\\u201c[^\\u201d]{15,}\\u201d"],
+      "minLength": 15
+    },
+    "keypoint": {
+      "emphasisPatterns": [
+        "(the key (point|truth|idea|lesson|principle) (is|here is))",
+        "(note (that|this|well|carefully))",
+        "(this is (crucial|essential|vital|important|significant|fundamental|central))",
+        "(the (main|central|core|fundamental|essential) (point|truth|idea|teaching|doctrine|theme))"
+      ],
+      "structuralPatterns": [
+        "^(first|second|third|fourth|finally|in conclusion|to summarize|in summary)",
+        "^\\d+[\\.\\)\\:]\\s"
+      ],
+      "minLength": 15
+    },
+    "crossref": {
+      "referencePatterns": [
+        "(see also|cf\\.|compare|see|cp\\.) [1-3]?\\s?[A-Z][a-z]+ \\d+",
+        "\\([1-3]?\\s?[A-Z][a-z]+ \\d+[:\\d,\\-;\\s]*\\)"
+      ],
+      "minLength": 5
+    }
+  },
+
+  "contentTypeWeights": {
+    "commentary": {
+      "doctrinal": 1.3,
+      "pastoral": 0.8
+    },
+    "sermon": {
+      "doctrinal": 0.9,
+      "pastoral": 1.3
+    },
+    "note": {
+      "doctrinal": 1.0,
+      "pastoral": 1.0
+    }
+  },
+
+  "parentCategories": {
+    "doctrinal": [
+      "940f9ea5-a56f-4eb2-9391-e78a76344b97", "f02b0452-cbda-47d0-b789-e36380dcff24",
+      "aeaa52b8-a4c2-4a0a-b4d5-54ff8f5c9a71", "6f42192e-7fd8-415f-9697-c0c9f4b5282a",
+      "40a27986-1340-4eb4-b1e8-81eb77127258", "0ce743da-1f17-42dc-a7cb-f47fc1d3ff2a",
+      "65d17c90-d695-4b97-b4ba-b455067ad129", "18ec0f30-a68a-497a-b53a-67f9061f0d11",
+      "288a6bcf-7731-4c3e-b1a2-24e3443939c9", "377865cf-c3c0-4c10-97b8-0d87709417aa",
+      "7c2ef3f3-a694-4059-ac98-a93baad0b08c", "1c87c485-0170-4d58-8ae3-111091f07175",
+      "69266ace-187b-46ef-805d-be7e285d65d5", "17d1f7b1-c68b-41f3-a262-a9eeb6771247",
+      "a9c2bc11-374a-41d0-aac5-ddc60a8bbf63", "6a80a3df-2eb4-4e47-936a-589bd1990f00",
+      "a0896303-8c1b-4359-be23-413bbc3e0074", "85bcbfef-4dc3-48b0-bca3-3877d8e34ec4",
+      "b36efb34-8b18-4599-bdeb-786a413b4376", "f94876bd-374d-46d5-963e-c4b8441cf4b5",
+      "3df5fa95-4305-4bab-96be-a8de6482f01c", "f2cd5e7c-8e19-4ee0-a6e4-5b7d1921326a",
+      "fd82b77a-f700-4276-b968-88240768a2ed", "2699715c-0351-4ef5-ba4f-9069d66047ee",
+      "a1bc983e-a1d9-47d8-b3d8-e61703106239", "323eca93-b7f2-4000-85f9-89379d5f4804",
+      "47ea24b0-a8b3-4533-84dd-d32a86b25387", "3ce6125e-86b2-4f72-afd3-c80c0b72a771",
+      "03e7ac8d-0b6d-4dbe-8ce7-4dd07f1fae39", "417bba4c-2863-4d5b-83e5-dfe9687ef6f4",
+      "bfe6d093-7773-43a6-a142-da4a255ae5b6", "5a87c675-b77a-49c5-9b47-7d720362211e",
+      "ce98c254-0812-49cd-99ee-2ee7e6bd9cc5", "80551515-e4c6-4dcc-8b48-77bfe17bc9d2",
+      "652b5cf2-02f9-4cbf-9726-dfe2b17d9168", "deac92ca-d5f2-4668-b409-eaca569a118f",
+      "ea2e51ac-d36e-41b3-b4b4-a3b5ea2e5342", "1538976c-992b-4f6f-af46-766f21ad6920"
+    ],
+    "pastoral": [
+      "72b97f9c-9d73-4461-b1f1-6503b528eced", "a2929e10-ba6d-450e-81c5-82348b23dec2",
+      "485d9292-36d3-485e-8158-a56135b95d81", "ffa4823f-c7fe-4739-855e-713bc638bd9f",
+      "7bc6614e-fb32-40f6-b09f-f131e2d2beb0", "e235b939-6a70-4256-a483-76b8f8b859d1",
+      "22f600d0-e65b-4529-91d0-f89cdd200cbc", "f196192f-b75b-4173-a7b2-0f4877fe721b",
+      "a2aab930-9e4f-498f-8036-3c50ad832683", "33a6e5c4-9552-4d3f-9511-c8745979484c",
+      "4e3e9e8b-29c1-4ef2-a235-ef89812b11ef", "7b35f4b1-ce85-42cf-acee-bc3493a7366b",
+      "4a8b4e69-2b91-4462-b87b-53ce43a34e97", "81c441fa-1a96-4b9f-9e9f-150159cfa55b",
+      "a2716589-2151-4b69-826f-9aac23b69b43", "2fcc3c3c-b082-4659-a5be-085a9c4b388d",
+      "eaaf369b-04ab-4133-83ca-833137a7b38a", "233dea72-3e59-48ff-a926-581162aecdcd",
+      "3624deb1-f20a-43b7-bef6-1b1dde54cc80", "8518da68-4c55-4474-847a-832159557708"
+    ]
+  }
+}

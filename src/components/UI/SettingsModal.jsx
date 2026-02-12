@@ -4,6 +4,8 @@ import { useSystematic } from '../../context/SystematicContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { systematicService } from '../../services/systematicService';
+import { taggingService } from '../../services/taggingService';
+import { TaggingQueue } from '../Notes/TaggingQueue';
 import styles from './Settings.module.css';
 
 const API_BASE = '/api/notes';
@@ -34,9 +36,14 @@ export const SettingsModal = () => {
   const [stDeleteConfirmText, setStDeleteConfirmText] = useState('');
   const stFileInputRef = useRef(null);
 
+  // Tagging state
+  const [showTaggingQueue, setShowTaggingQueue] = useState(false);
+  const [taggingStats, setTaggingStats] = useState(null);
+
   const openModal = () => {
     setIsOpen(true);
     setStatus({ type: null, message: '' });
+    loadTaggingStats();
   };
 
   const closeModal = () => {
@@ -278,6 +285,16 @@ export const SettingsModal = () => {
       setStatus({ type: 'error', message: error.message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Tagging - load stats when modal opens
+  const loadTaggingStats = async () => {
+    try {
+      const result = await taggingService.getQueue();
+      setTaggingStats(result.stats || null);
+    } catch (err) {
+      console.error('Failed to load tagging stats:', err);
     }
   };
 
@@ -707,6 +724,53 @@ export const SettingsModal = () => {
               />
             </div>
 
+            <div className={styles.divider} />
+
+            {/* Tagging Section */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <span className={styles.sectionIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                  </svg>
+                </span>
+                Tagging
+              </h3>
+
+              {taggingStats && (
+                <div style={{
+                  fontSize: '0.8125rem',
+                  color: 'var(--text-secondary)',
+                  marginBottom: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <span>{taggingStats.progress}% tagged</span>
+                  <span>{taggingStats.untaggedNotes} untagged of {taggingStats.totalNotes} notes</span>
+                </div>
+              )}
+
+              <button
+                className={styles.actionButton}
+                onClick={() => { closeModal(); setShowTaggingQueue(true); }}
+              >
+                <div className={styles.actionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                </div>
+                <div className={styles.actionContent}>
+                  <div className={styles.actionTitle}>Open Tagging Queue</div>
+                  <div className={styles.actionDescription}>Review and assign topics to untagged notes</div>
+                </div>
+              </button>
+            </div>
+
             {authRequired && (
               <>
                 <div className={styles.divider} />
@@ -777,6 +841,12 @@ export const SettingsModal = () => {
           </div>
         </div>
       </div>
+
+      <TaggingQueue
+        isOpen={showTaggingQueue}
+        onClose={() => setShowTaggingQueue(false)}
+        onNotesUpdated={refreshNotes}
+      />
     </>
   );
 };

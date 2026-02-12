@@ -25,6 +25,7 @@ npm-debug.log*
 
 # Database
 data/
+!server/data/
 
 # Personal files
 myfiles/

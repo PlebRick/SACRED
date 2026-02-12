@@ -3,6 +3,7 @@ import { NoteCard } from './NoteCard';
 import { NoteEditor } from './NoteEditor';
 import { AddNoteModal } from './AddNoteModal';
 import { RelatedDoctrines } from './RelatedDoctrines';
+import { TaggingQueue } from './TaggingQueue';
 import { useNotes } from '../../context/NotesContext';
 import { useBible } from '../../context/BibleContext';
 import styles from './Notes.module.css';
@@ -15,10 +16,12 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
     updateNote,
     deleteNote,
     getNotesForChapter,
-    createNote
+    createNote,
+    refreshNotes
   } = useNotes();
   const { bookId, chapter } = useBible();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTaggingOpen, setIsTaggingOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('note');
   const notesListRef = useRef(null);
 
@@ -84,6 +87,18 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
               ? (chapterNotes.length === 1 ? 'commentary' : 'commentaries')
               : (chapterNotes.length === 1 ? 'sermon' : 'sermons')}
           </span>
+          <button
+            className={styles.addNoteButton}
+            onClick={() => setIsTaggingOpen(true)}
+            aria-label="Tagging queue"
+            title="Tagging Queue"
+            style={{ background: 'transparent', color: 'var(--text-secondary)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+          </button>
           <button
             className={styles.addNoteButton}
             onClick={handleOpenModal}
@@ -160,6 +175,12 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
         onClose={handleCloseModal}
         onCreateNote={handleCreateNote}
         noteType={activeTab}
+      />
+
+      <TaggingQueue
+        isOpen={isTaggingOpen}
+        onClose={() => setIsTaggingOpen(false)}
+        onNotesUpdated={refreshNotes}
       />
     </div>
   );

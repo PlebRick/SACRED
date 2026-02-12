@@ -5,6 +5,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { InlineTagMark } from '../../extensions/InlineTagMark';
 import { SystematicLinkMark } from '../../extensions/SystematicLinkMark';
 import { InsertDoctrineModal } from './InsertDoctrineModal';
+import { TagReviewModal } from './TagReviewModal';
 import { SystematicLinkTooltip } from './SystematicLinkTooltip';
 import { formatVerseRange } from '../../utils/verseRange';
 import { parseReference } from '../../utils/parseReference';
@@ -291,6 +292,7 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [showTopics, setShowTopics] = useState(false);
   const [showAddTagType, setShowAddTagType] = useState(false);
   const [showDoctrineModal, setShowDoctrineModal] = useState(false);
+  const [showTagReview, setShowTagReview] = useState(false);
   const [isEditingReference, setIsEditingReference] = useState(false);
   const [referenceInput, setReferenceInput] = useState('');
   const [referenceError, setReferenceError] = useState('');
@@ -567,6 +569,27 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
+          <button
+            className={styles.topicToggle}
+            onClick={() => setShowTagReview(true)}
+            title="AI-suggested tags for this note"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ marginRight: '0.25rem' }}
+            >
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+            Suggest tags
+          </button>
           {!showTopics && (primaryTopicId || tags.length > 0) && (
             <span className={styles.topicPreview}>
               {primaryTopicId && getTopicById(primaryTopicId)?.name}
@@ -621,6 +644,22 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         onClose={() => setShowDoctrineModal(false)}
         onInsert={handleInsertDoctrine}
       />
+
+      {showTagReview && (
+        <TagReviewModal
+          isOpen={showTagReview}
+          noteId={note.id}
+          noteTitle={note.title}
+          noteType={note.type}
+          notePassage={formatVerseRange(note)}
+          onClose={() => setShowTagReview(false)}
+          onApplied={() => {
+            setShowTagReview(false);
+            // Refresh topics to reflect applied tags
+            refreshTopics();
+          }}
+        />
+      )}
     </div>
   );
 };

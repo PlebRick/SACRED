@@ -14,6 +14,7 @@ import { registerBackupTools } from './tools/backup.js';
 import { registerAiEnhancedTools } from './tools/ai-enhanced.js';
 import { registerSessionTools } from './tools/sessions.js';
 import { registerSeriesTools } from './tools/series.js';
+import { registerTaggingTools } from './tools/tagging.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
@@ -33,6 +34,7 @@ function createMcpServer(): McpServer {
   registerAiEnhancedTools(server);
   registerSessionTools(server);
   registerSeriesTools(server);
+  registerTaggingTools(server);
   registerResources(server);
 
   return server;
