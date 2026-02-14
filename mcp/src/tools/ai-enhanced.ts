@@ -1221,112 +1221,30 @@ export function registerAiEnhancedTools(server: McpServer): void {
     }
   );
 
-  // insert_doctrine_links - Add doctrine links to note content
+  // insert_doctrine_links - DEPRECATED: use analyze_doctrine_links + apply_doctrine_suggestions instead
   server.tool(
     'insert_doctrine_links',
-    'Preview or insert doctrine links ([[ST:ChX]]) into a note based on its passage',
+    '[DEPRECATED] Use analyze_doctrine_links and apply_doctrine_suggestions instead. This tool uses blunt scripture-index matching; the new tools use intelligent multi-signal matching with section-level targeting.',
     {
       noteId: z.string().describe('The UUID of the note'),
-      apply: z.boolean().optional().describe('Actually insert the links (default: false, just preview)'),
+      apply: z.boolean().optional().describe('Ignored - use analyze_doctrine_links instead'),
     },
-    async ({ noteId, apply = false }) => {
-      try {
-        const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(noteId) as DbNote | undefined;
-
-        if (!note) {
-          return {
-            content: [{ type: 'text' as const, text: `Note not found: ${noteId}` }],
-            isError: true,
-          };
-        }
-
-        // Find doctrines for this passage
-        const doctrines = db
-          .prepare(
-            `
-            SELECT DISTINCT st.chapter_number, st.title
-            FROM systematic_theology st
-            JOIN systematic_scripture_index ssi ON st.id = ssi.systematic_id
-            WHERE ssi.book = ? AND ssi.chapter >= ? AND ssi.chapter <= ?
-            AND ssi.is_primary = 1
-            ORDER BY st.chapter_number
-            LIMIT 5
-          `
-          )
-          .all(note.book, note.start_chapter, note.end_chapter) as { chapter_number: number; title: string }[];
-
-        // Check which links already exist
-        const existingLinks: string[] = [];
-        const linkRegex = /\[\[ST:Ch(\d+)(?::([A-Z])(?:\.(\d+))?)?\]\]/gi;
-        let match;
-        while ((match = linkRegex.exec(note.content || '')) !== null) {
-          existingLinks.push(match[0]);
-        }
-
-        // Generate suggested links block (dedupe by chapter number)
-        const newLinks = [...new Set(doctrines.map((d) => `[[ST:Ch${d.chapter_number}]]`))]
-          .filter((link) => !existingLinks.includes(link));
-
-        let updatedContent = note.content;
-        if (apply && newLinks.length > 0) {
-          // Add links at the end of content with proper span markup
-          const linkSpans = newLinks.map((link) => {
-            const ref = link.replace(/^\[\[ST:/, '').replace(/\]\]$/, '');
-            return `<span class="systematic-link" data-st-ref="${ref}" data-st-display="${link}">${link}</span>`;
-          });
-          const linksBlock = `<p><strong>Related Doctrines:</strong> ${linkSpans.join(' | ')}</p>`;
-          updatedContent = (note.content || '') + linksBlock;
-
-          db.prepare('UPDATE notes SET content = ?, updated_at = ? WHERE id = ?').run(
-            updatedContent,
-            new Date().toISOString(),
-            noteId
-          );
-
-          // Sync inline tags from updated content
-          syncInlineTags(noteId, updatedContent);
-        }
-
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(
-                {
-                  note: {
-                    id: note.id,
-                    book: note.book,
-                    startChapter: note.start_chapter,
-                    title: note.title,
-                  },
-                  existingLinks,
-                  suggestedDoctrines: doctrines.map((d) => ({
-                    chapterNumber: d.chapter_number,
-                    title: d.title,
-                    linkSyntax: `[[ST:Ch${d.chapter_number}]]`,
-                    alreadyPresent: existingLinks.includes(`[[ST:Ch${d.chapter_number}]]`),
-                  })),
-                  newLinksToAdd: newLinks,
-                  applied: apply,
-                  message: apply
-                    ? newLinks.length > 0
-                      ? `Inserted ${newLinks.length} new doctrine links`
-                      : 'No new links to add (all already present)'
-                    : 'Preview only - set apply=true to insert links',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        logger.error('Error inserting doctrine links:', error);
-        return {
-          content: [{ type: 'text' as const, text: `Error: ${error}` }],
-          isError: true,
-        };
-      }
+    async ({ noteId }) => {
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({
+              deprecated: true,
+              message: 'insert_doctrine_links is deprecated. Use these tools instead:\n' +
+                '- analyze_doctrine_links(noteId) — runs intelligent matching with 4 scoring signals\n' +
+                '- apply_doctrine_suggestions(accepted, rejected) — accepts/rejects suggestions\n' +
+                '- batch_doctrine_matching(mode, noteIds, minConfidence) — batch processing',
+              noteId,
+            }, null, 2),
+          },
+        ],
+      };
     }
   );
 
@@ -2007,6 +1925,6 @@ export function registerAiEnhancedTools(server: McpServer): void {
   );
 
   logger.info(
-    'Registered AI-enhanced tools: parse_verse_reference, sermon_prep_bundle, doctrine_study_bundle, suggest_topics_for_passage, extract_illustrations, extract_applications, find_related_notes, summarize_topic_notes, create_enriched_note, auto_tag_note, insert_doctrine_links, get_similar_sermons, compile_illustrations_for_topic, generate_sermon_structure, check_illustration_duplicates, get_duplicate_illustrations'
+    'Registered AI-enhanced tools: parse_verse_reference, sermon_prep_bundle, doctrine_study_bundle, suggest_topics_for_passage, extract_illustrations, extract_applications, find_related_notes, summarize_topic_notes, create_enriched_note, auto_tag_note, insert_doctrine_links (deprecated), get_similar_sermons, compile_illustrations_for_topic, generate_sermon_structure, check_illustration_duplicates, get_duplicate_illustrations'
   );
 }

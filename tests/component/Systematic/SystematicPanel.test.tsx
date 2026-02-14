@@ -53,6 +53,7 @@ describe('SystematicPanel', () => {
   const mockAddAnnotation = vi.fn();
   const mockDeleteAnnotation = vi.fn();
   const mockNavigate = vi.fn();
+  const mockClearHighlightSectionId = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,6 +67,8 @@ describe('SystematicPanel', () => {
       annotations: [],
       addAnnotation: mockAddAnnotation,
       deleteAnnotation: mockDeleteAnnotation,
+      highlightSectionId: null,
+      clearHighlightSectionId: mockClearHighlightSectionId,
     });
     (useBible as any).mockReturnValue({
       navigate: mockNavigate,
@@ -89,6 +92,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       const { container } = render(<SystematicPanel />);
@@ -107,6 +112,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       const { container } = render(<SystematicPanel />);
@@ -179,6 +186,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -347,6 +356,8 @@ describe('SystematicPanel', () => {
         ],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -369,6 +380,8 @@ describe('SystematicPanel', () => {
         ],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -390,6 +403,8 @@ describe('SystematicPanel', () => {
         ],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -410,6 +425,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -433,6 +450,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -455,6 +474,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -478,6 +499,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -500,6 +523,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -526,6 +551,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -549,6 +576,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -570,6 +599,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -591,6 +622,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -612,6 +645,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);
@@ -633,6 +668,8 @@ describe('SystematicPanel', () => {
         annotations: [],
         addAnnotation: mockAddAnnotation,
         deleteAnnotation: mockDeleteAnnotation,
+        highlightSectionId: null,
+        clearHighlightSectionId: mockClearHighlightSectionId,
       });
 
       render(<SystematicPanel />);

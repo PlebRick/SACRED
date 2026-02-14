@@ -183,6 +183,12 @@
 
 .subsectionBlock {
   /* Sections flow naturally after chapter intro */
+  transition: background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.scrollHighlighted {
+  background-color: var(--note-highlight);
 }
 
 .inlineSectionHeader {

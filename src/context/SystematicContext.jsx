@@ -18,7 +18,8 @@ const initialState = {
   searchResults: [],
   searchQuery: '',
   annotations: [],
-  annotationsLoading: false
+  annotationsLoading: false,
+  highlightSectionId: null
 };
 
 const reducer = (state, action) => {
@@ -88,6 +89,10 @@ const reducer = (state, action) => {
         ...state,
         annotations: state.annotations.filter(a => a.id !== action.id)
       };
+    case 'SET_HIGHLIGHT_SECTION':
+      return { ...state, highlightSectionId: action.id };
+    case 'CLEAR_HIGHLIGHT_SECTION':
+      return { ...state, highlightSectionId: null };
     default:
       return state;
   }
@@ -273,6 +278,16 @@ export const SystematicProvider = ({ children }) => {
     }
   }, []);
 
+  // Set highlight section (for scroll-to-section after navigating to a link)
+  const setHighlightSectionId = useCallback((id) => {
+    dispatch({ type: 'SET_HIGHLIGHT_SECTION', id });
+  }, []);
+
+  // Clear highlight section
+  const clearHighlightSectionId = useCallback(() => {
+    dispatch({ type: 'CLEAR_HIGHLIGHT_SECTION' });
+  }, []);
+
   // Get referencing notes
   const getReferencingNotes = useCallback(async (systematicId) => {
     try {
@@ -305,41 +320,43 @@ export const SystematicProvider = ({ children }) => {
     if (!match) return false;
 
     const [, chapterNum, sectionLetter, subsectionNum] = match;
+    const chapterNumber = parseInt(chapterNum, 10);
 
     try {
-      // First try to find the specific entry
-      if (subsectionNum) {
+      // For section/subsection refs, open the full chapter and scroll to the section
+      if (sectionLetter) {
         const entries = await systematicService.getFlat();
-        const entry = entries.find(e =>
-          e.chapterNumber === parseInt(chapterNum, 10) &&
-          e.sectionLetter === sectionLetter?.toUpperCase() &&
-          e.subsectionNumber === parseInt(subsectionNum, 10)
-        );
-        if (entry) {
-          await selectEntry(entry.id);
-          return true;
+        let entry;
+
+        if (subsectionNum) {
+          entry = entries.find(e =>
+            e.chapterNumber === chapterNumber &&
+            e.sectionLetter === sectionLetter.toUpperCase() &&
+            e.subsectionNumber === parseInt(subsectionNum, 10)
+          );
+        } else {
+          entry = entries.find(e =>
+            e.chapterNumber === chapterNumber &&
+            e.sectionLetter === sectionLetter.toUpperCase() &&
+            e.subsectionNumber === null
+          );
         }
-      } else if (sectionLetter) {
-        const entries = await systematicService.getFlat();
-        const entry = entries.find(e =>
-          e.chapterNumber === parseInt(chapterNum, 10) &&
-          e.sectionLetter === sectionLetter?.toUpperCase() &&
-          e.subsectionNumber === null
-        );
+
         if (entry) {
-          await selectEntry(entry.id);
+          await openChapter(chapterNumber);
+          setHighlightSectionId(entry.id);
           return true;
         }
       }
 
-      // Fall back to opening the chapter
-      await openChapter(parseInt(chapterNum, 10));
+      // Chapter-level link or fallback: just open the chapter
+      await openChapter(chapterNumber);
       return true;
     } catch (error) {
       console.error('Failed to navigate to link:', error);
       return false;
     }
-  }, [selectEntry, openChapter]);
+  }, [openChapter, setHighlightSectionId]);
 
   // Helper to find chapter in tree
   const findChapterInTree = useCallback((chapterNum) => {
@@ -369,7 +386,9 @@ export const SystematicProvider = ({ children }) => {
       getReferencingNotes,
       refreshTree,
       navigateToLink,
-      findChapterInTree
+      findChapterInTree,
+      setHighlightSectionId,
+      clearHighlightSectionId
     }}>
       {children}
     </SystematicContext.Provider>

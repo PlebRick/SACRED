@@ -6,6 +6,70 @@ const db = require('../db.cjs');
 
 const router = express.Router();
 
+// Extract [[ST:ChN]] doctrine link references from HTML content
+function extractDoctrineLinks(html) {
+  if (!html) return [];
+  const refs = new Set();
+  // Match data-ref attributes on systematic link spans
+  const dataRefPattern = /data-ref="([^"]+)"/g;
+  let m;
+  while ((m = dataRefPattern.exec(html)) !== null) {
+    refs.add(m[1]);
+  }
+  // Also match raw [[ST:ChN]] syntax in text
+  const rawPattern = /\[\[ST:(Ch\d+(?::[A-Z](?:\.\d+)?)?)\]\]/g;
+  while ((m = rawPattern.exec(html)) !== null) {
+    refs.add(m[1]);
+  }
+  return [...refs].sort();
+}
+
+// Capture doctrine link snapshot on import (original links from insert_doctrine_links)
+function captureDoctrineLinks(noteId, content) {
+  const links = extractDoctrineLinks(content);
+  if (links.length === 0) return;
+
+  const existing = db.prepare('SELECT id FROM doctrine_link_edits WHERE note_id = ?').get(noteId);
+  if (!existing) {
+    db.prepare(`
+      INSERT INTO doctrine_link_edits (id, note_id, original_links, captured_at)
+      VALUES (?, ?, ?, ?)
+    `).run(uuidv4(), noteId, JSON.stringify(links), new Date().toISOString());
+  }
+}
+
+// Track doctrine link edits (compare old content vs new content)
+function trackDoctrineLinkEdits(noteId, oldContent, newContent) {
+  const oldLinks = extractDoctrineLinks(oldContent);
+  const newLinks = extractDoctrineLinks(newContent);
+
+  // No change
+  if (JSON.stringify(oldLinks) === JSON.stringify(newLinks)) return;
+
+  const added = newLinks.filter(l => !oldLinks.includes(l));
+  const removed = oldLinks.filter(l => !newLinks.includes(l));
+
+  // No meaningful edit (both empty or no actual adds/removes)
+  if (added.length === 0 && removed.length === 0) return;
+
+  const now = new Date().toISOString();
+  const existing = db.prepare('SELECT id, original_links FROM doctrine_link_edits WHERE note_id = ?').get(noteId);
+
+  if (existing) {
+    db.prepare(`
+      UPDATE doctrine_link_edits
+      SET current_links = ?, links_added = ?, links_removed = ?, edited_at = ?
+      WHERE note_id = ?
+    `).run(JSON.stringify(newLinks), JSON.stringify(added), JSON.stringify(removed), now, noteId);
+  } else {
+    // No import snapshot exists — create one with old content as baseline
+    db.prepare(`
+      INSERT INTO doctrine_link_edits (id, note_id, original_links, current_links, links_added, links_removed, captured_at, edited_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(uuidv4(), noteId, JSON.stringify(oldLinks), JSON.stringify(newLinks), JSON.stringify(added), JSON.stringify(removed), now, now);
+  }
+}
+
 // Generate text signature for duplicate detection
 const generateSignature = (text) => {
   if (!text || text.length < 20) return null;  // Skip short text
@@ -322,6 +386,9 @@ router.put('/:id', (req, res) => {
     // Sync inline tags from content
     syncInlineTags(id, content);
 
+    // Track doctrine link edits (compare old vs new content)
+    trackDoctrineLinkEdits(id, existing.content, content);
+
     const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id);
     res.json(toApiFormatWithTags(note));
   } catch (error) {
@@ -349,3 +416,4 @@ router.delete('/:id', (req, res) => {
 
 module.exports = router;
 module.exports.syncInlineTags = syncInlineTags;
+module.exports.captureDoctrineLinks = captureDoctrineLinks;

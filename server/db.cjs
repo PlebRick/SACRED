@@ -414,6 +414,53 @@ db.exec(`
 `);
 
 // ===========================================
+// DOCTRINE LINK CORRECTION TRACKING
+// ===========================================
+// Captures the original doctrine links inserted at import time and
+// tracks manual edits. This data trains the future intelligent Grudem
+// matching feature.
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS doctrine_link_edits (
+    id TEXT PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+    original_links TEXT NOT NULL,   -- JSON array of [[ST:ChN]] refs at import time
+    current_links TEXT,             -- JSON array of refs after manual edits (null = not yet edited)
+    links_added TEXT,               -- JSON array of refs Rick added manually
+    links_removed TEXT,             -- JSON array of refs Rick removed
+    captured_at TEXT NOT NULL,      -- when original links were recorded
+    edited_at TEXT                  -- when Rick last edited the links
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_doctrine_edits_note ON doctrine_link_edits(note_id);
+`);
+
+// ===========================================
+// DOCTRINE LINK SUGGESTIONS (intelligent matching)
+// ===========================================
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS doctrine_suggestions (
+    id TEXT PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+    chapter_number INTEGER NOT NULL,
+    section_letter TEXT,
+    subsection_number INTEGER,
+    link_syntax TEXT NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT,
+    confidence REAL NOT NULL,
+    signals TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    reviewed_at TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_doctrine_sugg_note ON doctrine_suggestions(note_id);
+  CREATE INDEX IF NOT EXISTS idx_doctrine_sugg_status ON doctrine_suggestions(status);
+`);
+
+// ===========================================
 // ILLUSTRATION DUPLICATE DETECTION
 // ===========================================
 

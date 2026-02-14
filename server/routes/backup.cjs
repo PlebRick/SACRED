@@ -1,7 +1,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db.cjs');
-const { syncInlineTags } = require('./notes.cjs');
+const { syncInlineTags, captureDoctrineLinks } = require('./notes.cjs');
 
 const router = express.Router();
 
@@ -334,7 +334,12 @@ router.post('/import', (req, res) => {
           const existing = checkStmt.get(noteId);
 
           if (existing) {
-            // Update existing note
+            // Update existing note — preserve primary_topic_id and series_id
+            // if not explicitly provided in import data (prevents reimport from wiping tags)
+            const existingNote = db.prepare('SELECT primary_topic_id, series_id FROM notes WHERE id = ?').get(noteId);
+            const finalPrimaryTopicId = note.primaryTopicId !== undefined ? (note.primaryTopicId || null) : (existingNote.primary_topic_id || null);
+            const finalSeriesId = note.seriesId !== undefined ? (note.seriesId || null) : (existingNote.series_id || null);
+
             updateStmt.run(
               note.book,
               note.startChapter,
@@ -344,8 +349,8 @@ router.post('/import', (req, res) => {
               note.title || '',
               note.content || '',
               note.type || 'note',
-              note.primaryTopicId || null,
-              note.seriesId || null,
+              finalPrimaryTopicId,
+              finalSeriesId,
               note.updatedAt || now,
               noteId
             );
@@ -370,8 +375,9 @@ router.post('/import', (req, res) => {
             inserted++;
           }
 
-          // Handle tags if present
-          if (note.tags && Array.isArray(note.tags)) {
+          // Handle tags — only replace if explicitly provided in import data
+          // (prevents reimport from wiping existing secondary tags)
+          if (note.tags !== undefined && Array.isArray(note.tags)) {
             deleteTagsStmt.run(noteId);
             for (const tagId of note.tags) {
               try {
@@ -385,6 +391,11 @@ router.post('/import', (req, res) => {
           // Sync inline tags from note content
           if (note.content) {
             syncInlineTags(noteId, note.content);
+          }
+
+          // Capture doctrine link snapshot for correction tracking
+          if (note.content) {
+            captureDoctrineLinks(noteId, note.content);
           }
         } catch (noteError) {
           errors.push({ id: noteId, type: 'note', error: noteError.message });

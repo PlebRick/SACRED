@@ -152,7 +152,10 @@ async function fetchWeb(bookId, chapter) {
     throw new Error(`Unknown book ID: ${bookId}`);
   }
 
-  const url = `https://bible-api.com/${apiBookName}+${chapter}?translation=web`;
+  // For single-chapter books, omit chapter number to avoid verse-level interpretation
+  const url = singleChapterBooks.has(bookId)
+    ? `https://bible-api.com/${apiBookName}?translation=web`
+    : `https://bible-api.com/${apiBookName}+${chapter}?translation=web`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -171,6 +174,9 @@ async function fetchWeb(bookId, chapter) {
   };
 }
 
+// Single-chapter books: ESV API interprets "Obadiah 1" as verse 1, not chapter 1
+const singleChapterBooks = new Set(['OBA', 'PHM', '2JN', '3JN', 'JUD']);
+
 // Fetch from ESV translation (api.esv.org)
 async function fetchEsv(bookId, chapter) {
   const apiKey = process.env.ESV_API_KEY;
@@ -183,7 +189,9 @@ async function fetchEsv(bookId, chapter) {
     throw new Error(`Unknown book ID: ${bookId}`);
   }
 
-  const query = encodeURIComponent(`${esvBookName} ${chapter}`);
+  // For single-chapter books, omit chapter number to get the whole book
+  const queryStr = singleChapterBooks.has(bookId) ? esvBookName : `${esvBookName} ${chapter}`;
+  const query = encodeURIComponent(queryStr);
   const url = `https://api.esv.org/v3/passage/text/?q=${query}&include-verse-numbers=true&include-footnotes=false&include-headings=false&include-short-copyright=false&include-passage-references=false`;
 
   const response = await fetch(url, {

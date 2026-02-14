@@ -75,7 +75,9 @@ export const SystematicPanel = () => {
     getReferencingNotes,
     annotations,
     addAnnotation,
-    deleteAnnotation
+    deleteAnnotation,
+    highlightSectionId,
+    clearHighlightSectionId
   } = useSystematic();
 
   const { navigate } = useBible();
@@ -84,6 +86,7 @@ export const SystematicPanel = () => {
   const [selection, setSelection] = useState(null);
   const [colorPickerPosition, setColorPickerPosition] = useState(null);
   const contentRef = useRef(null);
+  const sectionRefs = useRef({});
 
   // Load referencing notes when entry changes
   useEffect(() => {
@@ -161,6 +164,26 @@ export const SystematicPanel = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [colorPickerPosition]);
+
+  // Scroll to highlighted section when navigating via doctrine link
+  useEffect(() => {
+    if (!highlightSectionId) return;
+
+    const rafId = requestAnimationFrame(() => {
+      const el = sectionRefs.current[highlightSectionId];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.classList.add(styles.scrollHighlighted);
+
+        setTimeout(() => {
+          el.classList.remove(styles.scrollHighlighted);
+          clearHighlightSectionId();
+        }, 2000);
+      }
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [highlightSectionId, clearHighlightSectionId]);
 
   // Handle highlight creation
   const handleHighlight = async (color) => {
@@ -390,7 +413,12 @@ export const SystematicPanel = () => {
             {entrySections
               .filter(s => s.entryType === 'section') // Only show sections, not subsections (subsection content is aggregated into sections)
               .map(section => (
-              <div key={section.id} className={styles.subsectionBlock}>
+              <div
+                key={section.id}
+                id={`section-${section.id}`}
+                ref={el => { sectionRefs.current[section.id] = el; }}
+                className={styles.subsectionBlock}
+              >
                 {/* Section header */}
                 {section.sectionLetter && section.title && (
                   <h3 className={styles.inlineSectionHeader}>

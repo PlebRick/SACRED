@@ -4,6 +4,7 @@ import { NoteEditor } from './NoteEditor';
 import { AddNoteModal } from './AddNoteModal';
 import { RelatedDoctrines } from './RelatedDoctrines';
 import { TaggingQueue } from './TaggingQueue';
+import { DoctrineMatchingQueue } from '../Systematic/DoctrineMatchingQueue';
 import { useNotes } from '../../context/NotesContext';
 import { useBible } from '../../context/BibleContext';
 import styles from './Notes.module.css';
@@ -22,6 +23,7 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
   const { bookId, chapter } = useBible();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTaggingOpen, setIsTaggingOpen] = useState(false);
+  const [isDoctrineQueueOpen, setIsDoctrineQueueOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('note');
   const notesListRef = useRef(null);
 
@@ -97,6 +99,19 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
               <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+          </button>
+          <button
+            className={styles.addNoteButton}
+            onClick={() => setIsDoctrineQueueOpen(true)}
+            aria-label="Doctrine linking queue"
+            title="Doctrine Linking Queue"
+            style={{ background: 'transparent', color: 'var(--text-secondary)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <path d="M8 7h8M8 11h6" />
             </svg>
           </button>
           <button
@@ -180,6 +195,12 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
       <TaggingQueue
         isOpen={isTaggingOpen}
         onClose={() => setIsTaggingOpen(false)}
+        onNotesUpdated={refreshNotes}
+      />
+
+      <DoctrineMatchingQueue
+        isOpen={isDoctrineQueueOpen}
+        onClose={() => setIsDoctrineQueueOpen(false)}
         onNotesUpdated={refreshNotes}
       />
     </div>

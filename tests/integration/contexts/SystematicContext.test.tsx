@@ -72,6 +72,7 @@ function TestConsumer() {
       <span data-testid="search-query">{context.searchQuery || 'none'}</span>
       <span data-testid="search-results-count">{context.searchResults?.length ?? 0}</span>
       <span data-testid="annotations-count">{context.annotations?.length ?? 0}</span>
+      <span data-testid="highlight-section-id">{context.highlightSectionId || 'none'}</span>
       <button
         data-testid="select-entry"
         onClick={() => context.selectEntry('ch-32')}
@@ -125,6 +126,12 @@ function TestConsumer() {
         onClick={() => context.navigateToLink('Ch32')}
       >
         Navigate to Link
+      </button>
+      <button
+        data-testid="navigate-to-section-link"
+        onClick={() => context.navigateToLink('Ch32:A')}
+      >
+        Navigate to Section Link
       </button>
       <button
         data-testid="find-chapter"
@@ -469,6 +476,39 @@ describe('SystematicContext', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('selected-entry-title').textContent).toBe('The Trinity');
+      });
+
+      // Chapter-level link should NOT set highlightSectionId
+      expect(screen.getByTestId('highlight-section-id').textContent).toBe('none');
+    });
+
+    it('navigates to section link and sets highlightSectionId', async () => {
+      const mockFlatEntries = [
+        { id: 'ch-32', chapterNumber: 32, sectionLetter: null, subsectionNumber: null },
+        { id: 'sec-32-a', chapterNumber: 32, sectionLetter: 'A', subsectionNumber: null },
+        { id: 'sec-32-b', chapterNumber: 32, sectionLetter: 'B', subsectionNumber: null },
+      ];
+      (systematicService.getFlat as any).mockResolvedValue(mockFlatEntries);
+
+      render(
+        <TestWrapper>
+          <TestConsumer />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading').textContent).toBe('false');
+      });
+
+      await act(async () => {
+        screen.getByTestId('navigate-to-section-link').click();
+      });
+
+      await waitFor(() => {
+        // Should open the chapter
+        expect(screen.getByTestId('selected-entry-title').textContent).toBe('The Trinity');
+        // Should set highlightSectionId to the section entry ID
+        expect(screen.getByTestId('highlight-section-id').textContent).toBe('sec-32-a');
       });
     });
   });

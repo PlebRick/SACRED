@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { systematicService } from '../../services/systematicService';
 import { taggingService } from '../../services/taggingService';
 import { TaggingQueue } from '../Notes/TaggingQueue';
+import { DoctrineMatchingQueue } from '../Systematic/DoctrineMatchingQueue';
 import styles from './Settings.module.css';
 
 const API_BASE = '/api/notes';
@@ -39,6 +40,7 @@ export const SettingsModal = () => {
   // Tagging state
   const [showTaggingQueue, setShowTaggingQueue] = useState(false);
   const [taggingStats, setTaggingStats] = useState(null);
+  const [showDoctrineQueue, setShowDoctrineQueue] = useState(false);
 
   const openModal = () => {
     setIsOpen(true);
@@ -769,6 +771,23 @@ export const SettingsModal = () => {
                   <div className={styles.actionDescription}>Review and assign topics to untagged notes</div>
                 </div>
               </button>
+
+              <button
+                className={styles.actionButton}
+                onClick={() => { closeModal(); setShowDoctrineQueue(true); }}
+              >
+                <div className={styles.actionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    <path d="M8 7h8M8 11h6" />
+                  </svg>
+                </div>
+                <div className={styles.actionContent}>
+                  <div className={styles.actionTitle}>Doctrine Linking Queue</div>
+                  <div className={styles.actionDescription}>Review and assign systematic theology links to notes</div>
+                </div>
+              </button>
             </div>
 
             {authRequired && (
@@ -845,6 +864,12 @@ export const SettingsModal = () => {
       <TaggingQueue
         isOpen={showTaggingQueue}
         onClose={() => setShowTaggingQueue(false)}
+        onNotesUpdated={refreshNotes}
+      />
+
+      <DoctrineMatchingQueue
+        isOpen={showDoctrineQueue}
+        onClose={() => setShowDoctrineQueue(false)}
         onNotesUpdated={refreshNotes}
       />
     </>

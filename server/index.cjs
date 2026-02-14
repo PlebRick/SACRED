@@ -19,6 +19,7 @@ const sessionsRoutes = require('./routes/sessions.cjs');
 const bibleRoutes = require('./routes/bible.cjs');
 const seriesRoutes = require('./routes/series.cjs');
 const taggingRoutes = require('./routes/tagging.cjs');
+const doctrineMatchingRoutes = require('./routes/doctrine-matching.cjs');
 const authRoutes = require('./routes/auth.cjs');
 
 // Import auth middleware
@@ -46,6 +47,7 @@ app.use('/api/sessions', sessionsRoutes);
 app.use('/api/bible', bibleRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/tagging', taggingRoutes);
+app.use('/api/doctrine-matching', doctrineMatchingRoutes);
 
 // Cleanup expired sessions periodically (every hour)
 setInterval(cleanupExpiredSessions, 60 * 60 * 1000);

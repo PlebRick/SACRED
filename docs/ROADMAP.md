@@ -119,7 +119,7 @@
 
 ## Tests
 
-Current: 1174 tests | Run `npm run test:coverage` for latest metrics
+Current: 1201 tests | Run `npm run test:coverage` for latest metrics
 
 *Note: Coverage % decreased due to new topics system code. Key new files have excellent coverage.*
 
@@ -201,6 +201,34 @@ Current: 1174 tests | Run `npm run test:coverage` for latest metrics
   - App runs from /Applications
 
 ---
+
+## Planned Features
+
+- [ ] **Auto-tag notes on import**
+  - Wire tagging engine into `POST /api/notes/import` endpoint
+  - Notes arrive with topic assignments automatically
+  - Currently manual: "tag the new ones" after import
+  - Waiting on: user validation that engine quality is good enough
+
+- [ ] **Intelligent Grudem Matching**
+  - Content-aware doctrine link insertion (replaces blunt scripture index lookup)
+  - Analyze note text against Grudem chapter summaries/keywords to score relevance
+  - Confidence scoring: rank links by combined passage + content match
+  - Suggestion workflow: present ranked links, allow accept/reject (same pattern as tagging engine)
+  - Learns from corrections: `doctrine_link_edits` table already tracking manual edits
+  - When shipped: removes `insert_doctrine_links` from CC-Sermon-Writer import pipeline
+
+- [ ] **Section-level Grudem anchors**
+  - Currently `[[ST:Ch32]]` links to a whole chapter — too broad
+  - Add anchors to individual sections (A, B, C...) and subsections (A.1, A.2...)
+  - Link format: `[[ST:Ch32:C.2]]` navigates directly to the specific section discussing the topic
+  - Systematic panel scrolls to the exact anchor instead of chapter top
+  - Intelligent Grudem Matching should suggest section-level links, not just chapter-level
+
+- [ ] **Tagging engine rule tuning**
+  - Improve keyword sets based on Wiersbe/Gospel narrative tagging results
+  - Add Gospel-specific passage heuristics (engine struggles with narrative chapters)
+  - Calibrate confidence thresholds based on accumulated manual corrections
 
 ## Ideas / Backlog
 
