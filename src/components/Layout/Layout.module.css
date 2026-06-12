@@ -192,6 +192,11 @@
   color: var(--text-primary);
 }
 
+.viewToggleActive {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
 /* Note Search Button */
 .noteSearchButton {
   display: flex;

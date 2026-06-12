@@ -9,7 +9,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getBookById } from '../../utils/bibleBooks';
 import styles from './Layout.module.css';
 
-export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
+export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth, view, onToggleView }) => {
   const { bookId, chapter } = useBible();
   const { highlightsVisible, toggleHighlights } = useTheme();
   const book = getBookById(bookId);
@@ -75,6 +75,26 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
 
         <div className={styles.headerRight}>
           <SyncIndicator />
+          {onToggleView && (
+            <button
+              className={`${styles.highlightToggle} ${view === 'dashboard' ? styles.viewToggleActive : ''}`}
+              onClick={onToggleView}
+              aria-label={view === 'dashboard' ? 'Back to reader' : 'Open coverage dashboard'}
+              title={view === 'dashboard' ? 'Back to reader' : 'Pulpit coverage dashboard'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {view === 'dashboard' ? (
+                  <path d="M2 6s2.5-3 10-3 10 3 10 3v12s-2.5-3-10-3-10 3-10 3z M12 3v15" />
+                ) : (
+                  <>
+                    <rect x="3" y="12" width="4" height="9" rx="1" />
+                    <rect x="10" y="7" width="4" height="14" rx="1" />
+                    <rect x="17" y="3" width="4" height="18" rx="1" />
+                  </>
+                )}
+              </svg>
+            </button>
+          )}
           <button
             className={styles.highlightToggle}
             onClick={toggleHighlights}

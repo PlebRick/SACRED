@@ -13,6 +13,7 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { BibleReader } from './components/Bible/BibleReader';
 import { NotesPanel } from './components/Notes/NotesPanel';
 import { SystematicPanel } from './components/Systematic/SystematicPanel';
+import { CoverageDashboard } from './components/Dashboard/CoverageDashboard';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
 import { Login } from './components/Auth/Login';
 import { isVerseInRange } from './utils/verseRange';
@@ -25,6 +26,7 @@ function AppContent() {
   const [notesWidth, setNotesWidth] = useState(400);
   const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   const [visibleVerse, setVisibleVerse] = useState(1);
+  const [view, setView] = useState('reader'); // 'reader' | 'dashboard'
 
   const { bookId, chapter } = useBible();
   const { getNotesForChapter } = useNotes();
@@ -62,6 +64,8 @@ function AppContent() {
         onToggleSidebar={toggleSidebar}
         sidebarOpen={sidebarOpen}
         sidebarWidth={sidebarWidth}
+        view={view}
+        onToggleView={() => setView(view === 'dashboard' ? 'reader' : 'dashboard')}
       />
 
       <main className={styles.main}>
@@ -77,6 +81,9 @@ function AppContent() {
           />
         )}
 
+        {view === 'dashboard' ? (
+          <CoverageDashboard onNavigateToReader={() => setView('reader')} />
+        ) : (
         <div className={styles.contentWrapper}>
           <div className={styles.leftColumn}>
             <BibleReader onVisibleVerseChange={handleVisibleVerseChange} />
@@ -95,6 +102,7 @@ function AppContent() {
             <SystematicPanel />
           </div>
         </div>
+        )}
 
         <button
           className={styles.mobileNotesToggle}
