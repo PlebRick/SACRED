@@ -82,6 +82,7 @@
       "dist/**/*",
       "server/**/*",
       "electron/**/*",
+      "connectors/**/*",
       "package.json"
     ],
     "extraResources": [
