@@ -1,5 +1,21 @@
 # SACRED Roadmap
 
+## v0.4.0 — "The Study" (shipped 2026-06-11)
+
+- [x] **Pulpit Coverage Dashboard** — scripture heatmap, doctrine coverage, topics, illustration reuse, series timeline
+- [x] **Command Palette (Cmd+K)** — passage jump, notes/doctrine search, actions
+- [x] **MCP Connectors** — register user-written MCP servers as in-app tools (`docs/CONNECTORS.md`)
+- [x] **AI Study Assistant (Cmd+J)** — Claude grounded in the personal corpus, with connector tools bridged in
+- [x] **Auto-Enrichment** — doctrine/topic/illustration suggestions after sermon saves
+- [x] Persisted layout widths
+
+### Next ideas (v0.5.0 candidates)
+- [ ] Voice-of-the-preacher drafting mode (assistant studies your sermon style before drafting)
+- [ ] Assistant access to study sessions ("what was I working on last week?")
+- [ ] Coverage dashboard: date-range filter, printable congregation report
+- [ ] Connector marketplace folder (`connectors/` auto-discovery without manual registration)
+- [ ] Enrichment for plain notes (currently sermons/commentary only)
+
 ## High Priority
 
 - [x] **Full-text search across notes** ✓ v0.0.5

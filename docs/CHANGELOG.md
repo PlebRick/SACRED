@@ -4,6 +4,55 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-06-11
+
+"The Study" overhaul — SACRED becomes a personal ministry intelligence platform.
+See `docs/OVERHAUL.md` for the design rationale.
+
+### Added
+- **Pulpit Coverage Dashboard**: full-screen view of what you've taught
+  - 66-book × chapter scripture heatmap (sermon markers, click-through to reader)
+  - Doctrine coverage across all 57 Grudem chapters, grouped by part
+  - Topic frequency bars, sermon series timeline, monthly activity chart
+  - Reused-illustration report powered by duplicate detection
+  - New `GET /api/coverage` endpoint; header toggle button
+
+- **Command Palette (Cmd+K)**: jump to anything
+  - Typed references navigate ("rom 8", "john 3:16")
+  - Inline full-text search across notes and systematic theology
+  - Actions: new note, dashboard, assistant, connectors, theme, highlights, sidebar
+  - Header ⌘K button for discoverability
+
+- **MCP Connectors**: bring your own tools
+  - Register any MCP server (stdio or HTTP) as a connector; SACRED acts as MCP client host
+  - Settings → Connectors UI: add, edit, test, enable/disable, browse and run tools
+  - `docs/CONNECTORS.md`: paste-into-Claude guide for generating connectors without coding
+  - Bundled example: `connectors/examples/hymn-suggestions` (public-domain hymns by sermon topic)
+  - New `connectors` table and `/api/connectors` routes
+
+- **AI Study Assistant (Cmd+J)**: Claude inside SACRED, grounded in your corpus
+  - Streaming chat panel with 11 tools over notes, sermons, doctrine library,
+    illustrations, series, and the offline WEB Bible
+  - Enabled connector tools are exposed to the assistant automatically
+  - Can save sermons/notes directly via its `create_note` tool
+  - Requires `ANTHROPIC_API_KEY` in `.env`; shows setup instructions otherwise
+  - New `/api/assistant` routes (SSE streaming, agentic tool loop)
+
+- **Auto-Enrichment**: the corpus compounds on its own
+  - After a sermon/commentary save, Claude suggests doctrine links, topics,
+    and untagged illustration/application passages
+  - SuggestionsBar in the note editor: accept inserts the doctrine link or topic
+  - New `note_suggestions` table and suggestion endpoints; inert without API key
+
+- **UI polish**: persisted sidebar/notes panel widths
+
+### Technical
+- New dependencies: `@anthropic-ai/sdk`, `@modelcontextprotocol/sdk`
+- New server modules: `server/connectors/manager.cjs`, `server/assistant/{client,tools,enrichment}.cjs`
+- Assistant model defaults to Claude Opus 4.8 (`SACRED_AI_MODEL` env var to override)
+
+---
+
 ## [0.3.0] - 2026-01-25
 
 ### Added

@@ -225,6 +225,59 @@ CREATE INDEX idx_notes_book_chapter ON notes(book, start_chapter, end_chapter);
 }
 ```
 
+### Coverage API (v0.4.0)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/coverage` | Aggregated pulpit coverage stats (scripture heatmap, doctrine coverage, topics, illustration reuse, series, activity) |
+
+Powers the Pulpit Coverage dashboard (header chart icon, or Cmd+K → "dashboard").
+
+### Connectors API (v0.4.0)
+
+User-provided MCP servers that extend SACRED with custom tools. SACRED acts as
+an MCP **client host** (`server/connectors/manager.cjs`). See `docs/CONNECTORS.md`
+for the connector-authoring guide (written to be pasted into a Claude chat).
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/connectors` | List connectors with live status |
+| POST | `/api/connectors` | Register connector (stdio: command+args, http: url) |
+| PUT | `/api/connectors/:id` | Update connector config |
+| DELETE | `/api/connectors/:id` | Remove connector |
+| POST | `/api/connectors/:id/test` | Connect + list tools health check |
+| GET | `/api/connectors/:id/tools` | List a connector's tools |
+| POST | `/api/connectors/:id/tools/:tool` | Invoke a tool (`{arguments: {...}}`) |
+
+Example connector: `connectors/examples/hymn-suggestions/index.cjs`.
+
+### AI Assistant API (v0.4.0)
+
+In-app study assistant (Claude Opus 4.8 via `@anthropic-ai/sdk`). Requires
+`ANTHROPIC_API_KEY` in `.env`; degrades gracefully without it. UI: Cmd+J or
+header sparkle button.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/assistant/status` | `{available, model}` |
+| POST | `/api/assistant/chat` | SSE-streaming agentic loop; body `{messages}` is full Anthropic-format history; `done` event returns updated history |
+
+Internal tools live in `server/assistant/tools.cjs` (notes/doctrine/sermon/
+illustration/Bible/series access + `create_note`). Enabled connector tools are
+bridged in automatically with `cx_*` names.
+
+### Note Suggestions API (v0.4.0)
+
+Auto-enrichment: ~20s after a sermon/commentary save (when API key present),
+`server/assistant/enrichment.cjs` generates doctrine/topic/illustration/
+application suggestions into `note_suggestions`.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/notes/:id/suggestions` | Pending suggestions for a note |
+| POST | `/api/notes/suggestions/:sid/accept` | Accept (topic → adds tag; doctrine → client inserts link) |
+| POST | `/api/notes/suggestions/:sid/dismiss` | Dismiss |
+
 ## Styling Guide
 
 ### CSS Variables (defined in `src/index.css`)
@@ -326,12 +379,16 @@ rm -rf node_modules && npm install
 - `NODE_ENV`: 'development' or 'production'
 - `DB_PATH`: Custom database file location
 - `ESV_API_KEY`: API key for ESV Bible translation (get one at https://api.esv.org/)
+- `ANTHROPIC_API_KEY`: Enables the in-app AI assistant and auto-enrichment (optional)
+- `SACRED_AI_MODEL`: Override the assistant model (default `claude-opus-4-8`)
 
 ## Documentation
 
 - `docs/ROADMAP.md` - Planned features and priorities
 - `docs/TESTING.md` - Test workflows and future test setup
 - `docs/CHANGELOG.md` - Version history
+- `docs/OVERHAUL.md` - v0.4.0 "The Study" design doc (dashboard, palette, connectors, assistant, enrichment)
+- `docs/CONNECTORS.md` - How to write MCP connectors for SACRED (paste into a Claude chat)
 - `docs/SYSTEMATIC-THEOLOGY-SCHEMA.md` - JSON format for importing custom theology content
 
 ## Systematic Theology Feature
