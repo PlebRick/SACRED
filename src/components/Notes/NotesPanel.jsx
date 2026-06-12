@@ -27,6 +27,13 @@ export const NotesPanel = ({ onClose, activeNoteId }) => {
     .filter(note => (note.type || 'note') === activeTab);
   const editingNote = notes.find(n => n.id === editingNoteId);
 
+  // Command palette "New Note…" action opens the add-note modal from outside
+  useEffect(() => {
+    const handleNewNote = () => setIsModalOpen(true);
+    window.addEventListener('sacred:new-note', handleNewNote);
+    return () => window.removeEventListener('sacred:new-note', handleNewNote);
+  }, []);
+
   // Auto-scroll to active note when it changes
   useEffect(() => {
     if (activeNoteId && notesListRef.current) {

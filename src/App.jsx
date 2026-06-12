@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -14,6 +14,7 @@ import { BibleReader } from './components/Bible/BibleReader';
 import { NotesPanel } from './components/Notes/NotesPanel';
 import { SystematicPanel } from './components/Systematic/SystematicPanel';
 import { CoverageDashboard } from './components/Dashboard/CoverageDashboard';
+import { CommandPalette } from './components/CommandPalette/CommandPalette';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
 import { Login } from './components/Auth/Login';
 import { isVerseInRange } from './utils/verseRange';
@@ -27,6 +28,19 @@ function AppContent() {
   const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   const [visibleVerse, setVisibleVerse] = useState(1);
   const [view, setView] = useState('reader'); // 'reader' | 'dashboard'
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Global Cmd/Ctrl+K opens the command palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { bookId, chapter } = useBible();
   const { getNotesForChapter } = useNotes();
@@ -102,6 +116,15 @@ function AppContent() {
             <SystematicPanel />
           </div>
         </div>
+        )}
+
+        {paletteOpen && (
+          <CommandPalette
+            onClose={() => setPaletteOpen(false)}
+            view={view}
+            onSetView={setView}
+            onToggleSidebar={toggleSidebar}
+          />
         )}
 
         <button
