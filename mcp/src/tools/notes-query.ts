@@ -153,6 +153,8 @@ export function registerQueryTools(server: McpServer): void {
           .prepare('SELECT book, COUNT(*) as count FROM notes GROUP BY book ORDER BY count DESC')
           .all() as { book: string; count: number }[];
 
+        // Metadata only — full content in a "summary" tool blew responses up
+        // to >100KB; use get_note for content
         const recentlyUpdated = db
           .prepare('SELECT * FROM notes ORDER BY updated_at DESC LIMIT 5')
           .all() as DbNote[];
@@ -166,7 +168,10 @@ export function registerQueryTools(server: McpServer): void {
                   total,
                   byType: Object.fromEntries(byType.map((r) => [r.type, r.count])),
                   byBook: Object.fromEntries(byBook.map((r) => [r.book, r.count])),
-                  recentlyUpdated: recentlyUpdated.map(toApiFormat),
+                  recentlyUpdated: recentlyUpdated.map((n) => {
+                    const { content: _content, ...meta } = toApiFormat(n);
+                    return meta;
+                  }),
                 },
                 null,
                 2

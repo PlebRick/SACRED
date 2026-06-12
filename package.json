@@ -1,7 +1,7 @@
 {
   "name": "sacred",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Personal Bible study app with rich text notes, commentary, and sermon management",
   "author": "SACRED",
   "license": "MIT",
@@ -31,6 +31,8 @@
     "docker:run": "docker run -p 3000:3000 -e AUTH_PASSWORD=changeme -v sacred-data:/app/data sacred"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@tiptap/extension-placeholder": "^2.10.4",
     "@tiptap/react": "^2.10.4",
     "@tiptap/starter-kit": "^2.10.4",
@@ -80,6 +82,7 @@
       "dist/**/*",
       "server/**/*",
       "electron/**/*",
+      "connectors/**/*",
       "package.json"
     ],
     "extraResources": [

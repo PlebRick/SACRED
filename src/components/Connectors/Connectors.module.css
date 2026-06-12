@@ -1,0 +1,332 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 8vh;
+  z-index: 1000;
+}
+
+.modal {
+  width: min(720px, 94vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 18px 60px var(--shadow);
+  padding: 1.4rem 1.6rem 1.6rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  color: var(--text-secondary);
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.closeButton:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.intro {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.1rem;
+  line-height: 1.5;
+}
+
+.intro code {
+  background: var(--bg-tertiary);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 1.1rem;
+}
+
+.connector {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+.connectorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.connectorName {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  padding: 0;
+}
+
+.transportBadge {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+}
+
+.disabledBadge {
+  font-size: 0.66rem;
+  color: var(--type-sermon);
+  border: 1px solid var(--type-sermon);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotConnected { background: #34d399; }
+.dotError { background: #ef4444; }
+.dotIdle { background: var(--text-secondary); opacity: 0.5; }
+
+.connectorActions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.smallButton {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.22rem 0.55rem;
+}
+
+.smallButton:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.dangerText:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.connectorDescription {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+}
+
+.testResult {
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-top: 0.4rem;
+  font-family: ui-monospace, monospace;
+}
+
+.toolsList {
+  margin-top: 0.7rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tool {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.toolHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  color: var(--text-primary);
+}
+
+.toolHeader:hover {
+  background: var(--bg-tertiary);
+}
+
+.toolName {
+  font-size: 0.8rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.toolDescription {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolRunner {
+  padding: 0.6rem 0.7rem 0.8rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toolParam {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.toolParamName {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.toolParamName em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.toolActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.result {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 260px;
+  overflow-y: auto;
+  font-family: ui-monospace, monospace;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field > span {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.input {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+textarea.input {
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+.formActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.primaryButton {
+  background: var(--accent);
+  color: var(--bg-primary);
+  font-weight: 600;
+  font-size: 0.84rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+}
+
+.primaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+}
+
+.secondaryButton:hover {
+  color: var(--text-primary);
+}
+
+.error {
+  color: #ef4444;
+  font-size: 0.8rem;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.muted code {
+  background: var(--bg-tertiary);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.76rem;
+}

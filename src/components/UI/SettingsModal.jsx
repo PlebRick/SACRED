@@ -653,6 +653,40 @@ export const SettingsModal = () => {
 
             <div className={styles.divider} />
 
+            {/* Connectors Section */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <span className={styles.sectionIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 17H7A5 5 0 0 1 7 7h2" />
+                    <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </span>
+                Connectors
+              </h3>
+
+              <button
+                className={styles.actionButton}
+                onClick={() => {
+                  closeModal();
+                  window.dispatchEvent(new CustomEvent('sacred:open-connectors'));
+                }}
+              >
+                <div className={styles.actionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66 4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66 4.24-4.24" />
+                  </svg>
+                </div>
+                <div className={styles.actionContent}>
+                  <div className={styles.actionTitle}>Manage Connectors</div>
+                  <div className={styles.actionDescription}>Add MCP servers that extend SACRED with custom tools</div>
+                </div>
+              </button>
+            </div>
+
+            <div className={styles.divider} />
+
             {/* Systematic Theology Section */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>

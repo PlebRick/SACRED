@@ -1,0 +1,189 @@
+.printRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+/* On-screen controls — never printed */
+.controls {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1.2rem;
+  background: #f3f1ec;
+  border-bottom: 1px solid #ddd8cf;
+  z-index: 1;
+}
+
+.controlsGroup {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #57534e;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input {
+  accent-color: #92400e;
+}
+
+.printButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #92400e;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.84rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #57534e;
+}
+
+.closeButton:hover {
+  background: #e7e3da;
+}
+
+/* The manuscript page */
+.page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 3rem 2.5rem 5rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 12pt;
+  line-height: 1.65;
+}
+
+.largePrint {
+  font-size: 16pt;
+  line-height: 1.7;
+}
+
+.manuscriptHeader {
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.6rem;
+}
+
+.manuscriptTitle {
+  font-size: 1.7em;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 0.35rem;
+}
+
+.manuscriptMeta {
+  font-size: 0.85em;
+  color: #444;
+}
+
+.manuscriptReference {
+  font-weight: 600;
+}
+
+/* Manuscript body — style the Tiptap HTML */
+.manuscriptBody h1,
+.manuscriptBody h2 {
+  font-size: 1.3em;
+  margin: 1.3em 0 0.45em;
+  line-height: 1.3;
+}
+
+.manuscriptBody h3 {
+  font-size: 1.12em;
+  margin: 1.1em 0 0.4em;
+}
+
+.manuscriptBody p {
+  margin: 0 0 0.75em;
+}
+
+.manuscriptBody ul,
+.manuscriptBody ol {
+  margin: 0 0 0.75em 1.4em;
+}
+
+.manuscriptBody li {
+  margin-bottom: 0.3em;
+}
+
+.manuscriptBody blockquote {
+  border-left: 3px solid #999;
+  margin: 0.8em 0;
+  padding-left: 1em;
+  font-style: italic;
+  color: #333;
+}
+
+.manuscriptBody strong {
+  font-weight: 700;
+}
+
+/* Inline tag marks: with highlights off, render as plain text */
+.noHighlights .manuscriptBody [data-tag-type],
+.noHighlights .manuscriptBody mark,
+.noHighlights .manuscriptBody span[style] {
+  background: transparent !important;
+  color: inherit !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Doctrine links print as plain text */
+.manuscriptBody a,
+.manuscriptBody [data-systematic-link] {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media print {
+  .printRoot {
+    position: static;
+    overflow: visible;
+  }
+
+  .controls {
+    display: none;
+  }
+
+  .page {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Avoid splitting headings from their content */
+  .manuscriptBody h1,
+  .manuscriptBody h2,
+  .manuscriptBody h3 {
+    break-after: avoid;
+  }
+
+  .manuscriptBody blockquote,
+  .manuscriptBody li {
+    break-inside: avoid;
+  }
+}

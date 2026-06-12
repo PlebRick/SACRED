@@ -272,3 +272,5 @@ router.get('/:translation/:book/:chapter', async (req, res) => {
 });
 
 module.exports = router;
+// Exposed for the AI assistant's get_bible_chapter tool
+module.exports.getLocalWebChapter = getLocalWebChapter;

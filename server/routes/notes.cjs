@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const cheerio = require('cheerio');
 const db = require('../db.cjs');
+const { queueEnrichment } = require('../assistant/enrichment.cjs');
 
 const router = express.Router();
 
@@ -335,6 +336,9 @@ router.post('/', (req, res) => {
     // Sync inline tags from content
     syncInlineTags(id, content);
 
+    // Queue AI enrichment (no-op without API key)
+    queueEnrichment(id, type);
+
     const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id);
     res.status(201).json(toApiFormatWithTags(note));
   } catch (error) {
@@ -389,6 +393,9 @@ router.put('/:id', (req, res) => {
     // Track doctrine link edits (compare old vs new content)
     trackDoctrineLinkEdits(id, existing.content, content);
 
+    // Queue AI enrichment (no-op without API key)
+    queueEnrichment(id, type);
+
     const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id);
     res.json(toApiFormatWithTags(note));
   } catch (error) {
@@ -411,6 +418,64 @@ router.delete('/:id', (req, res) => {
   } catch (error) {
     console.error('Error deleting note:', error);
     res.status(500).json({ error: 'Failed to delete note' });
+  }
+});
+
+// GET /api/notes/:id/suggestions - pending AI enrichment suggestions
+router.get('/:id/suggestions', (req, res) => {
+  try {
+    const rows = db.prepare(`
+      SELECT id, kind, payload, created_at
+      FROM note_suggestions
+      WHERE note_id = ? AND status = 'pending'
+      ORDER BY kind, created_at
+    `).all(req.params.id);
+    res.json(rows.map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      ...JSON.parse(r.payload),
+      createdAt: r.created_at
+    })));
+  } catch (error) {
+    console.error('Error fetching suggestions:', error);
+    res.status(500).json({ error: 'Failed to fetch suggestions' });
+  }
+});
+
+// POST /api/notes/suggestions/:sid/accept - accept a suggestion
+router.post('/suggestions/:sid/accept', (req, res) => {
+  try {
+    const suggestion = db.prepare('SELECT * FROM note_suggestions WHERE id = ?').get(req.params.sid);
+    if (!suggestion) return res.status(404).json({ error: 'Suggestion not found' });
+
+    const payload = JSON.parse(suggestion.payload);
+
+    // Topic suggestions apply server-side; doctrine links are inserted by the
+    // editor (client) so unsaved editor state isn't clobbered; illustration/
+    // application suggestions are informational nudges.
+    if (suggestion.kind === 'topic' && payload.topicId) {
+      db.prepare(`
+        INSERT OR IGNORE INTO note_tags (note_id, topic_id) VALUES (?, ?)
+      `).run(suggestion.note_id, payload.topicId);
+    }
+
+    db.prepare("UPDATE note_suggestions SET status = 'accepted' WHERE id = ?").run(req.params.sid);
+    res.json({ success: true, kind: suggestion.kind, ...payload });
+  } catch (error) {
+    console.error('Error accepting suggestion:', error);
+    res.status(500).json({ error: 'Failed to accept suggestion' });
+  }
+});
+
+// POST /api/notes/suggestions/:sid/dismiss
+router.post('/suggestions/:sid/dismiss', (req, res) => {
+  try {
+    const result = db.prepare("UPDATE note_suggestions SET status = 'dismissed' WHERE id = ?").run(req.params.sid);
+    if (result.changes === 0) return res.status(404).json({ error: 'Suggestion not found' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error dismissing suggestion:', error);
+    res.status(500).json({ error: 'Failed to dismiss suggestion' });
   }
 });
 

@@ -16,6 +16,11 @@ A personal Bible study app with rich text notes, commentary, and sermon manageme
 - **Export/Import** — Backup and restore notes, topics, and tag types as JSON
 - **Self-Hosted** — Your data stays on your machine
 - **Claude Integration** — MCP server for AI-assisted Bible study
+- **Pulpit Coverage Dashboard** — Heatmap of every book/chapter you've taught, doctrine coverage, illustration reuse
+- **Command Palette** — Cmd+K to jump to any passage, note, doctrine, or action
+- **AI Study Assistant** — In-app Claude chat grounded in *your* notes, sermons, and theology library (Cmd+J, requires `ANTHROPIC_API_KEY`)
+- **MCP Connectors** — Plug in your own MCP servers as in-app tools; see `docs/CONNECTORS.md`
+- **Auto-Enrichment** — Saved sermons get suggested doctrine links, topics, and untagged illustrations
 
 ## Quick Start
 

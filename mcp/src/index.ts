@@ -16,6 +16,7 @@ import { registerSessionTools } from './tools/sessions.js';
 import { registerSeriesTools } from './tools/series.js';
 import { registerTaggingTools } from './tools/tagging.js';
 import { registerDoctrineMatchingTools } from './tools/doctrine-matching.js';
+import { registerEnrichmentTools } from './tools/enrichment.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
@@ -37,6 +38,7 @@ function createMcpServer(): McpServer {
   registerSeriesTools(server);
   registerTaggingTools(server);
   registerDoctrineMatchingTools(server);
+  registerEnrichmentTools(server);
   registerResources(server);
 
   return server;

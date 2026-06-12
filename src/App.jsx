@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -13,18 +13,68 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { BibleReader } from './components/Bible/BibleReader';
 import { NotesPanel } from './components/Notes/NotesPanel';
 import { SystematicPanel } from './components/Systematic/SystematicPanel';
+import { CoverageDashboard } from './components/Dashboard/CoverageDashboard';
+import { CommandPalette } from './components/CommandPalette/CommandPalette';
+import { ConnectorsModal } from './components/Connectors/ConnectorsModal';
+import { AssistantPanel } from './components/Assistant/AssistantPanel';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
 import { Login } from './components/Auth/Login';
 import { isVerseInRange } from './utils/verseRange';
 import styles from './components/Layout/Layout.module.css';
 
 // Inner component that uses context
+// Layout widths persist across sessions
+const loadLayoutPref = (key, fallback) => {
+  const value = parseInt(localStorage.getItem(`sacred_layout_${key}`), 10);
+  return Number.isFinite(value) ? value : fallback;
+};
+
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const [notesWidth, setNotesWidth] = useState(400);
+  const [sidebarWidth, setSidebarWidth] = useState(() => loadLayoutPref('sidebar', 280));
+  const [notesWidth, setNotesWidth] = useState(() => loadLayoutPref('notes', 400));
   const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   const [visibleVerse, setVisibleVerse] = useState(1);
+  const [view, setView] = useState('reader'); // 'reader' | 'dashboard'
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [connectorsOpen, setConnectorsOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+
+  // Cmd/Ctrl+J toggles the assistant; also opened via header button and palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === 'j') {
+        e.preventDefault();
+        setAssistantOpen((open) => !open);
+      }
+    };
+    const handleOpenAssistant = () => setAssistantOpen(true);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('sacred:open-assistant', handleOpenAssistant);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('sacred:open-assistant', handleOpenAssistant);
+    };
+  }, []);
+
+  // Global Cmd/Ctrl+K opens the command palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Settings modal and command palette open connectors via this event
+  useEffect(() => {
+    const handleOpenConnectors = () => setConnectorsOpen(true);
+    window.addEventListener('sacred:open-connectors', handleOpenConnectors);
+    return () => window.removeEventListener('sacred:open-connectors', handleOpenConnectors);
+  }, []);
 
   const { bookId, chapter } = useBible();
   const { getNotesForChapter } = useNotes();
@@ -39,10 +89,12 @@ function AppContent() {
 
   const handleSidebarResize = useCallback((width) => {
     setSidebarWidth(width);
+    localStorage.setItem('sacred_layout_sidebar', String(width));
   }, []);
 
   const handleNotesResize = useCallback((width) => {
     setNotesWidth(width);
+    localStorage.setItem('sacred_layout_notes', String(width));
   }, []);
 
   const handleVisibleVerseChange = useCallback((verseNum) => {
@@ -62,6 +114,11 @@ function AppContent() {
         onToggleSidebar={toggleSidebar}
         sidebarOpen={sidebarOpen}
         sidebarWidth={sidebarWidth}
+        view={view}
+        onToggleView={() => setView(view === 'dashboard' ? 'reader' : 'dashboard')}
+        onToggleAssistant={() => setAssistantOpen((open) => !open)}
+        assistantOpen={assistantOpen}
+        onOpenPalette={() => setPaletteOpen(true)}
       />
 
       <main className={styles.main}>
@@ -77,6 +134,9 @@ function AppContent() {
           />
         )}
 
+        {view === 'dashboard' ? (
+          <CoverageDashboard onNavigateToReader={() => setView('reader')} />
+        ) : (
         <div className={styles.contentWrapper}>
           <div className={styles.leftColumn}>
             <BibleReader onVisibleVerseChange={handleVisibleVerseChange} />
@@ -95,6 +155,24 @@ function AppContent() {
             <SystematicPanel />
           </div>
         </div>
+        )}
+
+        {connectorsOpen && (
+          <ConnectorsModal onClose={() => setConnectorsOpen(false)} />
+        )}
+
+        {assistantOpen && (
+          <AssistantPanel onClose={() => setAssistantOpen(false)} />
+        )}
+
+        {paletteOpen && (
+          <CommandPalette
+            onClose={() => setPaletteOpen(false)}
+            view={view}
+            onSetView={setView}
+            onToggleSidebar={toggleSidebar}
+          />
+        )}
 
         <button
           className={styles.mobileNotesToggle}

@@ -9,7 +9,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getBookById } from '../../utils/bibleBooks';
 import styles from './Layout.module.css';
 
-export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
+export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth, view, onToggleView, onToggleAssistant, assistantOpen, onOpenPalette }) => {
   const { bookId, chapter } = useBible();
   const { highlightsVisible, toggleHighlights } = useTheme();
   const book = getBookById(bookId);
@@ -65,6 +65,19 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
               <path d="m14 17-1.5-1.5" />
             </svg>
           </button>
+          {onOpenPalette && (
+            <button
+              className={styles.paletteButton}
+              onClick={onOpenPalette}
+              aria-label="Open command palette"
+              title="Jump to anything (Cmd+K)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 17l6-5-6-5M12 19h8" />
+              </svg>
+              <kbd>⌘K</kbd>
+            </button>
+          )}
         </div>
 
         <div className={styles.headerCenter}>
@@ -75,6 +88,38 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth }) => {
 
         <div className={styles.headerRight}>
           <SyncIndicator />
+          {onToggleAssistant && (
+            <button
+              className={`${styles.highlightToggle} ${assistantOpen ? styles.viewToggleActive : ''}`}
+              onClick={onToggleAssistant}
+              aria-label="Toggle study assistant"
+              title="Study assistant (Cmd+J)"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z" />
+              </svg>
+            </button>
+          )}
+          {onToggleView && (
+            <button
+              className={`${styles.highlightToggle} ${view === 'dashboard' ? styles.viewToggleActive : ''}`}
+              onClick={onToggleView}
+              aria-label={view === 'dashboard' ? 'Back to reader' : 'Open coverage dashboard'}
+              title={view === 'dashboard' ? 'Back to reader' : 'Pulpit coverage dashboard'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {view === 'dashboard' ? (
+                  <path d="M2 6s2.5-3 10-3 10 3 10 3v12s-2.5-3-10-3-10 3-10 3z M12 3v15" />
+                ) : (
+                  <>
+                    <rect x="3" y="12" width="4" height="9" rx="1" />
+                    <rect x="10" y="7" width="4" height="14" rx="1" />
+                    <rect x="17" y="3" width="4" height="18" rx="1" />
+                  </>
+                )}
+              </svg>
+            </button>
+          )}
           <button
             className={styles.highlightToggle}
             onClick={toggleHighlights}

@@ -1,0 +1,70 @@
+.bar {
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0.9rem 0.6rem;
+  background: var(--bg-secondary);
+}
+
+.barLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.4rem 0.2rem 0.6rem;
+  max-width: 100%;
+}
+
+.chipKind {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.chipText {
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chipAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.chipAction:hover {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.chipDismiss:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
