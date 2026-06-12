@@ -16,6 +16,7 @@ import { SystematicPanel } from './components/Systematic/SystematicPanel';
 import { CoverageDashboard } from './components/Dashboard/CoverageDashboard';
 import { CommandPalette } from './components/CommandPalette/CommandPalette';
 import { ConnectorsModal } from './components/Connectors/ConnectorsModal';
+import { AssistantPanel } from './components/Assistant/AssistantPanel';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
 import { Login } from './components/Auth/Login';
 import { isVerseInRange } from './utils/verseRange';
@@ -31,6 +32,24 @@ function AppContent() {
   const [view, setView] = useState('reader'); // 'reader' | 'dashboard'
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+
+  // Cmd/Ctrl+J toggles the assistant; also opened via header button and palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === 'j') {
+        e.preventDefault();
+        setAssistantOpen((open) => !open);
+      }
+    };
+    const handleOpenAssistant = () => setAssistantOpen(true);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('sacred:open-assistant', handleOpenAssistant);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('sacred:open-assistant', handleOpenAssistant);
+    };
+  }, []);
 
   // Global Cmd/Ctrl+K opens the command palette
   useEffect(() => {
@@ -89,6 +108,8 @@ function AppContent() {
         sidebarWidth={sidebarWidth}
         view={view}
         onToggleView={() => setView(view === 'dashboard' ? 'reader' : 'dashboard')}
+        onToggleAssistant={() => setAssistantOpen((open) => !open)}
+        assistantOpen={assistantOpen}
       />
 
       <main className={styles.main}>
@@ -129,6 +150,10 @@ function AppContent() {
 
         {connectorsOpen && (
           <ConnectorsModal onClose={() => setConnectorsOpen(false)} />
+        )}
+
+        {assistantOpen && (
+          <AssistantPanel onClose={() => setAssistantOpen(false)} />
         )}
 
         {paletteOpen && (

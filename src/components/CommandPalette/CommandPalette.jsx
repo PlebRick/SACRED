@@ -49,6 +49,12 @@ export const CommandPalette = ({ onClose, view, onSetView, onToggleSidebar }) =>
         }
       },
       {
+        id: 'action-assistant',
+        label: 'Open Study Assistant',
+        keywords: 'assistant ai claude chat sermon prep help',
+        run: () => window.dispatchEvent(new CustomEvent('sacred:open-assistant'))
+      },
+      {
         id: 'action-connectors',
         label: 'Manage Connectors…',
         keywords: 'connectors mcp tools plugins extensions',
