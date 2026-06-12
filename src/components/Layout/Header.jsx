@@ -9,7 +9,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getBookById } from '../../utils/bibleBooks';
 import styles from './Layout.module.css';
 
-export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth, view, onToggleView, onToggleAssistant, assistantOpen }) => {
+export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth, view, onToggleView, onToggleAssistant, assistantOpen, onOpenPalette }) => {
   const { bookId, chapter } = useBible();
   const { highlightsVisible, toggleHighlights } = useTheme();
   const book = getBookById(bookId);
@@ -65,6 +65,19 @@ export const Header = ({ onToggleSidebar, sidebarOpen, sidebarWidth, view, onTog
               <path d="m14 17-1.5-1.5" />
             </svg>
           </button>
+          {onOpenPalette && (
+            <button
+              className={styles.paletteButton}
+              onClick={onOpenPalette}
+              aria-label="Open command palette"
+              title="Jump to anything (Cmd+K)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 17l6-5-6-5M12 19h8" />
+              </svg>
+              <kbd>⌘K</kbd>
+            </button>
+          )}
         </div>
 
         <div className={styles.headerCenter}>

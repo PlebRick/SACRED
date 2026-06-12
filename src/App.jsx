@@ -23,10 +23,16 @@ import { isVerseInRange } from './utils/verseRange';
 import styles from './components/Layout/Layout.module.css';
 
 // Inner component that uses context
+// Layout widths persist across sessions
+const loadLayoutPref = (key, fallback) => {
+  const value = parseInt(localStorage.getItem(`sacred_layout_${key}`), 10);
+  return Number.isFinite(value) ? value : fallback;
+};
+
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const [notesWidth, setNotesWidth] = useState(400);
+  const [sidebarWidth, setSidebarWidth] = useState(() => loadLayoutPref('sidebar', 280));
+  const [notesWidth, setNotesWidth] = useState(() => loadLayoutPref('notes', 400));
   const [mobileNotesOpen, setMobileNotesOpen] = useState(false);
   const [visibleVerse, setVisibleVerse] = useState(1);
   const [view, setView] = useState('reader'); // 'reader' | 'dashboard'
@@ -83,10 +89,12 @@ function AppContent() {
 
   const handleSidebarResize = useCallback((width) => {
     setSidebarWidth(width);
+    localStorage.setItem('sacred_layout_sidebar', String(width));
   }, []);
 
   const handleNotesResize = useCallback((width) => {
     setNotesWidth(width);
+    localStorage.setItem('sacred_layout_notes', String(width));
   }, []);
 
   const handleVisibleVerseChange = useCallback((verseNum) => {
@@ -110,6 +118,7 @@ function AppContent() {
         onToggleView={() => setView(view === 'dashboard' ? 'reader' : 'dashboard')}
         onToggleAssistant={() => setAssistantOpen((open) => !open)}
         assistantOpen={assistantOpen}
+        onOpenPalette={() => setPaletteOpen(true)}
       />
 
       <main className={styles.main}>

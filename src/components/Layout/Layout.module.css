@@ -197,6 +197,38 @@
   color: var(--accent);
 }
 
+.paletteButton {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  transition: all 0.2s ease;
+}
+
+.paletteButton:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.paletteButton kbd {
+  font-family: inherit;
+  font-size: 0.68rem;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+}
+
+@media (max-width: 768px) {
+  .paletteButton kbd {
+    display: none;
+  }
+}
+
 /* Note Search Button */
 .noteSearchButton {
   display: flex;
