@@ -501,7 +501,13 @@ Link formats:
 
 ## MCP Tools for Claude
 
-SACRED provides 72 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
+SACRED provides 78 MCP tools for Bible study assistance. **Always prefer MCP tools over file/database access** when working with SACRED data.
+
+**Claude-via-MCP is the primary AI path for this app.** The user works on a
+Claude subscription, not API billing — features that need AI (enrichment,
+coverage analysis, sermon prep) are designed to be driven by Claude from
+outside through these tools. The in-app assistant (`ANTHROPIC_API_KEY`) is an
+optional paid alternative, usually disabled.
 
 ### When to Use MCP Tools
 
@@ -575,6 +581,22 @@ SACRED provides 72 MCP tools for Bible study assistance. **Always prefer MCP too
 - `create_series` - Create a new sermon series
 - `add_sermon_to_series` - Link a sermon note to a series
 - `remove_sermon_from_series` - Unlink a sermon from a series
+
+**Enrichment & Coverage (v0.4.0):**
+- `get_pulpit_coverage` - Books/chapters taught, doctrines covered vs untouched, top topics, reused illustrations
+- `get_enrichment_queue` - Sermons/commentary with no pending suggestions yet
+- `add_note_suggestions` - File doctrine/topic/illustration suggestions for a note — they appear as accept/dismiss chips in the app's note editor
+- `get_note_suggestions` - Read a note's suggestions (check before filing duplicates)
+
+**Enrichment workflow** (when the user says "enrich my sermons" or similar):
+```
+1. get_enrichment_queue() - find unenriched sermons
+2. For each: get_note(id) - read the full content
+3. add_note_suggestions(noteId, [...]) - file doctrine links (only chapters
+   substantively engaged), topics (exact existing names), and untagged
+   illustration/application passages
+4. Tell the user the chips are waiting in their note editor
+```
 
 ### Best Practices
 

@@ -11,6 +11,7 @@ import { registerBackupTools } from './tools/backup.js';
 import { registerAiEnhancedTools } from './tools/ai-enhanced.js';
 import { registerSessionTools } from './tools/sessions.js';
 import { registerSeriesTools } from './tools/series.js';
+import { registerEnrichmentTools } from './tools/enrichment.js';
 import { registerResources } from './resources/notes.js';
 import { logger } from './utils/logger.js';
 
@@ -30,6 +31,7 @@ registerBackupTools(server);
 registerAiEnhancedTools(server);
 registerSessionTools(server);
 registerSeriesTools(server);
+registerEnrichmentTools(server);
 
 // Register resources
 registerResources(server);

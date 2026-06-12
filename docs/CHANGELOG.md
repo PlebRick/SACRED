@@ -46,6 +46,13 @@ See `docs/OVERHAUL.md` for the design rationale.
 
 - **UI polish**: persisted sidebar/notes panel widths
 
+- **Enrichment via Claude MCP (no API key needed)**: 4 new MCP tools —
+  `get_pulpit_coverage`, `get_enrichment_queue`, `add_note_suggestions`,
+  `get_note_suggestions` (78 tools total). Claude working from outside
+  (claude.ai / Claude Code, on the user's subscription) can analyze sermons
+  and file suggestions that surface as accept/dismiss chips in the note
+  editor — the same UX as API-key enrichment, at no per-use cost
+
 ### Technical
 - New dependencies: `@anthropic-ai/sdk`, `@modelcontextprotocol/sdk`
 - New server modules: `server/connectors/manager.cjs`, `server/assistant/{client,tools,enrichment}.cjs`

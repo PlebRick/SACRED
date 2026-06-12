@@ -203,10 +203,20 @@ export const AssistantPanel = ({ onClose }) => {
 
       {status && !status.available ? (
         <div className={styles.setup}>
-          <h3>Set up the assistant</h3>
+          <h3>Two ways to study with Claude</h3>
           <p>
-            The study assistant uses Claude to work with your notes, sermons, doctrine
-            library, and connectors — grounded in your own corpus.
+            <strong>Free — use Claude from outside (recommended).</strong> Your Claude
+            subscription already connects to SACRED through MCP with 78 tools. Open
+            claude.ai or Claude Code and ask things like:
+          </p>
+          <ul>
+            <li>"Help me prep a sermon on John 3 from my notes"</li>
+            <li>"Run my enrichment queue and file suggestions" — they appear right here in the note editor</li>
+            <li>"What doctrines haven't I preached on?" (pulpit coverage)</li>
+          </ul>
+          <p>
+            <strong>Optional — chat in this panel.</strong> This in-app assistant calls
+            the Anthropic API directly and is billed per use:
           </p>
           <ol>
             <li>Get an API key at <code>console.anthropic.com</code></li>
