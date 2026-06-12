@@ -44,6 +44,11 @@ See `docs/OVERHAUL.md` for the design rationale.
   - SuggestionsBar in the note editor: accept inserts the doctrine link or topic
   - New `note_suggestions` table and suggestion endpoints; inert without API key
 
+- **Print / PDF export**: printer button in the note editor opens a
+  print-formatted manuscript view — serif typography, title/passage/series/date
+  header, large-print pulpit mode (default for sermons), tag-highlight toggle.
+  Print dialog gives paper or Save-as-PDF (works in web and Mac app)
+
 - **UI polish**: persisted sidebar/notes panel widths
 
 - **Enrichment via Claude MCP (no API key needed)**: 4 new MCP tools —

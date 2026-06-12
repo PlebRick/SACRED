@@ -7,6 +7,7 @@ import { SystematicLinkMark } from '../../extensions/SystematicLinkMark';
 import { InsertDoctrineModal } from './InsertDoctrineModal';
 import { SystematicLinkTooltip } from './SystematicLinkTooltip';
 import { SuggestionsBar } from './SuggestionsBar';
+import { PrintView } from './PrintView';
 import { formatVerseRange } from '../../utils/verseRange';
 import { parseReference } from '../../utils/parseReference';
 import { TopicSelector } from '../UI/TopicSelector';
@@ -292,6 +293,7 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
   const [showTopics, setShowTopics] = useState(false);
   const [showAddTagType, setShowAddTagType] = useState(false);
   const [showDoctrineModal, setShowDoctrineModal] = useState(false);
+  const [showPrintView, setShowPrintView] = useState(false);
   const [isEditingReference, setIsEditingReference] = useState(false);
   const [referenceInput, setReferenceInput] = useState('');
   const [referenceError, setReferenceError] = useState('');
@@ -518,6 +520,18 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         </div>
         <div className={styles.editorActions}>
           {isSaving && <span className={styles.savingIndicator}>Saving...</span>}
+          <button
+            className={styles.closeButton}
+            onClick={() => setShowPrintView(true)}
+            aria-label="Print or export as PDF"
+            title="Print / Save as PDF"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="6 9 6 2 18 2 18 9" />
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <rect x="6" y="14" width="12" height="8" />
+            </svg>
+          </button>
           <button className={styles.closeButton} onClick={onClose} aria-label="Close editor">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -629,6 +643,13 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
         onClose={() => setShowDoctrineModal(false)}
         onInsert={handleInsertDoctrine}
       />
+
+      {showPrintView && (
+        <PrintView
+          note={{ ...note, title, content: editor?.getHTML() || note.content, seriesId }}
+          onClose={() => setShowPrintView(false)}
+        />
+      )}
     </div>
   );
 };

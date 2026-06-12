@@ -146,6 +146,17 @@ a {
   text-decoration: none;
 }
 
+/* Print isolation: while the PrintView portal is open, only it prints */
+@media print {
+  body.sacred-printing #root {
+    display: none !important;
+  }
+
+  body.sacred-printing::before {
+    display: none; /* no noise texture on paper */
+  }
+}
+
 /* Utility classes */
 .visually-hidden {
   position: absolute;
