@@ -15,6 +15,7 @@ import { NotesPanel } from './components/Notes/NotesPanel';
 import { SystematicPanel } from './components/Systematic/SystematicPanel';
 import { CoverageDashboard } from './components/Dashboard/CoverageDashboard';
 import { CommandPalette } from './components/CommandPalette/CommandPalette';
+import { ConnectorsModal } from './components/Connectors/ConnectorsModal';
 import { ResizableDivider } from './components/Layout/ResizableDivider';
 import { Login } from './components/Auth/Login';
 import { isVerseInRange } from './utils/verseRange';
@@ -29,6 +30,7 @@ function AppContent() {
   const [visibleVerse, setVisibleVerse] = useState(1);
   const [view, setView] = useState('reader'); // 'reader' | 'dashboard'
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [connectorsOpen, setConnectorsOpen] = useState(false);
 
   // Global Cmd/Ctrl+K opens the command palette
   useEffect(() => {
@@ -40,6 +42,13 @@ function AppContent() {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Settings modal and command palette open connectors via this event
+  useEffect(() => {
+    const handleOpenConnectors = () => setConnectorsOpen(true);
+    window.addEventListener('sacred:open-connectors', handleOpenConnectors);
+    return () => window.removeEventListener('sacred:open-connectors', handleOpenConnectors);
   }, []);
 
   const { bookId, chapter } = useBible();
@@ -116,6 +125,10 @@ function AppContent() {
             <SystematicPanel />
           </div>
         </div>
+        )}
+
+        {connectorsOpen && (
+          <ConnectorsModal onClose={() => setConnectorsOpen(false)} />
         )}
 
         {paletteOpen && (

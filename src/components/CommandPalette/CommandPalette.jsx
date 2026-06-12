@@ -49,6 +49,12 @@ export const CommandPalette = ({ onClose, view, onSetView, onToggleSidebar }) =>
         }
       },
       {
+        id: 'action-connectors',
+        label: 'Manage Connectors…',
+        keywords: 'connectors mcp tools plugins extensions',
+        run: () => window.dispatchEvent(new CustomEvent('sacred:open-connectors'))
+      },
+      {
         id: 'action-theme',
         label: 'Toggle Theme',
         keywords: 'theme dark light mode',

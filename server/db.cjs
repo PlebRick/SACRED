@@ -387,6 +387,27 @@ if (!hasSeriesId) {
 }
 
 // ===========================================
+// MCP CONNECTORS
+// ===========================================
+
+// User-provided MCP servers that extend SACRED with external tools
+db.exec(`
+  CREATE TABLE IF NOT EXISTS connectors (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    transport TEXT NOT NULL DEFAULT 'stdio',  -- 'stdio' | 'http'
+    command TEXT,                             -- stdio: executable (e.g. 'node')
+    args TEXT,                                -- stdio: JSON array of arguments
+    env TEXT,                                 -- stdio: JSON object of extra env vars
+    url TEXT,                                 -- http: server URL
+    enabled INTEGER DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )
+`);
+
+// ===========================================
 // ILLUSTRATION DUPLICATE DETECTION
 // ===========================================
 
