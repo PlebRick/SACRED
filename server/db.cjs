@@ -408,6 +408,27 @@ db.exec(`
 `);
 
 // ===========================================
+// AI ENRICHMENT SUGGESTIONS
+// ===========================================
+
+// Suggestions generated after sermon/commentary saves (doctrine links,
+// topics, untagged illustrations/applications). Surfaced in NoteEditor.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS note_suggestions (
+    id TEXT PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,            -- 'doctrine' | 'topic' | 'illustration' | 'application'
+    payload TEXT NOT NULL,         -- JSON, shape depends on kind
+    status TEXT DEFAULT 'pending', -- 'pending' | 'accepted' | 'dismissed'
+    created_at TEXT NOT NULL
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_note_suggestions_note ON note_suggestions(note_id, status)
+`);
+
+// ===========================================
 // ILLUSTRATION DUPLICATE DETECTION
 // ===========================================
 

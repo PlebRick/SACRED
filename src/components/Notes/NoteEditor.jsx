@@ -6,6 +6,7 @@ import { InlineTagMark } from '../../extensions/InlineTagMark';
 import { SystematicLinkMark } from '../../extensions/SystematicLinkMark';
 import { InsertDoctrineModal } from './InsertDoctrineModal';
 import { SystematicLinkTooltip } from './SystematicLinkTooltip';
+import { SuggestionsBar } from './SuggestionsBar';
 import { formatVerseRange } from '../../utils/verseRange';
 import { parseReference } from '../../utils/parseReference';
 import { TopicSelector } from '../UI/TopicSelector';
@@ -603,6 +604,14 @@ export const NoteEditor = ({ note, onUpdate, onClose }) => {
       <div className={styles.editorContent} ref={editorContentRef}>
         <EditorContent editor={editor} />
       </div>
+
+      <SuggestionsBar
+        noteId={note.id}
+        onInsertDoctrine={handleInsertDoctrine}
+        onTopicAccepted={(topicId) => {
+          if (topicId && !tags.includes(topicId)) setTags([...tags, topicId]);
+        }}
+      />
 
       <SystematicLinkTooltip editorContainerRef={editorContentRef} />
 
