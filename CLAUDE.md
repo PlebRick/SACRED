@@ -23,8 +23,8 @@ This project uses **two GitHub repositories** that must be kept in sync:
 ### Git Remotes
 
 ```bash
-origin  → github.com/PlebRick/SACRED (public)
-private → github.com/PlebRick/SACRED-PRIVATE (private)
+origin  → github.com/DigiMonk73/SACRED (public)
+private → github.com/DigiMonk73/SACRED-PRIVATE (private)
 ```
 
 ### Workflow Rules
